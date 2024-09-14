@@ -25,7 +25,7 @@ import {
   convertWeekDataToHoursWorked, 
 } from "../../utils/tableUtils";
 import { Employee } from "../../models/Employee";
-import { WeekData } from "../../types/WeekData"; // Make sure to import WeekData correctly
+import { WeekData } from "../../types/WeekData";
 
 interface DropdownTableProps {
   employees: Employee[];
@@ -79,6 +79,10 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
   const startIndex = page * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
   const paginatedEmployees = employees.slice(startIndex, endIndex);
+
+  if (!employees || employees.length === 0) {
+    return <div>No hay empleados disponibles</div>;
+  }
 
   return (
     <Paper sx={{ width: "100%" }}>
