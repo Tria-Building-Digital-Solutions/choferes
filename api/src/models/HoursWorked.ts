@@ -1,5 +1,6 @@
 import { Model, DataTypes } from "sequelize";
-import { sequelize } from "../database";
+import { Employee } from "./Employee";
+import sequelize from "../config/database";
 
 export class HoursWorked extends Model {
   public id!: number;
@@ -31,5 +32,8 @@ HoursWorked.init(
   {
     sequelize,
     modelName: "HoursWorked",
+    tableName: 'hours_worked',
   }
 );
+
+HoursWorked.belongsTo(Employee, { foreignKey: 'employeeId' });

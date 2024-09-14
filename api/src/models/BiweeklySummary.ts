@@ -1,6 +1,6 @@
 import { Model, DataTypes } from "sequelize";
-import { sequelize } from "../database";
 import { Employee } from "./Employee";
+import sequelize from "../config/database";
 
 export class BiweeklySummary extends Model {
   public id!: number;
@@ -36,5 +36,8 @@ BiweeklySummary.init(
   {
     sequelize,
     modelName: "BiweeklySummary",
+    tableName: 'biweekly_summary',
   }
 );
+
+BiweeklySummary.belongsTo(Employee, { foreignKey: 'employeeId' });

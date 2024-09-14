@@ -1,6 +1,6 @@
 import { Model, DataTypes } from "sequelize";
-import { sequelize } from "../database";
 import { Employee } from "./Employee";
+import sequelize from "../config/database";
 
 export class WeeklySummary extends Model {
   public id!: number;
@@ -36,5 +36,8 @@ WeeklySummary.init(
   {
     sequelize,
     modelName: "WeeklySummary",
+    tableName: 'weekly_summary',
   }
 );
+
+WeeklySummary.belongsTo(Employee, { foreignKey: 'employeeId' });
