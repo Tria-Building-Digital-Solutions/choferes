@@ -20,19 +20,19 @@ import { RootState } from "../store/store";
 import { addEmployee, removeEmployee } from "../store/slices/employeeSlice";
 import SearchBar from "../components/SearchBar/SearchBar";
 import ConfirmationDialog from "../components/Dialog/ConfirmationDialog";
+import { Employee } from "../models/Employee";
 
 const ManageEmployees: React.FC = () => {
   const dispatch = useDispatch();
-  const employees = useSelector((state: RootState) => state.employee.employees);
+  const employees = useSelector((state: RootState) => state.employee.employees) as Employee[];
   const [newEmployeeFirstName, setNewEmployeeFirstName] = useState("");
   const [newEmployeeLastName, setNewEmployeeLastName] = useState("");
-  const [newEmployeeFirstNameError, setNewEmployeeFirstNameError] =
-    useState("");
+  const [newEmployeeFirstNameError, setNewEmployeeFirstNameError] = useState("");
   const [newEmployeeLastNameError, setNewEmployeeLastNameError] = useState("");
   const [filter, setFilter] = useState("");
   const [showResults, setShowResults] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
-  const [selectedEmployee, setSelectedEmployee] = useState("");
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(8);
 
@@ -60,35 +60,39 @@ const ManageEmployees: React.FC = () => {
     }
 
     if (valid) {
-      const fullName = `${newEmployeeFirstName.trim()} ${newEmployeeLastName.trim()}`;
-      if (!employees.includes(fullName)) {
-        dispatch(addEmployee(fullName));
+      const newEmployee: Employee = {
+        id: Date.now(), // Generate a unique ID or use a different method
+        firstName: newEmployeeFirstName.trim(),
+        lastName: newEmployeeLastName.trim(),
+      };
+      if (!employees.some(emp => emp.firstName === newEmployee.firstName && emp.lastName === newEmployee.lastName)) {
+        dispatch(addEmployee(newEmployee));
         setNewEmployeeFirstName("");
         setNewEmployeeLastName("");
       }
     }
   };
 
-  const handleRemoveEmployee = (name: string) => {
-    setSelectedEmployee(name);
+  const handleRemoveEmployee = (employeeId: number) => {
+    setSelectedEmployeeId(employeeId);
     setOpenDialog(true);
   };
 
   const handleConfirmRemove = () => {
-    if (selectedEmployee) {
-      dispatch(removeEmployee(selectedEmployee));
-      setSelectedEmployee("");
+    if (selectedEmployeeId !== null) {
+      dispatch(removeEmployee(selectedEmployeeId));
+      setSelectedEmployeeId(null);
       setOpenDialog(false);
     }
   };
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
-    setSelectedEmployee("");
+    setSelectedEmployeeId(null);
   };
 
   const filteredEmployees = employees.filter((employee) =>
-    employee.toLowerCase().includes(filter.toLowerCase())
+    `${employee.firstName} ${employee.lastName}`.toLowerCase().includes(filter.toLowerCase())
   );
 
   useEffect(() => {
@@ -118,12 +122,12 @@ const ManageEmployees: React.FC = () => {
               <Table stickyHeader>
                 <TableBody>
                   {paginatedEmployees.map((employee) => (
-                    <TableRow key={employee}>
-                      <TableCell>{employee}</TableCell>
+                    <TableRow key={employee.id}>
+                      <TableCell>{`${employee.firstName} ${employee.lastName}`}</TableCell>
                       <TableCell align="right">
                         <IconButton
                           edge="end"
-                          onClick={() => handleRemoveEmployee(employee)}
+                          onClick={() => handleRemoveEmployee(employee.id)}
                         >
                           <DeleteIcon />
                         </IconButton>

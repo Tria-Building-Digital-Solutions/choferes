@@ -7,9 +7,10 @@ import SearchBar from "../components/SearchBar/SearchBar";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
 import CalendarTodayRoundedIcon from "@mui/icons-material/CalendarTodayRounded";
+import { Employee } from "../models/Employee";
 
 const Dashboard: React.FC = () => {
-  const employees = useSelector((state: RootState) => state.employee.employees);
+  const employees = useSelector((state: RootState) => state.employee.employees) as Employee[];
   const [weekOffset, setWeekOffset] = useState(0);
   const [filter, setFilter] = useState("");
   const [showResults, setShowResults] = useState(true);
@@ -19,7 +20,7 @@ const Dashboard: React.FC = () => {
   const handleCurrentWeek = () => setWeekOffset(0);
 
   const filteredEmployees = employees.filter((employee) =>
-    employee.toLowerCase().includes(filter.toLowerCase())
+    `${employee.firstName} ${employee.lastName}`.toLowerCase().includes(filter.toLowerCase())
   );
 
   useEffect(() => {

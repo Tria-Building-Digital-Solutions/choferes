@@ -1,60 +1,56 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { mockEmployees } from "../../data/mockData"
-
-interface DaySelection {
-  label: string;
-  hours: number;
-}
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { RootState } from '../../store/store';
+import { Employee } from '../../models/Employee';
+import { DaySelection } from '../../types/DaySelection';
+import { WeekData } from '../../types/WeekData';
 
 interface EmployeeState {
-  employees: string[];
-  weekData: {
-    [weekOffset: number]: {
-      [employee: string]: {
-        [day: string]: DaySelection;
-      };
-    };
-  };
+  employees: Employee[];
+  weekData: Record<number, WeekData>;
 }
 
 const initialState: EmployeeState = {
-  employees: mockEmployees,
-  weekData: {},
+  employees: [],
+  weekData: {}
 };
 
 const employeeSlice = createSlice({
-  name: 'employees',
+  name: 'employee',
   initialState,
   reducers: {
-    addEmployee: (state, action: PayloadAction<string>) => {
+    addEmployee(state, action: PayloadAction<Employee>) {
       state.employees.push(action.payload);
     },
-    removeEmployee: (state, action: PayloadAction<string>) => {
-      state.employees = state.employees.filter(
-        (employee) => employee !== action.payload
-      );
+    removeEmployee(state, action: PayloadAction<number>) {
+      state.employees = state.employees.filter(employee => employee.id !== action.payload);
     },
     updateEmployeeSelection: (
       state,
       action: PayloadAction<{
         weekOffset: number;
-        employee: string;
+        employeeId: number;
         day: string;
         selection: DaySelection;
       }>
     ) => {
-      const { weekOffset, employee, day, selection } = action.payload;
+      const { weekOffset, employeeId, day, selection } = action.payload;
+
       if (!state.weekData[weekOffset]) {
         state.weekData[weekOffset] = {};
       }
-      if (!state.weekData[weekOffset][employee]) {
-        state.weekData[weekOffset][employee] = {};
+
+      if (!state.weekData[weekOffset][employeeId]) {
+        state.weekData[weekOffset][employeeId] = {};
       }
-      state.weekData[weekOffset][employee][day] = selection;
+
+      state.weekData[weekOffset][employeeId][day] = selection;
     },
   },
 });
 
-export const { addEmployee, removeEmployee, updateEmployeeSelection } =
-  employeeSlice.actions;
+export const { addEmployee, removeEmployee, updateEmployeeSelection } = employeeSlice.actions;
+
+export const selectEmployees = (state: RootState) => state.employee.employees;
+export const selectWeekData = (state: RootState) => state.employee.weekData;
+
 export default employeeSlice.reducer;

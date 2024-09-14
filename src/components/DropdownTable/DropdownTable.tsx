@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Table,
   TableBody,
@@ -11,17 +11,24 @@ import {
   MenuItem,
   FormControl,
   TablePagination,
+  InputLabel,
 } from "@mui/material";
 import { getCurrentWeekDates } from "../../utils/dateUtils";
 import { STATE, TABLE } from "../../constants/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import { updateEmployeeSelection } from "../../store/slices/employeeSlice";
-import { calculateTotalHours, getBackgroundColor, getOptionsForDay } from "../../utils/tableUtils";
-import "./styles.css";
+import {
+  calculateTotalHours,
+  getBackgroundColor,
+  getOptionsForDay,
+  convertWeekDataToHoursWorked, 
+} from "../../utils/tableUtils";
+import { Employee } from "../../models/Employee";
+import { WeekData } from "../../types/WeekData"; // Make sure to import WeekData correctly
 
 interface DropdownTableProps {
-  employees: string[];
+  employees: Employee[];
   weekOffset: number;
 }
 
@@ -34,15 +41,21 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
     () => getCurrentWeekDates(weekOffset),
     [weekOffset]
   );
+
   const weekData = useSelector(
     (state: RootState) => state.employee.weekData[weekOffset] || {}
-  );
+  ) as WeekData;
+
+  const hoursWorked = convertWeekDataToHoursWorked(weekData); 
 
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [selectedColumn, setSelectedColumn] = useState<
+    "weekly" | "biweekly" | "monthly"
+  >("weekly");
 
   const handleChange = (
-    employee: string,
+    employee: Employee,
     day: string,
     selectedLabel: string
   ) => {
@@ -51,14 +64,16 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
     );
     const selectedHours = selectedOption ? selectedOption.hours : 0;
 
-    dispatch(
-      updateEmployeeSelection({
-        weekOffset,
-        employee,
-        day,
-        selection: { label: selectedLabel, hours: selectedHours },
-      })
-    );
+    if (employee.id !== undefined) {
+      dispatch(
+        updateEmployeeSelection({
+          weekOffset,
+          employeeId: employee.id,
+          day,
+          selection: { label: selectedLabel, hours: selectedHours },
+        })
+      );
+    }
   };
 
   const startIndex = page * rowsPerPage;
@@ -85,20 +100,39 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                 </TableCell>
               ))}
               <TableCell
-                align="center"
+                align="right"
                 sx={{
                   position: "sticky",
                   right: 0,
                   zIndex: 2,
                 }}
               >
-                Total Horas
+                <FormControl>
+                  <InputLabel>Total</InputLabel>
+                  <Select
+                    value={selectedColumn}
+                    onChange={(e) =>
+                      setSelectedColumn(
+                        e.target.value as "weekly" | "biweekly" | "monthly"
+                      )
+                    }
+                    autoWidth
+                    label="Total"
+                  >
+                    <MenuItem value="weekly">Semanal</MenuItem>
+                    <MenuItem value="biweekly">Quincenal</MenuItem>
+                    <MenuItem value="monthly">Mensual</MenuItem>
+                  </Select>
+                </FormControl>
               </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {paginatedEmployees.map((employee, rowIndex) => (
-              <TableRow key={employee} sx={{ backgroundColor: getBackgroundColor(rowIndex) }}>
+              <TableRow
+                key={`${employee.firstName}-${employee.lastName}-${rowIndex}`} // Ensure a unique key
+                sx={{ backgroundColor: getBackgroundColor(rowIndex) }}
+              >
                 <TableCell
                   sx={{
                     position: "sticky",
@@ -107,11 +141,15 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                     backgroundColor: getBackgroundColor(rowIndex),
                   }}
                 >
-                  {employee}
+                  {employee.firstName} {employee.lastName}
                 </TableCell>
                 {currentWeek.map(({ day }) => {
+                  const employeeIdStr = employee.id?.toString() || "";
                   const selectedLabel =
-                    weekData[employee]?.[day]?.label || STATE.FREE;
+                    (employee.id !== undefined &&
+                      weekData[employeeIdStr]?.[day]?.label) ||
+                    STATE.FREE;
+
                   return (
                     <TableCell key={day}>
                       <FormControl fullWidth>
@@ -132,17 +170,63 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                     </TableCell>
                   );
                 })}
-                <TableCell
-                  align="center"
-                  sx={{
-                    position: "sticky",
-                    right: 0,
-                    zIndex: 2,
-                    backgroundColor: getBackgroundColor(rowIndex),
-                  }}
-                >
-                  {calculateTotalHours(currentWeek, weekData, employee)}
-                </TableCell>
+                {selectedColumn === "weekly" && (
+                  <TableCell
+                    align="center"
+                    sx={{
+                      position: "sticky",
+                      right: 0,
+                      zIndex: 2,
+                      backgroundColor: getBackgroundColor(rowIndex),
+                    }}
+                  >
+                    {employee.id !== undefined &&
+                      calculateTotalHours(
+                        currentWeek,
+                        hoursWorked,
+                        employee.id,
+                        "weekly"
+                      )}
+                  </TableCell>
+                )}
+                {selectedColumn === "biweekly" && (
+                  <TableCell
+                    align="center"
+                    sx={{
+                      position: "sticky",
+                      right: 0,
+                      zIndex: 2,
+                      backgroundColor: getBackgroundColor(rowIndex),
+                    }}
+                  >
+                    {employee.id !== undefined &&
+                      calculateTotalHours(
+                        currentWeek,
+                        hoursWorked,
+                        employee.id,
+                        "biweekly"
+                      )}
+                  </TableCell>
+                )}
+                {selectedColumn === "monthly" && (
+                  <TableCell
+                    align="center"
+                    sx={{
+                      position: "sticky",
+                      right: 0,
+                      zIndex: 2,
+                      backgroundColor: getBackgroundColor(rowIndex),
+                    }}
+                  >
+                    {employee.id !== undefined &&
+                      calculateTotalHours(
+                        currentWeek,
+                        hoursWorked,
+                        employee.id,
+                        "monthly"
+                      )}
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>
