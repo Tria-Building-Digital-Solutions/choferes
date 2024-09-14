@@ -1,0 +1,62 @@
+import { Request, Response } from 'express';
+import * as employeeService from '../services/employeeService';
+
+export const createEmployee = async (req: Request, res: Response) => {
+  try {
+    const newEmployee = await employeeService.createEmployee(req.body);
+    res.status(201).json(newEmployee);
+  } catch (error) {
+    res.status(500).json({ message: 'Error creating Employee', error });
+  }
+};
+
+export const getAllEmployees = async (req: Request, res: Response) => {
+  try {
+    const employees = await employeeService.getAllEmployees();
+    res.status(200).json(employees);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching Employees', error });
+  }
+};
+
+export const getEmployeeById = async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    const employee = await employeeService.getEmployeeById(id);
+    if (employee) {
+      res.status(200).json(employee);
+    } else {
+      res.status(404).json({ message: 'Employee not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching Employee', error });
+  }
+};
+
+export const updateEmployee = async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    const updatedEmployee = await employeeService.updateEmployee(id, req.body);
+    if (updatedEmployee) {
+      res.status(200).json(updatedEmployee);
+    } else {
+      res.status(404).json({ message: 'Employee not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating Employee', error });
+  }
+};
+
+export const deleteEmployee = async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    const deleted = await employeeService.deleteEmployee(id);
+    if (deleted) {
+      res.status(204).end();
+    } else {
+      res.status(404).json({ message: 'Employee not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting Employee', error });
+  }
+};
