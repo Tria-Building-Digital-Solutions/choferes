@@ -4,7 +4,7 @@ import employeeRoutes from './routes/employeeRoutes';
 import hoursWorkedRoutes from './routes/hoursWorkedRoutes';
 import weeklySummaryRoutes from './routes/weeklySummaryRoutes';
 import biweeklySummaryRoutes from './routes/biweeklySummaryRoutes';
-import monthlyWorkSummaryRoutes from './routes/monthlyWorkSummaryRoutes';
+import monthlySummaryRoutes from './routes/monthlySummaryRoutes';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -15,7 +15,7 @@ app.use('/api', employeeRoutes);
 app.use('/api', hoursWorkedRoutes);
 app.use('/api', weeklySummaryRoutes);
 app.use('/api', biweeklySummaryRoutes);
-app.use('/api', monthlyWorkSummaryRoutes);
+app.use('/api', monthlySummaryRoutes);
 
 app.listen(port, async () => {
   console.log(`Server is running on port ${port}`);

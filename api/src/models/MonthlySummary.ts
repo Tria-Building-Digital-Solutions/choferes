@@ -1,10 +1,10 @@
 import { Model, DataTypes } from "sequelize";
-import { sequelize } from "../database";
 import { Employee } from "./Employee";
 import { BiweeklySummary } from "./BiweeklySummary";
 import { WeeklySummary } from "./WeeklySummary";
+import sequelize from "../config/database";
 
-export class MonthlyWorkSummary extends Model {
+export class MonthlySummary extends Model {
   public id!: number;
   public employeeId!: number;
   public month!: string;
@@ -13,7 +13,7 @@ export class MonthlyWorkSummary extends Model {
   public monthlyTotal!: number;
 }
 
-MonthlyWorkSummary.init(
+MonthlySummary.init(
   {
     id: {
       type: DataTypes.INTEGER,
@@ -39,6 +39,9 @@ MonthlyWorkSummary.init(
   },
   {
     sequelize,
-    modelName: "MonthlyWorkSummary",
+    modelName: "MonthlySummary",
+    tableName: 'monthly_summary',
   }
 );
+
+MonthlySummary.belongsTo(Employee, { foreignKey: 'employeeId' });
