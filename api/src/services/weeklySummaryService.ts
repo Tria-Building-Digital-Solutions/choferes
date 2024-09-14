@@ -1,0 +1,25 @@
+import { WeeklySummary } from '../models/WeeklySummary';
+
+export const createWeeklySummary = async (data: { weekNumber: number; totalHours: number }) => {
+  return WeeklySummary.create(data);
+};
+
+export const getAllWeeklySummaries = async () => {
+  return WeeklySummary.findAll();
+};
+
+export const getWeeklySummaryById = async (id: number) => {
+  return WeeklySummary.findByPk(id);
+};
+
+export const updateWeeklySummary = async (
+  id: number,
+  data: { weekNumber?: number; totalHours?: number }
+) => {
+  await WeeklySummary.update(data, { where: { id } });
+  return WeeklySummary.findByPk(id);
+};
+
+export const deleteWeeklySummary = async (id: number) => {
+  return WeeklySummary.destroy({ where: { id } });
+};

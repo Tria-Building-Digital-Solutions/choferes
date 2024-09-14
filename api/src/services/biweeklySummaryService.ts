@@ -1,0 +1,25 @@
+import { BiweeklySummary } from '../models/BiweeklySummary';
+
+export const createBiweeklySummary = async (data: { firstHalfHours: number; secondHalfHours: number }) => {
+  return BiweeklySummary.create(data);
+};
+
+export const getAllBiweeklySummaries = async () => {
+  return BiweeklySummary.findAll();
+};
+
+export const getBiweeklySummaryById = async (id: number) => {
+  return BiweeklySummary.findByPk(id);
+};
+
+export const updateBiweeklySummary = async (
+  id: number,
+  data: { firstHalfHours?: number; secondHalfHours?: number }
+) => {
+  await BiweeklySummary.update(data, { where: { id } });
+  return BiweeklySummary.findByPk(id);
+};
+
+export const deleteBiweeklySummary = async (id: number) => {
+  return BiweeklySummary.destroy({ where: { id } });
+};
