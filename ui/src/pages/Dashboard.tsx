@@ -1,26 +1,36 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { RootState } from "../store/store";
 import { Box, Button, Grid, IconButton, Typography } from "@mui/material";
 import DropdownTable from "../components/DropdownTable/DropdownTable";
 import SearchBar from "../components/SearchBar/SearchBar";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
 import CalendarTodayRoundedIcon from "@mui/icons-material/CalendarTodayRounded";
+import api from "../services/api";
 import { Employee } from "../models/Employee";
 
 const Dashboard: React.FC = () => {
-  const employees = useSelector((state: RootState) => state.employee.employees) as Employee[];
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [weekOffset, setWeekOffset] = useState(0);
   const [filter, setFilter] = useState("");
   const [showResults, setShowResults] = useState(true);
+
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      const response = await api.get("/employees");
+      setEmployees(response.data);
+    };
+
+    fetchEmployees();
+  }, []);
 
   const handleNextWeek = () => setWeekOffset(weekOffset + 1);
   const handlePreviousWeek = () => setWeekOffset(weekOffset - 1);
   const handleCurrentWeek = () => setWeekOffset(0);
 
   const filteredEmployees = employees.filter((employee) =>
-    `${employee.firstName} ${employee.lastName}`.toLowerCase().includes(filter.toLowerCase())
+    `${employee.firstName} ${employee.lastName}`
+      .toLowerCase()
+      .includes(filter.toLowerCase())
   );
 
   useEffect(() => {
@@ -29,10 +39,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div>
-      <Typography
-        variant="h2"
-        sx={{ flexGrow: 1, margin: '25px 0' }}
-      >
+      <Typography variant="h2" sx={{ flexGrow: 1, margin: "25px 0" }}>
         Roles
       </Typography>
       <Grid
@@ -75,7 +82,7 @@ const Dashboard: React.FC = () => {
       </Grid>
       <br />
       {showResults ? (
-        <DropdownTable employees={filteredEmployees} weekOffset={weekOffset} />
+        <DropdownTable weekOffset={weekOffset} />
       ) : (
         <p>No se encontraron empleados con el filtro '{filter}'.</p>
       )}
