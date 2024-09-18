@@ -72,7 +72,7 @@ const ManageEmployees: React.FC = () => {
   const paginatedEmployees = filteredEmployees.slice(startIndex, endIndex);
 
   return (
-    <div>
+    <Box>
       <Typography variant="h2" sx={{ flexGrow: 1, margin: "25px 0" }}>
         Administrar Empleados
       </Typography>
@@ -146,8 +146,9 @@ const ManageEmployees: React.FC = () => {
           onClose={() => setOpenDialog(false)}
         />
       )}
-    </div>
+    </Box>
   );
 };
 
 export default ManageEmployees;
+

@@ -7,7 +7,7 @@ import biweeklySummaryRoutes from './routes/biweeklySummaryRoutes';
 import monthlySummaryRoutes from './routes/monthlySummaryRoutes';
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
 
 app.use(bodyParser.json());
 

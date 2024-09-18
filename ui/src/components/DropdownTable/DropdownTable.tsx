@@ -47,12 +47,12 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
 
   useEffect(() => {
     const fetchEmployees = async () => {
-      const response = await api.get("/employees");
+      const response = await api.get("/api/employees");
       setEmployees(response.data);
     };
 
     const fetchWeekData = async () => {
-      const response = await api.get(`/hours-worked?weekOffset=${weekOffset}`);
+      const response = await api.get(`/api/hours-worked?weekOffset=${weekOffset}`);
       setWeekData(response.data);
       setHoursWorked(convertWeekDataToHoursWorked(response.data));
     };
