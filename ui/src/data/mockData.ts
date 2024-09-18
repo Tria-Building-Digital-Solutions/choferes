@@ -1,7 +1,7 @@
 import { BiweeklySummary } from "../models/BiweeklySummary";
 import { Employee } from "../models/Employee";
 import { HoursWorked } from "../models/HoursWorked";
-import { MonthlyWorkSummary } from "../models/MonthlySummary";
+import { MonthlySummary } from "../models/MonthlySummary";
 import { WeeklySummary } from "../models/WeeklySummary";
 
 export const options = {
@@ -79,7 +79,7 @@ export const mockBiweeklySummaries: BiweeklySummary[] = [
   { firstHalfHours: 50, secondHalfHours: 45 },  
 ];
 
-export const mockMonthlyWorkSummaries: MonthlyWorkSummary[] = [
+export const mockMonthlyWorkSummaries: MonthlySummary[] = [
   {
     employee: { id: 1, firstName: "Emily", lastName: "Davis" },
     month: "September",

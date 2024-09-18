@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -14,47 +14,54 @@ import {
   InputLabel,
 } from "@mui/material";
 import { getCurrentWeekDates } from "../../utils/dateUtils";
-import { STATE, TABLE } from "../../constants/constants";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../../store/store";
-import { updateEmployeeSelection } from "../../store/slices/employeeSlice";
 import {
   calculateTotalHours,
+  convertWeekDataToHoursWorked,
   getBackgroundColor,
   getOptionsForDay,
-  convertWeekDataToHoursWorked, 
 } from "../../utils/tableUtils";
+import api from "../../services/api";
 import { Employee } from "../../models/Employee";
 import { WeekData } from "../../types/WeekData";
+import { STATE, TABLE } from "../../constants/constants";
+import { HoursWorked } from "../../models/HoursWorked";
 
 interface DropdownTableProps {
-  employees: Employee[];
   weekOffset: number;
 }
 
-const DropdownTable: React.FC<DropdownTableProps> = ({
-  employees,
-  weekOffset,
-}) => {
-  const dispatch = useDispatch();
+const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
   const currentWeek = useMemo(
     () => getCurrentWeekDates(weekOffset),
     [weekOffset]
   );
 
-  const weekData = useSelector(
-    (state: RootState) => state.employee.weekData[weekOffset] || {}
-  ) as WeekData;
-
-  const hoursWorked = convertWeekDataToHoursWorked(weekData); 
-
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [weekData, setWeekData] = useState<WeekData>({});
+  const [hoursWorked, setHoursWorked] = useState<HoursWorked[]>([]);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [selectedColumn, setSelectedColumn] = useState<
     "weekly" | "biweekly" | "monthly"
   >("weekly");
 
-  const handleChange = (
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      const response = await api.get("/employees");
+      setEmployees(response.data);
+    };
+
+    const fetchWeekData = async () => {
+      const response = await api.get(`/hours-worked?weekOffset=${weekOffset}`);
+      setWeekData(response.data);
+      setHoursWorked(convertWeekDataToHoursWorked(response.data));
+    };
+
+    fetchEmployees();
+    fetchWeekData();
+  }, [weekOffset]);
+
+  const handleChange = async (
     employee: Employee,
     day: string,
     selectedLabel: string
@@ -65,14 +72,19 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
     const selectedHours = selectedOption ? selectedOption.hours : 0;
 
     if (employee.id !== undefined) {
-      dispatch(
-        updateEmployeeSelection({
-          weekOffset,
-          employeeId: employee.id,
-          day,
-          selection: { label: selectedLabel, hours: selectedHours },
-        })
-      );
+      await api.put(`/hours-worked/${employee.id}`, {
+        weekOffset,
+        day,
+        label: selectedLabel,
+        hours: selectedHours,
+      });
+
+      const updatedWeekData = { ...weekData };
+      updatedWeekData[employee.id][day] = {
+        label: selectedLabel,
+        hours: selectedHours,
+      };
+      setWeekData(updatedWeekData);
     }
   };
 
