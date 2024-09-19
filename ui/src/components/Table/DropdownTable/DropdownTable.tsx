@@ -13,6 +13,7 @@ import {
   TablePagination,
   InputLabel,
   TableSortLabel,
+  Divider,
 } from "@mui/material";
 import { getCurrentWeekDates } from "../../../utils/dateUtils";
 import {
@@ -209,11 +210,23 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
                             handleChange(employee, day, e.target.value)
                           }
                         >
-                          {getOptionsForDay(day, schedules).map((option) => (
-                            <MenuItem key={option.id} value={option.label}>
-                              {option.label}
-                            </MenuItem>
-                          ))}
+                          {getOptionsForDay(day, schedules).reduce<
+                            React.ReactNode[]
+                          >((acc, option, index) => {
+                            acc.push(
+                              <MenuItem key={option.id} value={option.label}>
+                                {option.label}
+                              </MenuItem>
+                            );
+                            if (option.label === "Ausencia" && index > 0) {
+                              acc.splice(
+                                acc.length - 1,
+                                0,
+                                <Divider key={`divider-${option.id}`} />
+                              );
+                            }
+                            return acc;
+                          }, [])}
                         </Select>
                       </FormControl>
                     </TableCell>
