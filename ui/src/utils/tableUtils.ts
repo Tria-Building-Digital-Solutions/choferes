@@ -19,8 +19,10 @@ export const getOptionsForDay = (day: string): Option[] => {
   switch (true) {
     case day.includes(DAYS.FRIDAY):
       return options.friday;
-    case day.includes(DAYS.SATURDAY) || day.includes(DAYS.SUNDAY):
-      return options.weekend;
+    case day.includes(DAYS.SATURDAY):
+      return options.saturday;
+    case day.includes(DAYS.SUNDAY):
+      return options.sunday;
     default:
       return options.weekdays;
   }
@@ -81,6 +83,7 @@ export const calculateTotalHours = (
     const dayHours = hoursWorked.find(
       (record) =>
         record.employeeId === employeeId && 
+        isValidDate(record.date) &&  
         format(record.date, "EEEE") === day
     )?.hours || 0;
     
@@ -98,6 +101,10 @@ export const convertWeekDataToHoursWorked = (
       hours: (selection as DaySelection).hours,
     }))
   );
+};
+
+const isValidDate = (date: any): boolean => {
+  return date instanceof Date && !isNaN(date.getTime());
 };
 
 export const getBackgroundColor = (rowIndex: number) => {

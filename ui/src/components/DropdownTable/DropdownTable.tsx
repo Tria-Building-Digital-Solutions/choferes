@@ -47,12 +47,12 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
 
   useEffect(() => {
     const fetchEmployees = async () => {
-      const response = await api.get("/api/employees");
+      const response = await api.get("/employees");
       setEmployees(response.data);
     };
 
     const fetchWeekData = async () => {
-      const response = await api.get(`/api/hours-worked?weekOffset=${weekOffset}`);
+      const response = await api.get(`/hours?weekOffset=${weekOffset}`);
       setWeekData(response.data);
       setHoursWorked(convertWeekDataToHoursWorked(response.data));
     };
@@ -72,7 +72,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
     const selectedHours = selectedOption ? selectedOption.hours : 0;
 
     if (employee.id !== undefined) {
-      await api.put(`/hours-worked/${employee.id}`, {
+      await api.put(`/hours/${employee.id}`, {
         weekOffset,
         day,
         label: selectedLabel,
@@ -146,7 +146,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
           <TableBody>
             {paginatedEmployees.map((employee, rowIndex) => (
               <TableRow
-                key={`${employee.firstName}-${employee.lastName}-${rowIndex}`} // Ensure a unique key
+                key={`${employee.firstName}-${employee.lastName}-${rowIndex}`}
                 sx={{ backgroundColor: getBackgroundColor(rowIndex) }}
               >
                 <TableCell

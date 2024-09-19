@@ -3,10 +3,10 @@ import * as weeklySummaryController from '../controllers/weeklySummaryController
 
 const router = express.Router();
 
-router.post('/weekly-summaries', weeklySummaryController.createWeeklySummary);
-router.get('/weekly-summaries', weeklySummaryController.getAllWeeklySummaries);
-router.get('/weekly-summaries/:id', weeklySummaryController.getWeeklySummaryById);
-router.put('/weekly-summaries/:id', weeklySummaryController.updateWeeklySummary);
-router.delete('/weekly-summaries/:id', weeklySummaryController.deleteWeeklySummary);
+router.post('/', weeklySummaryController.createWeeklySummary);
+router.get('/', weeklySummaryController.getAllWeeklySummaries);
+router.get('/:id', weeklySummaryController.getWeeklySummaryById);
+router.put('/:id', weeklySummaryController.updateWeeklySummary);
+router.delete('/:id', weeklySummaryController.deleteWeeklySummary);
 
 export default router;

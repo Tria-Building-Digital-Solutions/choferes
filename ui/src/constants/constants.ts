@@ -7,8 +7,6 @@ export const APPBAR_MENU = {
   TITLE: "Choferes",
   ROLES: "Roles",
   EMPLOYEES: "Empleados",
-  TIME_MANAGEMENT: "Gestión de Tiempo",
-  REPORTS: "Informes",
 }
 
 export const ROUTES = {

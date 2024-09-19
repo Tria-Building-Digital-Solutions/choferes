@@ -3,10 +3,10 @@ import * as biweeklySummaryController from '../controllers/biweeklySummaryContro
 
 const router = express.Router();
 
-router.post('/biweekly-summaries', biweeklySummaryController.createBiweeklySummary);
-router.get('/biweekly-summaries', biweeklySummaryController.getAllBiweeklySummaries);
-router.get('/biweekly-summaries/:id', biweeklySummaryController.getBiweeklySummaryById);
-router.put('/biweekly-summaries/:id', biweeklySummaryController.updateBiweeklySummary);
-router.delete('/biweekly-summaries/:id', biweeklySummaryController.deleteBiweeklySummary);
+router.post('/', biweeklySummaryController.createBiweeklySummary);
+router.get('/', biweeklySummaryController.getAllBiweeklySummaries);
+router.get('/:id', biweeklySummaryController.getBiweeklySummaryById);
+router.put('/:id', biweeklySummaryController.updateBiweeklySummary);
+router.delete('/:id', biweeklySummaryController.deleteBiweeklySummary);
 
 export default router;
