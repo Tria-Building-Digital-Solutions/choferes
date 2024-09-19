@@ -11,10 +11,15 @@ import {
   TextField,
   TableHead,
   TableSortLabel,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
+import { getDayOptions } from "../../../utils/tableUtils";
 
 interface EditableTableProps<T> {
   data: T[];
@@ -30,6 +35,7 @@ interface EditableTableProps<T> {
   handleSaveClick: (id: number) => void;
   handleOpenDialog: (id: number) => void;
   getRowId: (row: T) => number;
+  totalCount: number;
 }
 
 type ColumnTranslations<T> = {
@@ -50,6 +56,7 @@ const EditableTable = <T extends Record<string, any>>({
   handleSaveClick,
   handleOpenDialog,
   getRowId,
+  totalCount,
 }: EditableTableProps<T>) => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [orderBy, setOrderBy] = useState<keyof T | null>(null);
@@ -57,8 +64,8 @@ const EditableTable = <T extends Record<string, any>>({
 
   useEffect(() => {
     if (columns.length > 0) {
-      setOrderBy(columns[0]); 
-      setOrderDirection("asc"); 
+      setOrderBy(columns[0]);
+      setOrderDirection("asc");
     }
   }, [columns]);
 
@@ -108,9 +115,18 @@ const EditableTable = <T extends Record<string, any>>({
       label: "Lugar",
       day: "Día",
       hours: "Horas",
-      weekday: "Entre semana"
     };
     return translations[column] || String(column);
+  };
+
+  const getDayTranslation = (day: string): string => {
+    const translations: { [key: string]: string } = {
+      weekday: "Lunes a Jueves",
+      friday: "Viernes",
+      saturday: "Sábado",
+      sunday: "Domingo",
+    };
+    return translations[day] || day;
   };
 
   return (
@@ -141,15 +157,46 @@ const EditableTable = <T extends Record<string, any>>({
                   {columns.map((column) => (
                     <TableCell key={String(column)}>
                       {editRowId === getRowId(row) ? (
-                        <TextField
-                          fullWidth
-                          value={editFields[column as string] || ""}
-                          onChange={(e) =>
-                            handleFieldChange(column as string, e.target.value)
-                          }
-                          error={!!errors[column as string]}
-                          helperText={errors[column as string]}
-                        />
+                        column === "day" ? (
+                          <FormControl variant="outlined" fullWidth>
+                            <InputLabel>Día</InputLabel>
+                            <Select
+                              label="Día"
+                              value={editFields[column as string] || ""}
+                              onChange={(e) =>
+                                handleFieldChange(
+                                  column as string,
+                                  e.target.value
+                                )
+                              }
+                              error={!!errors[column as string]}
+                            >
+                              {getDayOptions().map((option) => (
+                                <MenuItem
+                                  key={option.value}
+                                  value={option.value}
+                                >
+                                  {option.label}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        ) : (
+                          <TextField
+                            fullWidth
+                            value={editFields[column as string] || ""}
+                            onChange={(e) =>
+                              handleFieldChange(
+                                column as string,
+                                e.target.value
+                              )
+                            }
+                            error={!!errors[column as string]}
+                            helperText={errors[column as string]}
+                          />
+                        )
+                      ) : column === "day" ? (
+                        getDayTranslation(row[column as keyof T] as string)
                       ) : (
                         row[column]
                       )}
@@ -192,7 +239,7 @@ const EditableTable = <T extends Record<string, any>>({
       <TablePagination
         rowsPerPageOptions={[5, 10, 25]}
         component="div"
-        count={data.length}
+        count={totalCount}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={(event, newPage) => setPage(newPage)}
