@@ -105,6 +105,10 @@ const EditableTable = <T extends Record<string, any>>({
     const translations: ColumnTranslations<T> = {
       firstName: "Nombre",
       lastName: "Apellido",
+      label: "Lugar",
+      day: "Día",
+      hours: "Horas",
+      weekday: "Entre semana"
     };
     return translations[column] || String(column);
   };

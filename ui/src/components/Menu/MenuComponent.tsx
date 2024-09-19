@@ -4,13 +4,23 @@ import {
   IconButton,
   Menu,
   MenuItem,
+  Divider,
   SvgIconProps,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
+
+interface MenuItemProps {
+  text: string;
+  onClick?: () => void;
+  icon?: React.ReactElement<SvgIconProps>;
+  subMenuItems?: MenuItemProps[]; 
+}
 
 interface MenuComponentProps {
   icon?: React.ReactElement<SvgIconProps>;
   buttonText?: string;
-  menuItems: { text: string; onClick: () => void }[];
+  menuItems: MenuItemProps[];
 }
 
 const MenuComponent: React.FC<MenuComponentProps> = ({
@@ -19,7 +29,9 @@ const MenuComponent: React.FC<MenuComponentProps> = ({
   menuItems,
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [subMenuAnchorEl, setSubMenuAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  const openSubMenu = Boolean(subMenuAnchorEl);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -27,6 +39,11 @@ const MenuComponent: React.FC<MenuComponentProps> = ({
 
   const handleClose = () => {
     setAnchorEl(null);
+    setSubMenuAnchorEl(null); 
+  };
+
+  const handleSubMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    setSubMenuAnchorEl(event.currentTarget);
   };
 
   return (
@@ -64,15 +81,39 @@ const MenuComponent: React.FC<MenuComponentProps> = ({
         }}
       >
         {menuItems.map((item, index) => (
-          <MenuItem
-            key={index}
-            onClick={() => {
-              item.onClick();
-              handleClose();
-            }}
-          >
-            {item.text}
-          </MenuItem>
+          <React.Fragment key={index}>
+            <MenuItem
+              onClick={(e) => {
+                if (item.onClick) item.onClick();
+                if (!item.subMenuItems) handleClose();
+              }}
+              onMouseEnter={item.subMenuItems ? handleSubMenuClick : undefined} 
+            >
+              {item.icon && <ListItemIcon>{item.icon}</ListItemIcon>}
+              <ListItemText primary={item.text} />
+              {item.subMenuItems && (
+                <IconButton onClick={handleSubMenuClick}>
+                </IconButton>
+              )}
+            </MenuItem>
+
+            {item.subMenuItems && (
+              <Menu
+                anchorEl={subMenuAnchorEl}
+                open={openSubMenu}
+                onClose={handleClose}
+              >
+                {item.subMenuItems.map((subItem, subIndex) => (
+                  <MenuItem key={subIndex} onClick={subItem.onClick}>
+                    {subItem.icon && <ListItemIcon>{subItem.icon}</ListItemIcon>}
+                    <ListItemText primary={subItem.text} />
+                  </MenuItem>
+                ))}
+              </Menu>
+            )}
+            
+            {index < menuItems.length - 1 && <Divider />}
+          </React.Fragment>
         ))}
       </Menu>
     </div>
