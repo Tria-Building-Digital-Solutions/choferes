@@ -1,16 +1,10 @@
 import React, { useState, useEffect } from "react";
-import {
-  Button,
-  TextField,
-  Grid,
-  Box,
-  Typography,
-} from "@mui/material";
+import { Button, TextField, Grid, Box, Typography } from "@mui/material";
 import SearchBar from "../components/SearchBar/SearchBar";
 import ConfirmationDialog from "../components/Dialog/ConfirmationDialog";
 import { Employee } from "../models/Employee";
 import api from "../services/api";
-import EditableTable from "../components/EditableTable/EditableTable";
+import EditableTable from "../components/Table/EditableTable/EditableTable";
 
 const ManageEmployees: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -21,7 +15,9 @@ const ManageEmployees: React.FC = () => {
   const [editLastName, setEditLastName] = useState("");
   const [filter, setFilter] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
-  const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(null);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(
+    null
+  );
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
@@ -56,7 +52,11 @@ const ManageEmployees: React.FC = () => {
     setOpenDialog(true);
   };
 
-  const handleUpdateEmployee = async (id: number, firstName: string, lastName: string) => {
+  const handleUpdateEmployee = async (
+    id: number,
+    firstName: string,
+    lastName: string
+  ) => {
     try {
       await api.put(`/employees/${id}`, {
         firstName,
@@ -84,7 +84,9 @@ const ManageEmployees: React.FC = () => {
   };
 
   const filteredEmployees = employees.filter((employee) =>
-    `${employee.firstName} ${employee.lastName}`.toLowerCase().includes(filter.toLowerCase())
+    `${employee.firstName} ${employee.lastName}`
+      .toLowerCase()
+      .includes(filter.toLowerCase())
   );
 
   const startIndex = page * rowsPerPage;
@@ -136,20 +138,29 @@ const ManageEmployees: React.FC = () => {
           </Box>
         </Grid>
       </Grid>
-      <EditableTable
-        employees={paginatedEmployees}
-        editEmployeeId={editEmployeeId}
-        editFirstName={editFirstName}
-        editLastName={editLastName}
+      <EditableTable<Employee>
+        data={paginatedEmployees}
+        columns={["firstName", "lastName"]}
+        editRowId={editEmployeeId}
+        editFields={{
+          firstName: editFirstName,
+          lastName: editLastName,
+        }}
         page={page}
         rowsPerPage={rowsPerPage}
         setPage={setPage}
         setRowsPerPage={setRowsPerPage}
-        setEditFirstName={setEditFirstName}
-        setEditLastName={setEditLastName} 
+        setEditField={(field, value) => {
+          if (field === "firstName") {
+            setEditFirstName(value);
+          } else if (field === "lastName") {
+            setEditLastName(value);
+          }
+        }}
         handleEditClick={handleEditClick}
         handleSaveClick={handleSaveClick}
         handleOpenDialog={handleOpenDialog}
+        getRowId={(employee) => employee.id}
       />
       {openDialog && selectedEmployeeId !== null && (
         <ConfirmationDialog

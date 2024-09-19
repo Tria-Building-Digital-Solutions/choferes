@@ -12,20 +12,21 @@ import {
   FormControl,
   TablePagination,
   InputLabel,
+  TableSortLabel,
 } from "@mui/material";
-import { getCurrentWeekDates } from "../../utils/dateUtils";
+import { getCurrentWeekDates } from "../../../utils/dateUtils";
 import {
   calculateTotalHours,
   convertWeekDataToHoursWorked,
   getBackgroundColor,
   getOptionsForDay,
-} from "../../utils/tableUtils";
-import api from "../../services/api";
-import { Employee } from "../../models/Employee";
-import { WeekData } from "../../types/WeekData";
-import { STATE, TABLE } from "../../constants/constants";
-import { HoursWorked } from "../../models/HoursWorked";
-import { Schedule } from "../../models/Schedule";
+} from "../../../utils/tableUtils";
+import api from "../../../services/api";
+import { Employee } from "../../../models/Employee";
+import { WeekData } from "../../../types/WeekData";
+import { STATE } from "../../../constants/constants";
+import { HoursWorked } from "../../../models/HoursWorked";
+import { Schedule } from "../../../models/Schedule";
 
 interface DropdownTableProps {
   weekOffset: number;
@@ -46,6 +47,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
   const [selectedColumn, setSelectedColumn] = useState<
     "weekly" | "biweekly" | "monthly"
   >("weekly");
+  const [orderDirection, setOrderDirection] = useState<"asc" | "desc">("asc");
 
   useEffect(() => {
     const fetchEmployees = async () => {
@@ -55,7 +57,6 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
 
     const fetchSchedules = async () => {
       const response = await api.get("/schedules");
-      console.log(response.data); 
       setSchedules(response.data);
     };
 
@@ -75,10 +76,10 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
     day: string,
     selectedLabel: string
   ) => {
-    const selectedOption = getOptionsForDay(day, schedules).find(
+    const options = getOptionsForDay(day, schedules);
+    const selectedOption = options.find(
       (option) => option.label === selectedLabel
     );
-
     const selectedHours = selectedOption ? selectedOption.hours : 0;
 
     if (employee.id !== undefined) {
@@ -98,9 +99,19 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
     }
   };
 
+  const sortedEmployees = useMemo(() => {
+    return [...employees].sort((a, b) => {
+      const nameA = `${a.firstName} ${a.lastName}`;
+      const nameB = `${b.firstName} ${b.lastName}`;
+      return orderDirection === "asc"
+        ? nameA.localeCompare(nameB)
+        : nameB.localeCompare(nameA);
+    });
+  }, [employees, orderDirection]);
+
   const startIndex = page * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
-  const paginatedEmployees = employees.slice(startIndex, endIndex);
+  const paginatedEmployees = sortedEmployees.slice(startIndex, endIndex);
 
   if (!employees || employees.length === 0) {
     return <div>No hay empleados disponibles</div>;
@@ -119,7 +130,20 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
                   left: 0,
                   zIndex: 2,
                 }}
-              />
+              >
+                <TableSortLabel
+                  active={true}
+                  direction={orderDirection}
+                  onClick={() => {
+                    setOrderDirection((prev) =>
+                      prev === "asc" ? "desc" : "asc"
+                    );
+                  }}
+                >
+                  Empleados
+                </TableSortLabel>
+              </TableCell>
+
               {currentWeek.map(({ day, date }) => (
                 <TableCell key={day} align="center">
                   {`${day} ${date}`}
@@ -184,10 +208,9 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
                           onChange={(e) =>
                             handleChange(employee, day, e.target.value)
                           }
-                          displayEmpty
                         >
                           {getOptionsForDay(day, schedules).map((option) => (
-                            <MenuItem key={option.label} value={option.label}>
+                            <MenuItem key={option.id} value={option.label}>
                               {option.label}
                             </MenuItem>
                           ))}
@@ -269,7 +292,6 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
           setRowsPerPage(+event.target.value);
           setPage(0);
         }}
-        labelRowsPerPage={TABLE.ROWS_PER_PAGE}
       />
     </Paper>
   );

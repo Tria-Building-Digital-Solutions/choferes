@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Box, Button, Grid, IconButton, Typography } from "@mui/material";
-import DropdownTable from "../components/DropdownTable/DropdownTable";
+import DropdownTable from "../components/Table/DropdownTable/DropdownTable";
 import SearchBar from "../components/SearchBar/SearchBar";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
