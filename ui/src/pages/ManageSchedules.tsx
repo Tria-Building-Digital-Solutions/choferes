@@ -1,163 +1,140 @@
 import React, { useState, useEffect } from "react";
 import {
-  Box,
   Button,
-  FormControl,
-  Grid,
-  InputLabel,
-  MenuItem,
-  Select,
   TextField,
+  Grid,
+  Box,
   Typography,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
+import EditableTable from "../components/Table/EditableTable/EditableTable";
 import { Schedule } from "../models/Schedule";
 import api from "../services/api";
 import SearchBar from "../components/SearchBar/SearchBar";
-import { getDayOptions, getMappedDay } from "../utils/tableUtils";
-import ConfirmationDialog from "../components/Dialog/ConfirmationDialog";
-import EditableTable from "../components/Table/EditableTable/EditableTable";
+import { getDayOptions } from "../utils/tableUtils";
 
 const ManageSchedules: React.FC = () => {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
-  const [newScheduleDay, setNewScheduleDay] = useState("");
-  const [newScheduleLabel, setNewScheduleLabel] = useState("");
-  const [newScheduleHours, setNewScheduleHours] = useState(0);
-  const [editScheduleId, setEditScheduleId] = useState<number | null>(null);
-  const [editScheduleDay, setEditScheduleDay] = useState("");
-  const [editScheduleLabel, setEditScheduleLabel] = useState("");
-  const [editScheduleHours, setEditScheduleHours] = useState(0);
-  const [totalSchedules, setTotalSchedules] = useState(0);
+  const [filteredSchedules, setFilteredSchedules] = useState<Schedule[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [editRowId, setEditRowId] = useState<number | null>(null);
+  const [editFields, setEditFields] = useState({
+    label: "",
+    day: "",
+    hours: "",
+  });
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [scheduleToDelete, setScheduleToDelete] = useState<number | null>(null);
   const [filter, setFilter] = useState("");
-  const [openDialog, setOpenDialog] = useState(false);
-  const [selectedScheduleId, setSelectedScheduleId] = useState<number | null>(
-    null
-  );
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [labelError, setLabelError] = useState("");
-  const [dayError, setDayError] = useState("");
-  const [hoursError, setHoursError] = useState("");
 
   useEffect(() => {
     const fetchSchedules = async () => {
-      const response = await api.get("/schedules");
-      setSchedules(response.data);
-      setTotalSchedules(response.data.length);
+      try {
+        const response = await api.get("/schedules");
+        setSchedules(response.data);
+        setTotalCount(response.data.length);
+      } catch (error) {
+        console.error("Error fetching schedules", error);
+      }
     };
 
     fetchSchedules();
   }, []);
 
-  const validateFields = (): boolean => {
-    let isValid = true;
-    if (newScheduleLabel.trim() === "") {
-      setLabelError("El lugar es obligatorio.");
-      isValid = false;
-    } else {
-      setLabelError("");
-    }
+  useEffect(() => {
+    const filtered = schedules.filter((schedule) =>
+      `${schedule.label} ${schedule.day} ${schedule.hours}`
+        .toLowerCase()
+        .includes(filter.toLowerCase())
+    );
 
-    if (newScheduleDay === "") {
-      setDayError("Selecciona un día.");
-      isValid = false;
-    } else {
-      setDayError("");
-    }
+    setFilteredSchedules(filtered);
+    setTotalCount(filtered.length);
+  }, [schedules, filter]);
 
-    if (newScheduleHours < 0) {
-      setHoursError("Las horas deben ser mayores o igual a 0.");
-      isValid = false;
-    } else {
-      setHoursError("");
-    }
-
-    return isValid;
-  };
-
-  const handleAddSchedule = async () => {
-    if (!validateFields()) {
-      return;
-    }
-
-    const newSchedule = await api.post("/schedules", {
-      day: newScheduleDay,
-      label: newScheduleLabel,
-      hours: newScheduleHours,
-    });
-
-    setSchedules([...schedules, newSchedule.data]);
-    setNewScheduleDay("");
-    setNewScheduleLabel("");
-    setNewScheduleHours(0);
-  };
-
-  const handleDeleteSchedule = async (id: number) => {
-    await api.delete(`/schedules/${id}`);
-    setSchedules(schedules.filter((schedule) => schedule.id !== id));
-    setOpenDialog(false);
-  };
-
-  const handleOpenDialog = (id: number) => {
-    setSelectedScheduleId(id);
-    setOpenDialog(true);
-  };
-
-  const handleUpdateSchedule = async (
-    id: number,
-    day: string,
-    label: string,
-    hours: number
-  ) => {
-    try {
-      await api.put(`/schedules/${id}`, {
-        day,
-        label,
-        hours,
-      });
-      setSchedules((prevSchedules) =>
-        prevSchedules.map((schedule) =>
-          schedule.id === id ? { ...schedule, day, label, hours } : schedule
-        )
-      );
-    } catch (error) {
-      console.error("Error actualizando el horario:", error);
-    }
+  const handleAddSchedule = () => {
+    const newSchedule: Schedule = {
+      id: Math.max(...schedules.map((schedule) => schedule.id)) + 1,
+      label: editFields.label,
+      day: editFields.day,
+      hours: parseInt(editFields.hours, 10),
+    };
+    api
+      .post("/schedules", newSchedule)
+      .then(() => {
+        setSchedules([...schedules, newSchedule]);
+        setTotalCount(totalCount + 1);
+        setEditFields({ label: "", day: "", hours: "" });
+      })
+      .catch((error) => console.error("Error adding schedule", error));
   };
 
   const handleEditClick = (schedule: Schedule) => {
-    setEditScheduleId(schedule.id);
-    setEditScheduleDay(schedule.day);
-    setEditScheduleLabel(schedule.label);
-    setEditScheduleHours(schedule.hours);
+    setEditRowId(schedule.id);
+    setEditFields({
+      label: schedule.label,
+      day: schedule.day,
+      hours: schedule.hours.toString(),
+    });
   };
 
   const handleSaveClick = (id: number) => {
-    handleUpdateSchedule(
-      id,
-      editScheduleDay,
-      editScheduleLabel,
-      editScheduleHours
-    );
-    setEditScheduleId(null);
+    const updatedSchedule = {
+      ...editFields,
+      hours: parseInt(editFields.hours, 10),
+    };
+    api
+      .put(`/schedules/${id}`, updatedSchedule)
+      .then(() => {
+        setSchedules(
+          schedules.map((schedule) =>
+            schedule.id === id ? { ...schedule, ...updatedSchedule } : schedule
+          )
+        );
+        setEditRowId(null);
+        setEditFields({ label: "", day: "", hours: "" });
+      })
+      .catch((error) => console.error("Error updating schedule", error));
   };
 
-  const filteredSchedules = schedules.filter((schedule) => {
-    const mappedDay = getMappedDay(filter);
-    return (
-      `${schedule.label} ${schedule.day} ${schedule.hours}`
-        .toLowerCase()
-        .includes(filter.toLowerCase()) || schedule.day.includes(mappedDay)
-    );
-  });
+  const handleOpenDialog = (id: number) => {
+    setDialogOpen(true);
+    setScheduleToDelete(id);
+  };
 
-  const startIndex = page * rowsPerPage;
-  const endIndex = Math.min(startIndex + rowsPerPage, filteredSchedules.length);
-  const paginatedSchedules = filteredSchedules.slice(startIndex, endIndex);
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+    setScheduleToDelete(null);
+  };
+
+  const handleDelete = () => {
+    if (scheduleToDelete !== null) {
+      api
+        .delete(`/schedules/${scheduleToDelete}`)
+        .then(() => {
+          setSchedules(
+            schedules.filter((schedule) => schedule.id !== scheduleToDelete)
+          );
+          setTotalCount(totalCount - 1);
+          handleCloseDialog();
+        })
+        .catch((error) => console.error("Error deleting schedule", error));
+    }
+  };
 
   return (
     <Box>
       <Typography variant="h2" sx={{ flexGrow: 1, margin: "25px 0" }}>
-        Administrar Horarios
+        Gestionar Horarios
       </Typography>
       <Grid
         container
@@ -175,24 +152,22 @@ const ManageSchedules: React.FC = () => {
         <Grid item>
           <Box display="flex" alignItems="center">
             <TextField
-              label="Lugar"
+              label="Label"
               variant="outlined"
-              value={newScheduleLabel}
-              onChange={(e) => setNewScheduleLabel(e.target.value)}
               sx={{ mr: 2 }}
-              error={!!labelError}
-              helperText={labelError}
+              value={editFields.label}
+              onChange={(e) =>
+                setEditFields({ ...editFields, label: e.target.value })
+              }
             />
-            <FormControl
-              variant="outlined"
-              sx={{ mr: 2, width: 200 }}
-              error={!!dayError}
-            >
+            <FormControl variant="outlined" sx={{ mr: 2, width: 200 }}>
               <InputLabel>Día</InputLabel>
               <Select
                 label="Día"
-                value={newScheduleDay}
-                onChange={(e) => setNewScheduleDay(e.target.value as string)}
+                value={editFields.day}
+                onChange={(e) =>
+                  setEditFields({ ...editFields, day: e.target.value })
+                }
               >
                 {getDayOptions().map((option) => (
                   <MenuItem key={option.value} value={option.value}>
@@ -200,26 +175,22 @@ const ManageSchedules: React.FC = () => {
                   </MenuItem>
                 ))}
               </Select>
-              {dayError && (
-                <Typography color="error" variant="caption">
-                  {dayError}
-                </Typography>
-              )}
             </FormControl>
             <TextField
               label="Horas"
               variant="outlined"
-              value={newScheduleHours}
-              onChange={(e) => setNewScheduleHours(Number(e.target.value))}
+              type="number"
               sx={{ mr: 2 }}
-              error={!!hoursError}
-              helperText={hoursError}
+              value={editFields.hours}
+              onChange={(e) =>
+                setEditFields({ ...editFields, hours: e.target.value })
+              }
             />
             <Button
               variant="contained"
               color="primary"
-              onClick={handleAddSchedule}
               sx={{ height: "56px" }}
+              onClick={handleAddSchedule}
             >
               Agregar Horario
             </Button>
@@ -227,43 +198,46 @@ const ManageSchedules: React.FC = () => {
         </Grid>
       </Grid>
       <br />
-      <EditableTable<Schedule>
-        data={paginatedSchedules}
-        columns={["label", "day", "hours"]}
-        editRowId={editScheduleId}
-        editFields={{
-          label: editScheduleLabel,
-          day: editScheduleDay,
-          hours: editScheduleHours.toString(),
-        }}
-        page={page}
-        rowsPerPage={rowsPerPage}
-        setPage={setPage}
-        setRowsPerPage={setRowsPerPage}
-        setEditField={(field, value) => {
-          if (field === "label") {
-            setEditScheduleLabel(value);
-          } else if (field === "day") {
-            setEditScheduleDay(value);
-          } else if (field === "hours") {
-            setEditScheduleHours(Number(value));
+      {filteredSchedules.length > 0 ? (
+        <EditableTable<Schedule>
+          data={filteredSchedules}
+          columns={["label", "day", "hours"]}
+          editRowId={editRowId}
+          editFields={editFields}
+          setEditField={(field, value) =>
+            setEditFields({ ...editFields, [field]: value })
           }
-        }}
-        handleEditClick={handleEditClick}
-        handleSaveClick={handleSaveClick}
-        handleOpenDialog={handleOpenDialog}
-        getRowId={(schedule) => schedule.id}
-        totalCount={totalSchedules}
-      />
-      {openDialog && selectedScheduleId !== null && (
-        <ConfirmationDialog
-          open={openDialog}
-          title="Eliminar Horario"
-          message="¿Estás seguro de que quieres eliminar este horario?"
-          onConfirm={() => handleDeleteSchedule(selectedScheduleId)}
-          onClose={() => setOpenDialog(false)}
+          handleEditClick={handleEditClick}
+          handleSaveClick={handleSaveClick}
+          handleOpenDialog={handleOpenDialog}
+          getRowId={(row) => row.id}
+          totalCount={totalCount}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          setPage={setPage}
+          setRowsPerPage={setRowsPerPage}
         />
+      ) : (
+        <Typography variant="h6" color="textSecondary">
+          No se encontraron horarios que coincidan con la búsqueda.
+        </Typography>
       )}
+      <Dialog open={dialogOpen} onClose={handleCloseDialog}>
+        <DialogTitle>Confirmar Eliminación</DialogTitle>
+        <DialogContent>
+          <Typography>
+            ¿Estás seguro de que deseas eliminar este horario?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">
+            Cancelar
+          </Button>
+          <Button onClick={handleDelete} color="secondary">
+            Eliminar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

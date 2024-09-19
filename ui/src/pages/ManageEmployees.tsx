@@ -1,129 +1,128 @@
 import React, { useState, useEffect } from "react";
-import { Button, TextField, Grid, Box, Typography } from "@mui/material";
-import SearchBar from "../components/SearchBar/SearchBar";
-import ConfirmationDialog from "../components/Dialog/ConfirmationDialog";
+import {
+  Button,
+  TextField,
+  Grid,
+  Box,
+  Typography,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+} from "@mui/material";
+import EditableTable from "../components/Table/EditableTable/EditableTable";
 import { Employee } from "../models/Employee";
 import api from "../services/api";
-import EditableTable from "../components/Table/EditableTable/EditableTable";
+import SearchBar from "../components/SearchBar/SearchBar";
 
 const ManageEmployees: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [newEmployeeFirstName, setNewEmployeeFirstName] = useState("");
-  const [newEmployeeLastName, setNewEmployeeLastName] = useState("");
-  const [editEmployeeId, setEditEmployeeId] = useState<number | null>(null);
-  const [editFirstName, setEditFirstName] = useState("");
-  const [editLastName, setEditLastName] = useState("");
-  const [totalEmployees, setTotalEmployees] = useState(0);
+  const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [editRowId, setEditRowId] = useState<number | null>(null);
+  const [editFields, setEditFields] = useState({ firstName: "", lastName: "" });
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [employeeToDelete, setEmployeeToDelete] = useState<number | null>(null);
   const [filter, setFilter] = useState("");
-  const [openDialog, setOpenDialog] = useState(false);
-  const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(
-    null
-  );
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [firstNameError, setFirstNameError] = useState("");
-  const [lastNameError, setLastNameError] = useState("");
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
   useEffect(() => {
     const fetchEmployees = async () => {
-      const response = await api.get("/employees");
-      setEmployees(response.data);
-      setTotalEmployees(response.data.length);
+      try {
+        const response = await api.get("/employees");
+        setEmployees(response.data);
+        setTotalCount(response.data.length);
+      } catch (error) {
+        console.error("Error fetching employees", error);
+      }
     };
 
     fetchEmployees();
   }, []);
 
-  const validateFields = (): boolean => {
-    let isValid = true;
-    if (newEmployeeFirstName.trim() === "") {
-      setFirstNameError("El nombre es obligatorio.");
-      isValid = false;
-    } else {
-      setFirstNameError("");
-    }
+  useEffect(() => {
+    const filtered = employees.filter((employee) =>
+      `${employee.firstName} ${employee.lastName}`
+        .toLowerCase()
+        .includes(filter.toLowerCase())
+    );
 
-    if (newEmployeeLastName.trim() === "") {
-      setLastNameError("El apellido es obligatorio.");
-      isValid = false;
-    } else {
-      setLastNameError("");
-    }
+    setFilteredEmployees(filtered);
+    setTotalCount(filtered.length);
+  }, [employees, filter]);
 
-    return isValid;
-  };
-
-  const handleAddEmployee = async () => {
-    if (!validateFields()) {
-      return; 
-    }
-
-    const newEmployee = await api.post("/employees", {
-      firstName: newEmployeeFirstName,
-      lastName: newEmployeeLastName,
-    });
-
-    setEmployees([...employees, newEmployee.data]);
-    setNewEmployeeFirstName("");
-    setNewEmployeeLastName("");
-  };
-
-  const handleDeleteEmployee = async (id: number) => {
-    await api.delete(`/employees/${id}`);
-    setEmployees(employees.filter((employee) => employee.id !== id));
-    setOpenDialog(false);
-  };
-
-  const handleOpenDialog = (id: number) => {
-    setSelectedEmployeeId(id);
-    setOpenDialog(true);
-  };
-
-  const handleUpdateEmployee = async (
-    id: number,
-    firstName: string,
-    lastName: string
-  ) => {
-    try {
-      await api.put(`/employees/${id}`, {
-        firstName,
-        lastName,
-      });
-      setEmployees((prevEmployees) =>
-        prevEmployees.map((employee) =>
-          employee.id === id ? { ...employee, firstName, lastName } : employee
-        )
-      );
-    } catch (error) {
-      console.error("Error actualizando el empleado:", error);
-    }
+  const handleAddEmployee = () => {
+    const newEmployee: Employee = {
+      id: Math.max(...employees.map((employee) => employee.id)) + 1,
+      firstName: editFields.firstName,
+      lastName: editFields.lastName,
+    };
+    api
+      .post("/employees", newEmployee)
+      .then(() => {
+        setEmployees([...employees, newEmployee]);
+        setTotalCount(totalCount + 1);
+        setEditFields({ firstName: "", lastName: "" });
+      })
+      .catch((error) => console.error("Error adding employee", error));
   };
 
   const handleEditClick = (employee: Employee) => {
-    setEditEmployeeId(employee.id);
-    setEditFirstName(employee.firstName);
-    setEditLastName(employee.lastName);
+    setEditRowId(employee.id);
+    setEditFields({
+      firstName: employee.firstName,
+      lastName: employee.lastName,
+    });
   };
 
   const handleSaveClick = (id: number) => {
-    handleUpdateEmployee(id, editFirstName, editLastName);
-    setEditEmployeeId(null);
+    const updatedEmployee = {
+      ...editFields,
+    };
+    api
+      .put(`/employees/${id}`, updatedEmployee)
+      .then(() => {
+        setEmployees(
+          employees.map((employee) =>
+            employee.id === id ? { ...employee, ...updatedEmployee } : employee
+          )
+        );
+        setEditRowId(null);
+        setEditFields({ firstName: "", lastName: "" });
+      })
+      .catch((error) => console.error("Error updating employee", error));
   };
 
-  const filteredEmployees = employees.filter((employee) =>
-    `${employee.firstName} ${employee.lastName}`
-      .toLowerCase()
-      .includes(filter.toLowerCase())
-  );
+  const handleOpenDialog = (id: number) => {
+    setDialogOpen(true);
+    setEmployeeToDelete(id);
+  };
 
-  const startIndex = page * rowsPerPage;
-  const endIndex = Math.min(startIndex + rowsPerPage, filteredEmployees.length);
-  const paginatedEmployees = filteredEmployees.slice(startIndex, endIndex);
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+    setEmployeeToDelete(null);
+  };
+
+  const handleDelete = () => {
+    if (employeeToDelete !== null) {
+      api
+        .delete(`/employees/${employeeToDelete}`)
+        .then(() => {
+          setEmployees(
+            employees.filter((employee) => employee.id !== employeeToDelete)
+          );
+          setTotalCount(totalCount - 1);
+          handleCloseDialog();
+        })
+        .catch((error) => console.error("Error deleting employee", error));
+    }
+  };
 
   return (
     <Box>
       <Typography variant="h2" sx={{ flexGrow: 1, margin: "25px 0" }}>
-        Administrar Empleados
+        Gestionar Empleados
       </Typography>
       <Grid
         container
@@ -143,26 +142,26 @@ const ManageEmployees: React.FC = () => {
             <TextField
               label="Nombre"
               variant="outlined"
-              value={newEmployeeFirstName}
-              onChange={(e) => setNewEmployeeFirstName(e.target.value)}
               sx={{ mr: 2 }}
-              error={!!firstNameError}
-              helperText={firstNameError}
+              value={editFields.firstName}
+              onChange={(e) =>
+                setEditFields({ ...editFields, firstName: e.target.value })
+              }
             />
             <TextField
               label="Apellido"
               variant="outlined"
-              value={newEmployeeLastName}
-              onChange={(e) => setNewEmployeeLastName(e.target.value)}
               sx={{ mr: 2 }}
-              error={!!lastNameError}
-              helperText={lastNameError}
+              value={editFields.lastName}
+              onChange={(e) =>
+                setEditFields({ ...editFields, lastName: e.target.value })
+              }
             />
             <Button
               variant="contained"
               color="primary"
-              onClick={handleAddEmployee}
               sx={{ height: "56px" }}
+              onClick={handleAddEmployee}
             >
               Agregar Empleado
             </Button>
@@ -170,40 +169,46 @@ const ManageEmployees: React.FC = () => {
         </Grid>
       </Grid>
       <br/>
-      <EditableTable<Employee>
-        data={paginatedEmployees}
-        columns={["firstName", "lastName"]}
-        editRowId={editEmployeeId}
-        editFields={{
-          firstName: editFirstName,
-          lastName: editLastName,
-        }}
-        page={page}
-        rowsPerPage={rowsPerPage}
-        setPage={setPage}
-        setRowsPerPage={setRowsPerPage}
-        setEditField={(field, value) => {
-          if (field === "firstName") {
-            setEditFirstName(value);
-          } else if (field === "lastName") {
-            setEditLastName(value);
+      {filteredEmployees.length > 0 ? (
+        <EditableTable<Employee>
+          data={filteredEmployees}
+          columns={["firstName", "lastName"]}
+          editRowId={editRowId}
+          editFields={editFields}
+          setEditField={(field, value) =>
+            setEditFields({ ...editFields, [field]: value })
           }
-        }}
-        handleEditClick={handleEditClick}
-        handleSaveClick={handleSaveClick}
-        handleOpenDialog={handleOpenDialog}
-        getRowId={(employee) => employee.id}
-        totalCount={totalEmployees}
-      />
-      {openDialog && selectedEmployeeId !== null && (
-        <ConfirmationDialog
-          open={openDialog}
-          title="Eliminar Empleado"
-          message="¿Estás seguro de que quieres eliminar este empleado?"
-          onConfirm={() => handleDeleteEmployee(selectedEmployeeId)}
-          onClose={() => setOpenDialog(false)}
+          handleEditClick={handleEditClick}
+          handleSaveClick={handleSaveClick}
+          handleOpenDialog={handleOpenDialog}
+          getRowId={(row) => row.id}
+          totalCount={totalCount}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          setPage={setPage}
+          setRowsPerPage={setRowsPerPage}
         />
+      ) : (
+        <Typography variant="h6" color="textSecondary">
+          No se encontraron empleados que coincidan con la búsqueda.
+        </Typography>
       )}
+      <Dialog open={dialogOpen} onClose={handleCloseDialog}>
+        <DialogTitle>Confirmar Eliminación</DialogTitle>
+        <DialogContent>
+          <Typography>
+            ¿Estás seguro de que deseas eliminar este empleado?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">
+            Cancelar
+          </Button>
+          <Button onClick={handleDelete} color="secondary">
+            Eliminar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

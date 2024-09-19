@@ -1,110 +1,67 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   Table,
   TableBody,
   TableCell,
   TableContainer,
+  TableHead,
   TableRow,
   Paper,
   TablePagination,
-  IconButton,
-  TextField,
-  TableHead,
   TableSortLabel,
+  TextField,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
   Tooltip,
+  IconButton,
 } from "@mui/material";
+import { TABLE } from "../../../constants/constants";
+import { ColumnTranslations } from "../../../types/ColumnTransaltion";
+import { getDayOptions } from "../../../utils/tableUtils";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
-import { getDayOptions } from "../../../utils/tableUtils";
-import { ColumnTranslations } from "../../../types/ColumnTransaltion";
-import { TABLE } from "../../../constants/constants";
 
-interface EditableTableProps<T> {
+type EditableTableProps<T> = {
   data: T[];
-  editRowId: number | null;
-  editFields: { [key: string]: string };
   columns: (keyof T)[];
-  page: number;
-  rowsPerPage: number;
-  setPage: (page: number) => void;
-  setRowsPerPage: (rowsPerPage: number) => void;
+  editRowId: number | null;
+  editFields: Record<string, string>;
   setEditField: (field: string, value: string) => void;
   handleEditClick: (row: T) => void;
   handleSaveClick: (id: number) => void;
   handleOpenDialog: (id: number) => void;
   getRowId: (row: T) => number;
   totalCount: number;
-}
+  page: number;
+  rowsPerPage: number;
+  setPage: (page: number) => void;
+  setRowsPerPage: (rowsPerPage: number) => void;
+};
 
-const EditableTable = <T extends Record<string, any>>({
+const EditableTable = <T,>({
   data,
+  columns,
   editRowId,
   editFields,
-  columns,
-  page,
-  rowsPerPage,
-  setPage,
-  setRowsPerPage,
   setEditField,
   handleEditClick,
   handleSaveClick,
   handleOpenDialog,
   getRowId,
   totalCount,
+  page,
+  rowsPerPage,
+  setPage,
+  setRowsPerPage,
 }: EditableTableProps<T>) => {
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [orderBy, setOrderBy] = useState<keyof T | null>(null);
-  const [orderDirection, setOrderDirection] = useState<"asc" | "desc">("asc");
-
-  useEffect(() => {
-    if (columns.length > 0) {
-      setOrderBy(columns[0]);
-      setOrderDirection("asc");
-    }
-  }, [columns]);
-
-  const validateField = (field: string, value: string) => {
-    if (!value) {
-      return "Este campo es obligatorio";
-    }
-    if (/\d/.test(value)) {
-      return "No puede contener números";
-    }
-    return "";
-  };
-
-  const handleFieldChange = (field: string, value: string) => {
-    const errorMessage = validateField(field, value);
-    setErrors((prevErrors) => ({ ...prevErrors, [field]: errorMessage }));
-    setEditField(field, value);
-  };
-
-  const isFormValid = () => {
-    return Object.values(errors).every((error) => error === "");
-  };
-
-  const handleSortRequest = (column: keyof T) => {
-    const isAsc = orderBy === column && orderDirection === "asc";
-    setOrderDirection(isAsc ? "desc" : "asc");
-    setOrderBy(column);
-  };
-
-  const sortedData = () => {
-    if (!orderBy) return data;
-    return [...data].sort((a, b) => {
-      if (a[orderBy] < b[orderBy]) {
-        return orderDirection === "asc" ? -1 : 1;
-      }
-      if (a[orderBy] > b[orderBy]) {
-        return orderDirection === "asc" ? 1 : -1;
-      }
-      return 0;
-    });
+  const handlePageChange = (
+    event: React.MouseEvent<HTMLButtonElement> | null,
+    newPage: number
+  ) => {
+    setPage(newPage);
   };
 
   const getColumnTranslation = (column: keyof T): string => {
@@ -114,7 +71,8 @@ const EditableTable = <T extends Record<string, any>>({
       label: "Lugar",
       day: "Día",
       hours: "Horas",
-    };
+    } as any;
+
     return translations[column] || String(column);
   };
 
@@ -135,40 +93,32 @@ const EditableTable = <T extends Record<string, any>>({
           <TableHead>
             <TableRow>
               {columns.map((column) => (
-                <TableCell key={String(column)}>
-                  <TableSortLabel
-                    active={orderBy === column}
-                    direction={orderBy === column ? orderDirection : "asc"}
-                    onClick={() => handleSortRequest(column)}
-                  >
+                <TableCell key={String(column)} style={{ width: "150px" }}>
+                  <TableSortLabel>
                     {getColumnTranslation(column)}
                   </TableSortLabel>
                 </TableCell>
               ))}
-              <TableCell />
+              <TableCell style={{ width: "100px" }} />
             </TableRow>
           </TableHead>
           <TableBody>
-            {sortedData()
+            {data
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((row) => (
                 <TableRow key={getRowId(row)}>
-                  {columns.map((column) => (
-                    <TableCell key={String(column)}>
+                  {columns.map((column, index) => (
+                    <TableCell key={String(column)} style={{ width: "150px" }}>
                       {editRowId === getRowId(row) ? (
                         column === "day" ? (
                           <FormControl variant="outlined" fullWidth>
                             <InputLabel>Día</InputLabel>
                             <Select
                               label="Día"
-                              value={editFields[column as string] || ""}
+                              value={editFields[String(column)] || ""}
                               onChange={(e) =>
-                                handleFieldChange(
-                                  column as string,
-                                  e.target.value
-                                )
+                                setEditField(String(column), e.target.value)
                               }
-                              error={!!errors[column as string]}
                             >
                               {getDayOptions().map((option) => (
                                 <MenuItem
@@ -183,34 +133,29 @@ const EditableTable = <T extends Record<string, any>>({
                         ) : (
                           <TextField
                             fullWidth
-                            value={editFields[column as string] || ""}
+                            value={editFields[String(column)] || ""}
                             onChange={(e) =>
-                              handleFieldChange(
-                                column as string,
-                                e.target.value
-                              )
+                              setEditField(String(column), e.target.value)
                             }
-                            error={!!errors[column as string]}
-                            helperText={errors[column as string]}
                           />
                         )
                       ) : column === "day" ? (
-                        getDayTranslation(row[column as keyof T] as string)
+                        getDayTranslation(row[column as keyof T] as string) ||
+                        null
                       ) : (
-                        row[column]
+                        (row[column] as React.ReactNode)
                       )}
                     </TableCell>
                   ))}
-                  <TableCell align="right">
+                  <TableCell
+                    style={{ display: "flex", justifyContent: "flex-end" }}
+                  >
                     {editRowId === getRowId(row) ? (
                       <Tooltip title="Guardar" arrow>
                         <IconButton
                           color="primary"
-                          onClick={() =>
-                            isFormValid() && handleSaveClick(getRowId(row))
-                          }
-                          sx={{ ml: 2 }}
-                          disabled={!isFormValid()}
+                          onClick={() => handleSaveClick(getRowId(row))}
+                          sx={{ ml: 1 }} 
                         >
                           <SaveIcon />
                         </IconButton>
@@ -220,7 +165,7 @@ const EditableTable = <T extends Record<string, any>>({
                         <IconButton
                           color="primary"
                           onClick={() => handleEditClick(row)}
-                          sx={{ ml: 2 }}
+                          sx={{ ml: 1 }}
                         >
                           <EditIcon />
                         </IconButton>
@@ -230,7 +175,7 @@ const EditableTable = <T extends Record<string, any>>({
                       <IconButton
                         color="secondary"
                         onClick={() => handleOpenDialog(getRowId(row))}
-                        sx={{ ml: 2 }}
+                        sx={{ ml: 1 }} 
                       >
                         <DeleteIcon />
                       </IconButton>
@@ -247,7 +192,7 @@ const EditableTable = <T extends Record<string, any>>({
         count={totalCount}
         rowsPerPage={rowsPerPage}
         page={page}
-        onPageChange={(event, newPage) => setPage(newPage)}
+        onPageChange={handlePageChange}
         onRowsPerPageChange={(event) => {
           setRowsPerPage(+event.target.value);
           setPage(0);

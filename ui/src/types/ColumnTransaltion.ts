@@ -1,3 +1,3 @@
 export type ColumnTranslations<T> = {
-  [key in keyof T]?: string;
+  [K in keyof T]: string;
 };
