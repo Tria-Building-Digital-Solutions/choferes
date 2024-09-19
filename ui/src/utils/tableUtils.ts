@@ -10,6 +10,16 @@ import { HoursWorked } from "../models/HoursWorked";
 import { DaySelection } from "../types/DaySelection";
 import { Schedule } from "../models/Schedule";
 
+export const getDayOptions = () => [
+  { value: "weekday", label: "Lunes" },
+  { value: "weekday", label: "Martes" },
+  { value: "weekday", label: "Miércoles" },
+  { value: "weekday", label: "Jueves" },
+  { value: "friday", label: "Viernes" },
+  { value: "saturday", label: "Sábado" },
+  { value: "sunday", label: "Domingo" },
+];
+
 export const getOptionsForDay = (
   day: string,
   schedules: Schedule[]

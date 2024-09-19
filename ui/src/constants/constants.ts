@@ -7,12 +7,15 @@ export const DAYS = {
 export const APPBAR_MENU = {
   TITLE: "Choferes",
   ROLES: "Roles",
+  MANAGE: "Gestión",
   EMPLOYEES: "Empleados",
+  SCHEDULES: "Horarios",
 }
 
 export const ROUTES = {
   HOME: "/",
-  MANAGE_EMPLOYEES: "/manage-employees",
+  MANAGE_EMPLOYEES: "/employees",
+  MANAGE_SCHEDULES: "/schedules",
 }
 
 export const STATE = {
