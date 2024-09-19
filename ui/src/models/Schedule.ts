@@ -1,6 +1,6 @@
 export interface Schedule {
-    day: string;
-    label: string;
-    hours: number;
-  }
-  
+  id: number;
+  day: string;
+  label: string;
+  hours: number;
+}
