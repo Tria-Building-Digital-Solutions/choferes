@@ -6,26 +6,32 @@ import {
   format,
 } from "date-fns";
 import { DAYS } from "../constants/constants";
-import { options } from "../data/mockData";
-import { HoursWorked } from "../models/HoursWorked"; 
+import { HoursWorked } from "../models/HoursWorked";
 import { DaySelection } from "../types/DaySelection";
+import { Schedule } from "../models/Schedule";
 
-interface Option {
-  label: string;
-  hours: number;
-}
+export const getOptionsForDay = (
+  day: string,
+  schedules: Schedule[]
+): Schedule[] => {
+  let dayFilter = "";
 
-export const getOptionsForDay = (day: string): Option[] => {
-  switch (true) {
-    case day.includes(DAYS.FRIDAY):
-      return options.friday;
-    case day.includes(DAYS.SATURDAY):
-      return options.saturday;
-    case day.includes(DAYS.SUNDAY):
-      return options.sunday;
+  switch (day.toLowerCase()) {
+    case "viernes":
+      dayFilter = DAYS.FRIDAY;
+      break;
+    case "sábado":
+      dayFilter = DAYS.SATURDAY;
+      break;
+    case "domingo":
+      dayFilter = DAYS.SUNDAY;
+      break;
     default:
-      return options.weekdays;
+      dayFilter = "weekday";
+      break;
   }
+
+  return schedules.filter((schedule) => schedule.day === dayFilter);
 };
 
 const getDatesForPeriod = (startDate: Date, daysCount: number) => {
@@ -50,7 +56,7 @@ const getMonthlyDates = (startDate: Date) => {
   const lastDayOfMonth = endOfMonth(startDate);
   return eachDayOfInterval({ start: firstDayOfMonth, end: lastDayOfMonth }).map(
     (date) => ({
-      day: format(date, "EEEE"), 
+      day: format(date, "EEEE"),
       date: format(date, "dd-MM-yyyy"),
     })
   );
@@ -80,13 +86,14 @@ export const calculateTotalHours = (
   }
 
   return days.reduce((total, { day }) => {
-    const dayHours = hoursWorked.find(
-      (record) =>
-        record.employeeId === employeeId && 
-        isValidDate(record.date) &&  
-        format(record.date, "EEEE") === day
-    )?.hours || 0;
-    
+    const dayHours =
+      hoursWorked.find(
+        (record) =>
+          record.employeeId === employeeId &&
+          isValidDate(record.date) &&
+          format(record.date, "EEEE") === day
+      )?.hours || 0;
+
     return total + dayHours;
   }, 0);
 };
