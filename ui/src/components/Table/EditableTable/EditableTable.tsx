@@ -15,6 +15,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Tooltip,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -146,7 +147,7 @@ const EditableTable = <T extends Record<string, any>>({
                   </TableSortLabel>
                 </TableCell>
               ))}
-              <TableCell align="right">Acciones</TableCell>
+              <TableCell />
             </TableRow>
           </TableHead>
           <TableBody>
@@ -204,32 +205,38 @@ const EditableTable = <T extends Record<string, any>>({
                   ))}
                   <TableCell align="right">
                     {editRowId === getRowId(row) ? (
-                      <IconButton
-                        color="primary"
-                        onClick={() =>
-                          isFormValid() && handleSaveClick(getRowId(row))
-                        }
-                        sx={{ ml: 2 }}
-                        disabled={!isFormValid()}
-                      >
-                        <SaveIcon />
-                      </IconButton>
+                      <Tooltip title="Guardar" arrow>
+                        <IconButton
+                          color="primary"
+                          onClick={() =>
+                            isFormValid() && handleSaveClick(getRowId(row))
+                          }
+                          sx={{ ml: 2 }}
+                          disabled={!isFormValid()}
+                        >
+                          <SaveIcon />
+                        </IconButton>
+                      </Tooltip>
                     ) : (
+                      <Tooltip title="Editar" arrow>
+                        <IconButton
+                          color="primary"
+                          onClick={() => handleEditClick(row)}
+                          sx={{ ml: 2 }}
+                        >
+                          <EditIcon />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    <Tooltip title="Eliminar" arrow>
                       <IconButton
-                        color="primary"
-                        onClick={() => handleEditClick(row)}
+                        color="secondary"
+                        onClick={() => handleOpenDialog(getRowId(row))}
                         sx={{ ml: 2 }}
                       >
-                        <EditIcon />
+                        <DeleteIcon />
                       </IconButton>
-                    )}
-                    <IconButton
-                      color="secondary"
-                      onClick={() => handleOpenDialog(getRowId(row))}
-                      sx={{ ml: 2 }}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
+                    </Tooltip>
                   </TableCell>
                 </TableRow>
               ))}
