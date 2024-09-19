@@ -2,7 +2,7 @@
 
 # dependencies
 /node_modules
-ui/node-modules/*
+ui/node-modules/
 /.pnp
 .pnp.js
 

@@ -21,6 +21,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import { getDayOptions } from "../../../utils/tableUtils";
+import { ColumnTranslations } from "../../../types/ColumnTransaltion";
+import { TABLE } from "../../../constants/constants";
 
 interface EditableTableProps<T> {
   data: T[];
@@ -38,10 +40,6 @@ interface EditableTableProps<T> {
   getRowId: (row: T) => number;
   totalCount: number;
 }
-
-type ColumnTranslations<T> = {
-  [key in keyof T]?: string;
-};
 
 const EditableTable = <T extends Record<string, any>>({
   data,
@@ -254,6 +252,7 @@ const EditableTable = <T extends Record<string, any>>({
           setRowsPerPage(+event.target.value);
           setPage(0);
         }}
+        labelRowsPerPage={TABLE.ROWS_PER_PAGE}
       />
     </Paper>
   );

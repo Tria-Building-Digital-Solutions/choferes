@@ -25,7 +25,7 @@ import {
 import api from "../../../services/api";
 import { Employee } from "../../../models/Employee";
 import { WeekData } from "../../../types/WeekData";
-import { STATE } from "../../../constants/constants";
+import { STATE, TABLE } from "../../../constants/constants";
 import { HoursWorked } from "../../../models/HoursWorked";
 import { Schedule } from "../../../models/Schedule";
 
@@ -305,6 +305,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
           setRowsPerPage(+event.target.value);
           setPage(0);
         }}
+        labelRowsPerPage={TABLE.ROWS_PER_PAGE}
       />
     </Paper>
   );
