@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import { json, urlencoded } from 'body-parser';
 import employeeRoutes from './routes/employeeRoutes';
 import hoursWorkedRoutes from './routes/hoursWorkedRoutes';
@@ -8,7 +9,6 @@ import monthlySummaryRoutes from './routes/monthlySummaryRoutes';
 import scheduleRoutes from './routes/scheduleRoutes';
 import sequelize from './config/database'; 
 
-const cors = require('cors');
 const app = express();
 
 app.use(cors());  
