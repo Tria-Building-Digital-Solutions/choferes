@@ -2,28 +2,23 @@ import React, { useState, useEffect } from "react";
 import {
   Button,
   TextField,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableRow,
-  Paper,
-  TablePagination,
-  IconButton,
   Grid,
   Box,
   Typography,
 } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
 import SearchBar from "../components/SearchBar/SearchBar";
 import ConfirmationDialog from "../components/Dialog/ConfirmationDialog";
 import { Employee } from "../models/Employee";
 import api from "../services/api";
+import EditableTable from "../components/EditableTable/EditableTable";
 
 const ManageEmployees: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [newEmployeeFirstName, setNewEmployeeFirstName] = useState("");
   const [newEmployeeLastName, setNewEmployeeLastName] = useState("");
+  const [editEmployeeId, setEditEmployeeId] = useState<number | null>(null);
+  const [editFirstName, setEditFirstName] = useState("");
+  const [editLastName, setEditLastName] = useState("");
   const [filter, setFilter] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(null);
@@ -61,10 +56,35 @@ const ManageEmployees: React.FC = () => {
     setOpenDialog(true);
   };
 
+  const handleUpdateEmployee = async (id: number, firstName: string, lastName: string) => {
+    try {
+      await api.put(`/employees/${id}`, {
+        firstName,
+        lastName,
+      });
+      setEmployees((prevEmployees) =>
+        prevEmployees.map((employee) =>
+          employee.id === id ? { ...employee, firstName, lastName } : employee
+        )
+      );
+    } catch (error) {
+      console.error("Error actualizando el empleado:", error);
+    }
+  };
+
+  const handleEditClick = (employee: Employee) => {
+    setEditEmployeeId(employee.id);
+    setEditFirstName(employee.firstName);
+    setEditLastName(employee.lastName);
+  };
+
+  const handleSaveClick = (id: number) => {
+    handleUpdateEmployee(id, editFirstName, editLastName);
+    setEditEmployeeId(null);
+  };
+
   const filteredEmployees = employees.filter((employee) =>
-    `${employee.firstName} ${employee.lastName}`
-      .toLowerCase()
-      .includes(filter.toLowerCase())
+    `${employee.firstName} ${employee.lastName}`.toLowerCase().includes(filter.toLowerCase())
   );
 
   const startIndex = page * rowsPerPage;
@@ -76,7 +96,12 @@ const ManageEmployees: React.FC = () => {
       <Typography variant="h2" sx={{ flexGrow: 1, margin: "25px 0" }}>
         Administrar Empleados
       </Typography>
-      <Grid container spacing={2} justifyContent="space-between" alignItems="center">
+      <Grid
+        container
+        spacing={2}
+        justifyContent="space-between"
+        alignItems="center"
+      >
         <Grid item>
           <SearchBar
             placeholder="Buscar Empleado"
@@ -91,51 +116,40 @@ const ManageEmployees: React.FC = () => {
               variant="outlined"
               value={newEmployeeFirstName}
               onChange={(e) => setNewEmployeeFirstName(e.target.value)}
+              sx={{ mr: 2 }}
             />
             <TextField
               label="Apellido"
               variant="outlined"
               value={newEmployeeLastName}
               onChange={(e) => setNewEmployeeLastName(e.target.value)}
+              sx={{ mr: 2 }}
             />
-            <Button variant="contained" color="primary" onClick={handleAddEmployee}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleAddEmployee}
+              sx={{ height: "56px" }}
+            >
               Agregar Empleado
             </Button>
           </Box>
         </Grid>
       </Grid>
-
-      <TableContainer component={Paper}>
-        <Table>
-          <TableBody>
-            {paginatedEmployees.map((employee) => (
-              <TableRow key={employee.id}>
-                <TableCell>{employee.firstName}</TableCell>
-                <TableCell>{employee.lastName}</TableCell>
-                <TableCell>
-                  <IconButton
-                    color="secondary"
-                    onClick={() => handleOpenDialog(employee.id)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <TablePagination
-        rowsPerPageOptions={[5, 10, 25]}
-        component="div"
-        count={filteredEmployees.length}
-        rowsPerPage={rowsPerPage}
+      <EditableTable
+        employees={paginatedEmployees}
+        editEmployeeId={editEmployeeId}
+        editFirstName={editFirstName}
+        editLastName={editLastName}
         page={page}
-        onPageChange={(event, newPage) => setPage(newPage)}
-        onRowsPerPageChange={(event) => {
-          setRowsPerPage(+event.target.value);
-          setPage(0);
-        }}
+        rowsPerPage={rowsPerPage}
+        setPage={setPage}
+        setRowsPerPage={setRowsPerPage}
+        setEditFirstName={setEditFirstName}
+        setEditLastName={setEditLastName} 
+        handleEditClick={handleEditClick}
+        handleSaveClick={handleSaveClick}
+        handleOpenDialog={handleOpenDialog}
       />
       {openDialog && selectedEmployeeId !== null && (
         <ConfirmationDialog
@@ -151,4 +165,3 @@ const ManageEmployees: React.FC = () => {
 };
 
 export default ManageEmployees;
-
