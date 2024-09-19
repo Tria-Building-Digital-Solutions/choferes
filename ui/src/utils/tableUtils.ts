@@ -10,11 +10,23 @@ import { HoursWorked } from "../models/HoursWorked";
 import { DaySelection } from "../types/DaySelection";
 import { Schedule } from "../models/Schedule";
 
+const dayMapping: { [key: string]: string } = {
+  "lunes": "weekday",
+  "martes": "weekday",
+  "miércoles": "weekday",
+  "jueves": "weekday",
+  "viernes": "friday",
+  "sábado": "saturday",
+  "domingo": "sunday",
+};
+
+export const getMappedDay = (dayFilter: string) => {
+  const lowerCaseDay = dayFilter.toLowerCase();
+  return dayMapping[lowerCaseDay] || lowerCaseDay; 
+};
+
 export const getDayOptions = () => [
-  { value: "weekday", label: "Lunes" },
-  { value: "weekday", label: "Martes" },
-  { value: "weekday", label: "Miércoles" },
-  { value: "weekday", label: "Jueves" },
+  { value: "weekday", label: "Lunes a Jueves" },
   { value: "friday", label: "Viernes" },
   { value: "saturday", label: "Sábado" },
   { value: "sunday", label: "Domingo" },

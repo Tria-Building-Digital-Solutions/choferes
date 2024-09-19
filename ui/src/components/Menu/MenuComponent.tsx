@@ -81,7 +81,7 @@ const MenuComponent: React.FC<MenuComponentProps> = ({
         }}
       >
         {menuItems.map((item, index) => (
-          <React.Fragment key={index}>
+          <div key={index}>
             <MenuItem
               onClick={(e) => {
                 if (item.onClick) item.onClick();
@@ -113,7 +113,7 @@ const MenuComponent: React.FC<MenuComponentProps> = ({
             )}
             
             {index < menuItems.length - 1 && <Divider />}
-          </React.Fragment>
+          </div>
         ))}
       </Menu>
     </div>

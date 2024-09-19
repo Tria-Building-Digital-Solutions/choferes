@@ -13,24 +13,51 @@ const ManageEmployees: React.FC = () => {
   const [editEmployeeId, setEditEmployeeId] = useState<number | null>(null);
   const [editFirstName, setEditFirstName] = useState("");
   const [editLastName, setEditLastName] = useState("");
+  const [totalEmployees, setTotalEmployees] = useState(0);
   const [filter, setFilter] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(
     null
   );
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [firstNameError, setFirstNameError] = useState("");
+  const [lastNameError, setLastNameError] = useState("");
 
   useEffect(() => {
     const fetchEmployees = async () => {
       const response = await api.get("/employees");
       setEmployees(response.data);
+      setTotalEmployees(response.data.length);
     };
 
     fetchEmployees();
   }, []);
 
+  const validateFields = (): boolean => {
+    let isValid = true;
+    if (newEmployeeFirstName.trim() === "") {
+      setFirstNameError("El nombre es obligatorio.");
+      isValid = false;
+    } else {
+      setFirstNameError("");
+    }
+
+    if (newEmployeeLastName.trim() === "") {
+      setLastNameError("El apellido es obligatorio.");
+      isValid = false;
+    } else {
+      setLastNameError("");
+    }
+
+    return isValid;
+  };
+
   const handleAddEmployee = async () => {
+    if (!validateFields()) {
+      return; 
+    }
+
     const newEmployee = await api.post("/employees", {
       firstName: newEmployeeFirstName,
       lastName: newEmployeeLastName,
@@ -90,7 +117,7 @@ const ManageEmployees: React.FC = () => {
   );
 
   const startIndex = page * rowsPerPage;
-  const endIndex = startIndex + rowsPerPage;
+  const endIndex = Math.min(startIndex + rowsPerPage, filteredEmployees.length);
   const paginatedEmployees = filteredEmployees.slice(startIndex, endIndex);
 
   return (
@@ -119,6 +146,8 @@ const ManageEmployees: React.FC = () => {
               value={newEmployeeFirstName}
               onChange={(e) => setNewEmployeeFirstName(e.target.value)}
               sx={{ mr: 2 }}
+              error={!!firstNameError}
+              helperText={firstNameError}
             />
             <TextField
               label="Apellido"
@@ -126,6 +155,8 @@ const ManageEmployees: React.FC = () => {
               value={newEmployeeLastName}
               onChange={(e) => setNewEmployeeLastName(e.target.value)}
               sx={{ mr: 2 }}
+              error={!!lastNameError}
+              helperText={lastNameError}
             />
             <Button
               variant="contained"
@@ -138,6 +169,7 @@ const ManageEmployees: React.FC = () => {
           </Box>
         </Grid>
       </Grid>
+      <br/>
       <EditableTable<Employee>
         data={paginatedEmployees}
         columns={["firstName", "lastName"]}
@@ -161,6 +193,7 @@ const ManageEmployees: React.FC = () => {
         handleSaveClick={handleSaveClick}
         handleOpenDialog={handleOpenDialog}
         getRowId={(employee) => employee.id}
+        totalCount={totalEmployees}
       />
       {openDialog && selectedEmployeeId !== null && (
         <ConfirmationDialog

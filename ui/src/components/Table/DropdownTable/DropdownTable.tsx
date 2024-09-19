@@ -44,7 +44,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
   const [weekData, setWeekData] = useState<WeekData>({});
   const [hoursWorked, setHoursWorked] = useState<HoursWorked[]>([]);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [selectedColumn, setSelectedColumn] = useState<
     "weekly" | "biweekly" | "monthly"
   >("weekly");

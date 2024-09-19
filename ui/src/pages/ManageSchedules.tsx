@@ -13,7 +13,7 @@ import {
 import { Schedule } from "../models/Schedule";
 import api from "../services/api";
 import SearchBar from "../components/SearchBar/SearchBar";
-import { getDayOptions } from "../utils/tableUtils";
+import { getDayOptions, getMappedDay } from "../utils/tableUtils";
 import ConfirmationDialog from "../components/Dialog/ConfirmationDialog";
 import EditableTable from "../components/Table/EditableTable/EditableTable";
 
@@ -26,6 +26,7 @@ const ManageSchedules: React.FC = () => {
   const [editScheduleDay, setEditScheduleDay] = useState("");
   const [editScheduleLabel, setEditScheduleLabel] = useState("");
   const [editScheduleHours, setEditScheduleHours] = useState(0);
+  const [totalSchedules, setTotalSchedules] = useState(0);
   const [filter, setFilter] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedScheduleId, setSelectedScheduleId] = useState<number | null>(
@@ -33,17 +34,51 @@ const ManageSchedules: React.FC = () => {
   );
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [labelError, setLabelError] = useState("");
+  const [dayError, setDayError] = useState("");
+  const [hoursError, setHoursError] = useState("");
 
   useEffect(() => {
     const fetchSchedules = async () => {
       const response = await api.get("/schedules");
       setSchedules(response.data);
+      setTotalSchedules(response.data.length);
     };
 
     fetchSchedules();
   }, []);
 
+  const validateFields = (): boolean => {
+    let isValid = true;
+    if (newScheduleLabel.trim() === "") {
+      setLabelError("El lugar es obligatorio.");
+      isValid = false;
+    } else {
+      setLabelError("");
+    }
+
+    if (newScheduleDay === "") {
+      setDayError("Selecciona un día.");
+      isValid = false;
+    } else {
+      setDayError("");
+    }
+
+    if (newScheduleHours < 0) {
+      setHoursError("Las horas deben ser mayores o igual a 0.");
+      isValid = false;
+    } else {
+      setHoursError("");
+    }
+
+    return isValid;
+  };
+
   const handleAddSchedule = async () => {
+    if (!validateFields()) {
+      return;
+    }
+
     const newSchedule = await api.post("/schedules", {
       day: newScheduleDay,
       label: newScheduleLabel,
@@ -106,12 +141,17 @@ const ManageSchedules: React.FC = () => {
     setEditScheduleId(null);
   };
 
-  const filteredSchedules = schedules.filter((schedule) =>
-    `${schedule.label}`.toLowerCase().includes(filter.toLowerCase())
-  );
+  const filteredSchedules = schedules.filter((schedule) => {
+    const mappedDay = getMappedDay(filter);
+    return (
+      `${schedule.label} ${schedule.day} ${schedule.hours}`
+        .toLowerCase()
+        .includes(filter.toLowerCase()) || schedule.day.includes(mappedDay)
+    );
+  });
 
   const startIndex = page * rowsPerPage;
-  const endIndex = startIndex + rowsPerPage;
+  const endIndex = Math.min(startIndex + rowsPerPage, filteredSchedules.length);
   const paginatedSchedules = filteredSchedules.slice(startIndex, endIndex);
 
   return (
@@ -140,8 +180,14 @@ const ManageSchedules: React.FC = () => {
               value={newScheduleLabel}
               onChange={(e) => setNewScheduleLabel(e.target.value)}
               sx={{ mr: 2 }}
+              error={!!labelError}
+              helperText={labelError}
             />
-            <FormControl variant="outlined" sx={{ mr: 2, width: 200 }}>
+            <FormControl
+              variant="outlined"
+              sx={{ mr: 2, width: 200 }}
+              error={!!dayError}
+            >
               <InputLabel>Día</InputLabel>
               <Select
                 label="Día"
@@ -154,6 +200,11 @@ const ManageSchedules: React.FC = () => {
                   </MenuItem>
                 ))}
               </Select>
+              {dayError && (
+                <Typography color="error" variant="caption">
+                  {dayError}
+                </Typography>
+              )}
             </FormControl>
             <TextField
               label="Horas"
@@ -161,6 +212,8 @@ const ManageSchedules: React.FC = () => {
               value={newScheduleHours}
               onChange={(e) => setNewScheduleHours(Number(e.target.value))}
               sx={{ mr: 2 }}
+              error={!!hoursError}
+              helperText={hoursError}
             />
             <Button
               variant="contained"
@@ -173,6 +226,7 @@ const ManageSchedules: React.FC = () => {
           </Box>
         </Grid>
       </Grid>
+      <br />
       <EditableTable<Schedule>
         data={paginatedSchedules}
         columns={["label", "day", "hours"]}
@@ -191,7 +245,7 @@ const ManageSchedules: React.FC = () => {
             setEditScheduleLabel(value);
           } else if (field === "day") {
             setEditScheduleDay(value);
-          } else if(field === "hours"){
+          } else if (field === "hours") {
             setEditScheduleHours(Number(value));
           }
         }}
@@ -199,6 +253,7 @@ const ManageSchedules: React.FC = () => {
         handleSaveClick={handleSaveClick}
         handleOpenDialog={handleOpenDialog}
         getRowId={(schedule) => schedule.id}
+        totalCount={totalSchedules}
       />
       {openDialog && selectedScheduleId !== null && (
         <ConfirmationDialog
