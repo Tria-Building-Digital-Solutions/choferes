@@ -25,6 +25,7 @@ import { Employee } from "../../models/Employee";
 import { WeekData } from "../../types/WeekData";
 import { STATE, TABLE } from "../../constants/constants";
 import { HoursWorked } from "../../models/HoursWorked";
+import { Schedule } from "../../models/Schedule";
 
 interface DropdownTableProps {
   weekOffset: number;
@@ -37,6 +38,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
   );
 
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [weekData, setWeekData] = useState<WeekData>({});
   const [hoursWorked, setHoursWorked] = useState<HoursWorked[]>([]);
   const [page, setPage] = useState(0);
@@ -51,6 +53,12 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
       setEmployees(response.data);
     };
 
+    const fetchSchedules = async () => {
+      const response = await api.get("/schedules");
+      console.log(response.data); 
+      setSchedules(response.data);
+    };
+
     const fetchWeekData = async () => {
       const response = await api.get(`/hours?weekOffset=${weekOffset}`);
       setWeekData(response.data);
@@ -58,6 +66,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
     };
 
     fetchEmployees();
+    fetchSchedules();
     fetchWeekData();
   }, [weekOffset]);
 
@@ -66,9 +75,10 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
     day: string,
     selectedLabel: string
   ) => {
-    const selectedOption = getOptionsForDay(day).find(
+    const selectedOption = getOptionsForDay(day, schedules).find(
       (option) => option.label === selectedLabel
     );
+
     const selectedHours = selectedOption ? selectedOption.hours : 0;
 
     if (employee.id !== undefined) {
@@ -176,7 +186,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
                           }
                           displayEmpty
                         >
-                          {getOptionsForDay(day).map((option) => (
+                          {getOptionsForDay(day, schedules).map((option) => (
                             <MenuItem key={option.label} value={option.label}>
                               {option.label}
                             </MenuItem>

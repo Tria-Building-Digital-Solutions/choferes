@@ -1,7 +1,8 @@
 export const DAYS = {
-  FRIDAY: "Viernes",
-  SATURDAY: "Sábado",
-  SUNDAY: "Domingo",
+  WEEKDAY: 'weekday',
+  FRIDAY: "friday",
+  SATURDAY: "saturday",
+  SUNDAY: "sunday",
 };
 export const APPBAR_MENU = {
   TITLE: "Choferes",
