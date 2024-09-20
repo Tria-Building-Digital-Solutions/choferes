@@ -16,7 +16,7 @@ import {
   Divider,
   Typography,
 } from "@mui/material";
-import { getCurrentWeekDates } from "../../../utils/dateUtils";
+import { formatHeaderDate, getCurrentWeekDates } from "../../../utils/dateUtils";
 import {
   calculateTotalHours,
   convertWeekDataToHoursWorked,
@@ -25,10 +25,11 @@ import {
 } from "../../../utils/tableUtils";
 import api from "../../../services/api";
 import { Employee } from "../../../models/Employee";
-import { WeekData } from "../../../types/WeekData";
 import { STATE, TABLE } from "../../../constants/constants";
 import { HoursWorked } from "../../../models/HoursWorked";
 import { Schedule } from "../../../models/Schedule";
+import { translateDayToSpanish } from "../../../utils/calculationUtils";
+import { DayOfWeek } from "../../../types/DayOfWeek";
 
 interface DropdownTableProps {
   weekOffset: number;
@@ -42,7 +43,9 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
 
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
-  const [weekData, setWeekData] = useState<WeekData>({});
+  const [weekData, setWeekData] = useState<
+    Record<number, Record<string, { label: string; hours: number }>>
+  >({});
   const [hoursWorked, setHoursWorked] = useState<HoursWorked[]>([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -76,6 +79,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
   const handleChange = async (
     employee: Employee,
     day: string,
+    date: Date,
     selectedLabel: string
   ) => {
     const options = getOptionsForDay(day, schedules);
@@ -85,18 +89,25 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
     const selectedHours = selectedOption ? selectedOption.hours : 0;
 
     if (employee.id !== undefined) {
+      const date = new Date().toISOString();
+
       await api.put(`/hours/${employee.id}`, {
-        weekOffset,
-        day,
-        label: selectedLabel,
+        employeeId: employee.id,
+        date: new Date(date).toISOString(),
         hours: selectedHours,
       });
 
       const updatedWeekData = { ...weekData };
+
+      if (!updatedWeekData[employee.id]) {
+        updatedWeekData[employee.id] = {};
+      }
+
       updatedWeekData[employee.id][day] = {
         label: selectedLabel,
         hours: selectedHours,
       };
+
       setWeekData(updatedWeekData);
     }
   };
@@ -114,6 +125,15 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
   const startIndex = page * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
   const paginatedEmployees = sortedEmployees.slice(startIndex, endIndex);
+
+  const today = new Date();
+  const todayString = today
+    .toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    })
+    .replace(",", "");
 
   if (!employees || employees.length === 0) {
     return (
@@ -134,11 +154,10 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
                 sx={{
                   position: "sticky",
                   left: 0,
-                  zIndex: 2,
+                  zIndex: 3,
                 }}
               >
                 <TableSortLabel
-                  active={true}
                   direction={orderDirection}
                   onClick={() => {
                     setOrderDirection((prev) =>
@@ -149,12 +168,16 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
                   Empleados
                 </TableSortLabel>
               </TableCell>
+              {currentWeek.map(({ day, date }) => {
+                console.log("day", day);
+                console.log("date", date);
 
-              {currentWeek.map(({ day, date }) => (
-                <TableCell key={day} align="center">
-                  {`${day} ${date}`}
-                </TableCell>
-              ))}
+                return (
+                  <TableCell key={day} align="center">
+                    {`${translateDayToSpanish(day as DayOfWeek)} ${formatHeaderDate(date)}`}
+                  </TableCell>
+                );
+              })}
               <TableCell
                 align="right"
                 sx={{
@@ -199,39 +222,89 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
                 >
                   {employee.firstName} {employee.lastName}
                 </TableCell>
-                {currentWeek.map(({ day }) => {
-                  const employeeIdStr = employee.id?.toString() || "";
+                {currentWeek.map(({ day, date }) => {
+                  const formattedDate = new Date(date)
+                    .toLocaleDateString("en-GB", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })
+                    .replace(",", "");
+                  const isFutureDate = new Date(date) > today;
                   const selectedLabel =
-                    (employee.id !== undefined &&
-                      weekData[employeeIdStr]?.[day]?.label) ||
-                    STATE.FREE;
+                    employee.id !== undefined &&
+                    weekData[employee.id]?.[day]?.label
+                      ? weekData[employee.id][day].label
+                      : STATE.FREE;
+
+                  const options = getOptionsForDay(day, schedules);
+
+                  const priorityOptions = [
+                    "Ausencia",
+                    "Cubre Almuerzo",
+                    "Libre",
+                    "Salida Programada",
+                  ];
+
+                  const sortedOptions = [...options].sort((a, b) => {
+                    const indexA = priorityOptions.indexOf(a.label);
+                    const indexB = priorityOptions.indexOf(b.label);
+
+                    if (indexA !== -1 && indexB !== -1) {
+                      return indexA - indexB;
+                    }
+
+                    if (indexA !== -1) return 1;
+                    if (indexB !== -1) return -1;
+
+                    return a.label.localeCompare(b.label);
+                  });
+
+                  const validLabel = sortedOptions.some(
+                    (option) => option.label === selectedLabel
+                  )
+                    ? selectedLabel
+                    : sortedOptions[0]?.label || "";
 
                   return (
-                    <TableCell key={day}>
+                    <TableCell
+                      key={day}
+                      sx={{
+                        backgroundColor:
+                          todayString === formattedDate ? "#F0F2F5" : "inherit",
+                      }}
+                    >
                       <FormControl fullWidth>
                         <Select
-                          value={selectedLabel}
+                          value={validLabel}
                           onChange={(e) =>
-                            handleChange(employee, day, e.target.value)
+                            handleChange(
+                              employee,
+                              day,
+                              new Date(date),
+                              e.target.value
+                            )
                           }
+                          disabled={isFutureDate}
                         >
-                          {getOptionsForDay(day, schedules).reduce<
-                            React.ReactNode[]
-                          >((acc, option, index) => {
-                            acc.push(
-                              <MenuItem key={option.id} value={option.label}>
-                                {option.label}
-                              </MenuItem>
-                            );
-                            if (option.label === "Ausencia" && index > 0) {
-                              acc.splice(
-                                acc.length - 1,
-                                0,
-                                <Divider key={`divider-${option.id}`} />
+                          {sortedOptions.reduce<React.ReactNode[]>(
+                            (acc, option, index) => {
+                              acc.push(
+                                <MenuItem key={option.id} value={option.label}>
+                                  {option.label}
+                                </MenuItem>
                               );
-                            }
-                            return acc;
-                          }, [])}
+                              if (option.label === "Ausencia" && index > 0) {
+                                acc.splice(
+                                  acc.length - 1,
+                                  0,
+                                  <Divider key={`divider-${option.id}`} />
+                                );
+                              }
+                              return acc;
+                            },
+                            []
+                          )}
                         </Select>
                       </FormControl>
                     </TableCell>

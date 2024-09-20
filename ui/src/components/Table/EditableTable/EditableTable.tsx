@@ -135,7 +135,6 @@ const EditableTable = <T,>({
               {columns.map((column) => (
                 <TableCell key={String(column)} className="tableCell">
                   <TableSortLabel
-                    active={orderBy === column}
                     direction={orderBy === column ? order : "asc"}
                     onClick={() => handleSortRequest(column)}
                   >
