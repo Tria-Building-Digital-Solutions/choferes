@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Table,
   TableBody,
@@ -57,6 +57,33 @@ const EditableTable = <T,>({
   setPage,
   setRowsPerPage,
 }: EditableTableProps<T>) => {
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  const validateField = (field: string, value: string): boolean => {
+    if (
+      field === "firstName" ||
+      field === "lastName" ||
+      field === "label" ||
+      field === "day"
+    ) {
+      return /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/.test(value);
+    } else if (field === "hours") {
+      return /^[0-9]+$/.test(value);
+    }
+    return true;
+  };
+
+  const checkFormValidity = useCallback(() => {
+    const isValid = Object.keys(editFields).every((field) =>
+      validateField(field, editFields[field])
+    );
+    setIsFormValid(isValid);
+  }, [editFields]);
+
+  useEffect(() => {
+    checkFormValidity();
+  }, [checkFormValidity]);
+
   const handlePageChange = (
     event: React.MouseEvent<HTMLButtonElement> | null,
     newPage: number
@@ -93,7 +120,7 @@ const EditableTable = <T,>({
           <TableHead>
             <TableRow>
               {columns.map((column) => (
-                <TableCell key={String(column)} style={{ width: "150px" }}>
+                <TableCell key={String(column)} className="tableCell">
                   <TableSortLabel>
                     {getColumnTranslation(column)}
                   </TableSortLabel>
@@ -107,8 +134,8 @@ const EditableTable = <T,>({
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((row) => (
                 <TableRow key={getRowId(row)}>
-                  {columns.map((column, index) => (
-                    <TableCell key={String(column)} style={{ width: "150px" }}>
+                  {columns.map((column) => (
+                    <TableCell key={String(column)} className="tableCell">
                       {editRowId === getRowId(row) ? (
                         column === "day" ? (
                           <FormControl variant="outlined" fullWidth>
@@ -137,6 +164,12 @@ const EditableTable = <T,>({
                             onChange={(e) =>
                               setEditField(String(column), e.target.value)
                             }
+                            error={
+                              !validateField(
+                                String(column),
+                                editFields[String(column)]
+                              )
+                            }
                           />
                         )
                       ) : column === "day" ? (
@@ -147,15 +180,14 @@ const EditableTable = <T,>({
                       )}
                     </TableCell>
                   ))}
-                  <TableCell
-                    style={{ display: "flex", justifyContent: "flex-end" }}
-                  >
+                  <TableCell className="actionCell">
                     {editRowId === getRowId(row) ? (
                       <Tooltip title="Guardar" arrow>
                         <IconButton
                           color="primary"
                           onClick={() => handleSaveClick(getRowId(row))}
-                          sx={{ ml: 1 }} 
+                          className="saveIconButton"
+                          disabled={!isFormValid}
                         >
                           <SaveIcon />
                         </IconButton>
@@ -165,7 +197,7 @@ const EditableTable = <T,>({
                         <IconButton
                           color="primary"
                           onClick={() => handleEditClick(row)}
-                          sx={{ ml: 1 }}
+                          className="saveIconButton"
                         >
                           <EditIcon />
                         </IconButton>
@@ -175,7 +207,7 @@ const EditableTable = <T,>({
                       <IconButton
                         color="secondary"
                         onClick={() => handleOpenDialog(getRowId(row))}
-                        sx={{ ml: 1 }} 
+                        className="saveIconButton"
                       >
                         <DeleteIcon />
                       </IconButton>
@@ -198,6 +230,7 @@ const EditableTable = <T,>({
           setPage(0);
         }}
         labelRowsPerPage={TABLE.ROWS_PER_PAGE}
+        className="pagination"
       />
     </Paper>
   );

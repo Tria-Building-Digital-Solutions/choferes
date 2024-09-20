@@ -14,6 +14,7 @@ import {
   InputLabel,
   TableSortLabel,
   Divider,
+  Typography,
 } from "@mui/material";
 import { getCurrentWeekDates } from "../../../utils/dateUtils";
 import {
@@ -115,7 +116,11 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
   const paginatedEmployees = sortedEmployees.slice(startIndex, endIndex);
 
   if (!employees || employees.length === 0) {
-    return <div>No hay empleados disponibles</div>;
+    return (
+      <Typography variant="h6" color="textSecondary">
+        No se encontraron empleados disponibles.
+      </Typography>
+    );
   }
 
   return (

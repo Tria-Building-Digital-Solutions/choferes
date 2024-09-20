@@ -27,9 +27,7 @@ const ManageEmployees: React.FC = () => {
   const [filter, setFilter] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [errors, setErrors] = useState({ firstName: "", lastName: "" });
   const [isValid, setIsValid] = useState(false);
-  const [isAttempted, setIsAttempted] = useState(false);
 
   useEffect(() => {
     const fetchEmployees = async () => {
@@ -57,35 +55,17 @@ const ManageEmployees: React.FC = () => {
   }, [employees, filter]);
 
   const validateFields = useCallback(() => {
-    const newErrors = { firstName: "", lastName: "" };
-    const nameRegex = /^[a-zA-Z\s]+$/;
-
-    if (!editFields.firstName) {
-      newErrors.firstName = "El campo es requerido.";
-    } else if (!nameRegex.test(editFields.firstName)) {
-      newErrors.firstName = "El campo solo puede contener letras y espacios.";
-    }
-
-    if (!editFields.lastName) {
-      newErrors.lastName = "El campo es requerido.";
-    } else if (!nameRegex.test(editFields.lastName)) {
-      newErrors.lastName = "El campo solo puede contener letras y espacios.";
-    }
-
-    setErrors(newErrors);
-    setIsValid(!newErrors.firstName && !newErrors.lastName);
-  }, [editFields]);
+    const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+    const isFirstNameValid = nameRegex.test(addFields.firstName) && addFields.firstName !== "";
+    const isLastNameValid = nameRegex.test(addFields.lastName) && addFields.lastName !== "";
+    setIsValid(isFirstNameValid && isLastNameValid);
+  }, [addFields]);
 
   useEffect(() => {
     validateFields();
   }, [validateFields]);
 
   const handleAddEmployee = () => {
-    setIsAttempted(true);
-    validateFields();
-
-    if (!isValid) return;
-
     const newEmployee: Employee = {
       id: Math.max(...employees.map((employee) => employee.id)) + 1,
       firstName: addFields.firstName,
@@ -97,8 +77,6 @@ const ManageEmployees: React.FC = () => {
         setEmployees([...employees, newEmployee]);
         setTotalCount(totalCount + 1);
         setAddFields({ firstName: "", lastName: "" });
-        setErrors({ firstName: "", lastName: "" });
-        setIsAttempted(false);
       })
       .catch((error) => console.error("Error adding employee", error));
   };
@@ -109,12 +87,9 @@ const ManageEmployees: React.FC = () => {
       firstName: employee.firstName,
       lastName: employee.lastName,
     });
-    setErrors({ firstName: "", lastName: "" });
   };
 
   const handleSaveClick = (id: number) => {
-    if (!isValid) return;
-
     const updatedEmployee = {
       ...editFields,
     };
@@ -128,7 +103,6 @@ const ManageEmployees: React.FC = () => {
         );
         setEditRowId(null);
         setEditFields({ firstName: "", lastName: "" });
-        setErrors({ firstName: "", lastName: "" });
       })
       .catch((error) => console.error("Error updating employee", error));
   };
@@ -186,8 +160,6 @@ const ManageEmployees: React.FC = () => {
               onChange={(e) =>
                 setAddFields({ ...addFields, firstName: e.target.value })
               }
-              error={isAttempted && !!errors.firstName}
-              helperText={isAttempted && errors.firstName}
             />
             <TextField
               label="Apellido"
@@ -197,8 +169,6 @@ const ManageEmployees: React.FC = () => {
               onChange={(e) =>
                 setAddFields({ ...addFields, lastName: e.target.value })
               }
-              error={isAttempted && !!errors.lastName}
-              helperText={isAttempted && errors.lastName}
             />
             <Button
               variant="contained"

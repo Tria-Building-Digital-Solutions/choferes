@@ -40,13 +40,7 @@ const ManageSchedules: React.FC = () => {
   const [filter, setFilter] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [errors, setErrors] = useState({
-    label: "",
-    day: "",
-    hours: "",
-  });
   const [isValid, setIsValid] = useState(false);
-  const [isAttempted, setIsAttempted] = useState(false);
 
   useEffect(() => {
     const fetchSchedules = async () => {
@@ -74,39 +68,18 @@ const ManageSchedules: React.FC = () => {
   }, [schedules, filter]);
 
   const validateFields = useCallback(() => {
-    const newErrors = { label: "", day: "", hours: "" };
-    const nameRegex = /^[a-zA-Z\s]+$/;
-
-    if (!editFields.label) {
-      newErrors.label = "El campo es requerido";
-    } else if (!nameRegex.test(editFields.label)) {
-      newErrors.label = "El campo solo puede contener letras y espacios";
-    }
-
-    if (!editFields.day) {
-      newErrors.day = "El campo es requerido";
-    }
-
-    if (!editFields.hours) {
-      newErrors.hours = "El campo es requerido";
-    } else if (isNaN(Number(editFields.hours))) {
-      newErrors.hours = "El campo debe ser un número válido";
-    }
-
-    setErrors(newErrors);
-    setIsValid(!newErrors.label && !newErrors.day && !newErrors.hours);
-  }, [editFields]);
+    const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+    const isLabelValid = nameRegex.test(addFields.label) && addFields.label !== "";
+    const isDayValid = addFields.day !== "";
+    const isHoursValid = /^[0-9]+$/.test(addFields.hours);
+    setIsValid(isLabelValid && isDayValid && isHoursValid);
+  }, [addFields]);
 
   useEffect(() => {
     validateFields();
   }, [validateFields]);
 
   const handleAddSchedule = () => {
-    setIsAttempted(true);
-    validateFields();
-
-    if (!isValid) return;
-
     const newSchedule: Schedule = {
       id: Math.max(...schedules.map((schedule) => schedule.id)) + 1,
       label: addFields.label,
@@ -119,8 +92,6 @@ const ManageSchedules: React.FC = () => {
         setSchedules([...schedules, newSchedule]);
         setTotalCount(totalCount + 1);
         setAddFields({ label: "", day: "", hours: "" });
-        setErrors({ label: "", day: "", hours: "" });
-        setIsAttempted(false);
       })
       .catch((error) => console.error("Error adding schedule", error));
   };
@@ -135,8 +106,6 @@ const ManageSchedules: React.FC = () => {
   };
 
   const handleSaveClick = (id: number) => {
-    if (!isValid) return;
-
     const updatedSchedule = {
       ...editFields,
       hours: parseInt(editFields.hours, 10),
@@ -151,7 +120,6 @@ const ManageSchedules: React.FC = () => {
         );
         setEditRowId(null);
         setEditFields({ label: "", day: "", hours: "" });
-        setErrors({ label: "", day: "", hours: "" });
       })
       .catch((error) => console.error("Error updating schedule", error));
   };
@@ -202,15 +170,13 @@ const ManageSchedules: React.FC = () => {
         <Grid item>
           <Box display="flex" alignItems="center">
             <TextField
-              label="Label"
+              label="Lugar"
               variant="outlined"
               sx={{ mr: 2 }}
               value={addFields.label}
               onChange={(e) =>
                 setAddFields({ ...addFields, label: e.target.value })
               }
-              error={isAttempted && !!errors.label}
-              helperText={isAttempted && errors.label}
             />
             <FormControl variant="outlined" sx={{ mr: 2, width: 200 }}>
               <InputLabel>Día</InputLabel>
@@ -220,7 +186,6 @@ const ManageSchedules: React.FC = () => {
                 onChange={(e) =>
                   setAddFields({ ...addFields, day: e.target.value })
                 }
-                error={isAttempted && !!errors.day}
               >
                 {getDayOptions().map((option) => (
                   <MenuItem key={option.value} value={option.value}>
@@ -228,9 +193,6 @@ const ManageSchedules: React.FC = () => {
                   </MenuItem>
                 ))}
               </Select>
-              {isAttempted && errors.day && (
-                <Typography color="error">{errors.day}</Typography>
-              )}
             </FormControl>
             <TextField
               label="Horas"
@@ -241,8 +203,6 @@ const ManageSchedules: React.FC = () => {
               onChange={(e) =>
                 setAddFields({ ...addFields, hours: e.target.value })
               }
-              error={isAttempted && !!errors.hours}
-              helperText={isAttempted && errors.hours}
             />
             <Button
               variant="contained"
