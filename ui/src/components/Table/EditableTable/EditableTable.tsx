@@ -58,14 +58,11 @@ const EditableTable = <T,>({
   setRowsPerPage,
 }: EditableTableProps<T>) => {
   const [isFormValid, setIsFormValid] = useState(false);
+  const [order, setOrder] = useState<"asc" | "desc">("asc");
+  const [orderBy, setOrderBy] = useState<keyof T>(columns[0]);
 
   const validateField = (field: string, value: string): boolean => {
-    if (
-      field === "firstName" ||
-      field === "lastName" ||
-      field === "label" ||
-      field === "day"
-    ) {
+    if (field === "firstName" || field === "lastName" || field === "label" || field === "day") {
       return /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/.test(value);
     } else if (field === "hours") {
       return /^[0-9]+$/.test(value);
@@ -90,6 +87,22 @@ const EditableTable = <T,>({
   ) => {
     setPage(newPage);
   };
+
+  const handleSortRequest = (column: keyof T) => {
+    const isAsc = orderBy === column && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
+    setOrderBy(column);
+  };
+
+  const sortedData = [...data].sort((a, b) => {
+    if (a[orderBy] < b[orderBy]) {
+      return order === "asc" ? -1 : 1;
+    }
+    if (a[orderBy] > b[orderBy]) {
+      return order === "asc" ? 1 : -1;
+    }
+    return 0;
+  });
 
   const getColumnTranslation = (column: keyof T): string => {
     const translations: ColumnTranslations<T> = {
@@ -121,7 +134,11 @@ const EditableTable = <T,>({
             <TableRow>
               {columns.map((column) => (
                 <TableCell key={String(column)} className="tableCell">
-                  <TableSortLabel>
+                  <TableSortLabel
+                    active={orderBy === column}
+                    direction={orderBy === column ? order : "asc"}
+                    onClick={() => handleSortRequest(column)}
+                  >
                     {getColumnTranslation(column)}
                   </TableSortLabel>
                 </TableCell>
@@ -130,7 +147,7 @@ const EditableTable = <T,>({
             </TableRow>
           </TableHead>
           <TableBody>
-            {data
+            {sortedData
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((row) => (
                 <TableRow key={getRowId(row)}>
