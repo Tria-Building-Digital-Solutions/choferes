@@ -169,9 +169,6 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
                 </TableSortLabel>
               </TableCell>
               {currentWeek.map(({ day, date }) => {
-                console.log("day", day);
-                console.log("date", date);
-
                 return (
                   <TableCell key={day} align="center">
                     {`${translateDayToSpanish(day as DayOfWeek)} ${formatHeaderDate(date)}`}
