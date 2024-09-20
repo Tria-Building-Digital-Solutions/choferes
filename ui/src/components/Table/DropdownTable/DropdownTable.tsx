@@ -310,7 +310,6 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
           setRowsPerPage(+event.target.value);
           setPage(0);
         }}
-        labelRowsPerPage={TABLE.ROWS_PER_PAGE}
       />
     </Paper>
   );
