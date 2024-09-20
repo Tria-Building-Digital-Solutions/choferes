@@ -35,7 +35,7 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     setShowResults(filteredEmployees.length > 0);
-  }, [filter, employees, filteredEmployees.length]);
+  }, [filter, employees]);
 
   return (
     <div>
@@ -84,7 +84,10 @@ const Dashboard: React.FC = () => {
       </Grid>
       <br />
       {showResults ? (
-        <DropdownTable weekOffset={weekOffset} />
+        <DropdownTable
+          filteredEmployees={filteredEmployees}
+          weekOffset={weekOffset}
+        />
       ) : (
         <Typography variant="h6" color="textSecondary">
           No se encontraron empleados que coincidan con la búsqueda.

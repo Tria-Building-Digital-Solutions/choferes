@@ -32,10 +32,11 @@ import { translateDayToSpanish } from "../../../utils/calculationUtils";
 import { DayOfWeek } from "../../../types/DayOfWeek";
 
 interface DropdownTableProps {
+  filteredEmployees: Employee[]; 
   weekOffset: number;
 }
 
-const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
+const DropdownTable: React.FC<DropdownTableProps> = ({ filteredEmployees, weekOffset }) => {
   const currentWeek = useMemo(
     () => getCurrentWeekDates(weekOffset),
     [weekOffset]
@@ -113,14 +114,14 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ weekOffset }) => {
   };
 
   const sortedEmployees = useMemo(() => {
-    return [...employees].sort((a, b) => {
+    return [...filteredEmployees].sort((a, b) => {
       const nameA = `${a.firstName} ${a.lastName}`;
       const nameB = `${b.firstName} ${b.lastName}`;
       return orderDirection === "asc"
         ? nameA.localeCompare(nameB)
         : nameB.localeCompare(nameA);
     });
-  }, [employees, orderDirection]);
+  }, [filteredEmployees, orderDirection]);
 
   const startIndex = page * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
