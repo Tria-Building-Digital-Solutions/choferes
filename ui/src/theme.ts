@@ -124,6 +124,11 @@ const theme = createTheme({
         root: {
           padding: "16px",
           color: "#333333",
+          border: 'none',
+        },
+        head: {
+          borderBottom: '1px solid rgba(224, 224, 224, 1)', 
+          borderTop: '1px solid rgba(224, 224, 224, 1)',
         },
       },
     },

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Button,
   TextField,
@@ -25,6 +25,11 @@ const ManageSchedules: React.FC = () => {
   const [filteredSchedules, setFilteredSchedules] = useState<Schedule[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [editRowId, setEditRowId] = useState<number | null>(null);
+  const [addFields, setAddFields] = useState({
+    label: "",
+    day: "",
+    hours: "",
+  });
   const [editFields, setEditFields] = useState({
     label: "",
     day: "",
@@ -35,6 +40,13 @@ const ManageSchedules: React.FC = () => {
   const [filter, setFilter] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [errors, setErrors] = useState({
+    label: "",
+    day: "",
+    hours: "",
+  });
+  const [isValid, setIsValid] = useState(false);
+  const [isAttempted, setIsAttempted] = useState(false);
 
   useEffect(() => {
     const fetchSchedules = async () => {
@@ -61,19 +73,54 @@ const ManageSchedules: React.FC = () => {
     setTotalCount(filtered.length);
   }, [schedules, filter]);
 
+  const validateFields = useCallback(() => {
+    const newErrors = { label: "", day: "", hours: "" };
+    const nameRegex = /^[a-zA-Z\s]+$/;
+
+    if (!editFields.label) {
+      newErrors.label = "El campo es requerido";
+    } else if (!nameRegex.test(editFields.label)) {
+      newErrors.label = "El campo solo puede contener letras y espacios";
+    }
+
+    if (!editFields.day) {
+      newErrors.day = "El campo es requerido";
+    }
+
+    if (!editFields.hours) {
+      newErrors.hours = "El campo es requerido";
+    } else if (isNaN(Number(editFields.hours))) {
+      newErrors.hours = "El campo debe ser un número válido";
+    }
+
+    setErrors(newErrors);
+    setIsValid(!newErrors.label && !newErrors.day && !newErrors.hours);
+  }, [editFields]);
+
+  useEffect(() => {
+    validateFields();
+  }, [validateFields]);
+
   const handleAddSchedule = () => {
+    setIsAttempted(true);
+    validateFields();
+
+    if (!isValid) return;
+
     const newSchedule: Schedule = {
       id: Math.max(...schedules.map((schedule) => schedule.id)) + 1,
-      label: editFields.label,
-      day: editFields.day,
-      hours: parseInt(editFields.hours, 10),
+      label: addFields.label,
+      day: addFields.day,
+      hours: parseInt(addFields.hours, 10),
     };
     api
       .post("/schedules", newSchedule)
       .then(() => {
         setSchedules([...schedules, newSchedule]);
         setTotalCount(totalCount + 1);
-        setEditFields({ label: "", day: "", hours: "" });
+        setAddFields({ label: "", day: "", hours: "" });
+        setErrors({ label: "", day: "", hours: "" });
+        setIsAttempted(false);
       })
       .catch((error) => console.error("Error adding schedule", error));
   };
@@ -88,6 +135,8 @@ const ManageSchedules: React.FC = () => {
   };
 
   const handleSaveClick = (id: number) => {
+    if (!isValid) return;
+
     const updatedSchedule = {
       ...editFields,
       hours: parseInt(editFields.hours, 10),
@@ -102,6 +151,7 @@ const ManageSchedules: React.FC = () => {
         );
         setEditRowId(null);
         setEditFields({ label: "", day: "", hours: "" });
+        setErrors({ label: "", day: "", hours: "" });
       })
       .catch((error) => console.error("Error updating schedule", error));
   };
@@ -155,19 +205,22 @@ const ManageSchedules: React.FC = () => {
               label="Label"
               variant="outlined"
               sx={{ mr: 2 }}
-              value={editFields.label}
+              value={addFields.label}
               onChange={(e) =>
-                setEditFields({ ...editFields, label: e.target.value })
+                setAddFields({ ...addFields, label: e.target.value })
               }
+              error={isAttempted && !!errors.label}
+              helperText={isAttempted && errors.label}
             />
             <FormControl variant="outlined" sx={{ mr: 2, width: 200 }}>
               <InputLabel>Día</InputLabel>
               <Select
                 label="Día"
-                value={editFields.day}
+                value={addFields.day}
                 onChange={(e) =>
-                  setEditFields({ ...editFields, day: e.target.value })
+                  setAddFields({ ...addFields, day: e.target.value })
                 }
+                error={isAttempted && !!errors.day}
               >
                 {getDayOptions().map((option) => (
                   <MenuItem key={option.value} value={option.value}>
@@ -175,22 +228,28 @@ const ManageSchedules: React.FC = () => {
                   </MenuItem>
                 ))}
               </Select>
+              {isAttempted && errors.day && (
+                <Typography color="error">{errors.day}</Typography>
+              )}
             </FormControl>
             <TextField
               label="Horas"
               variant="outlined"
               type="number"
               sx={{ mr: 2 }}
-              value={editFields.hours}
+              value={addFields.hours}
               onChange={(e) =>
-                setEditFields({ ...editFields, hours: e.target.value })
+                setAddFields({ ...addFields, hours: e.target.value })
               }
+              error={isAttempted && !!errors.hours}
+              helperText={isAttempted && errors.hours}
             />
             <Button
               variant="contained"
               color="primary"
               sx={{ height: "56px" }}
               onClick={handleAddSchedule}
+              disabled={!isValid}
             >
               Agregar Horario
             </Button>

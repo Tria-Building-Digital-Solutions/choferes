@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Button,
   TextField,
@@ -20,12 +20,16 @@ const ManageEmployees: React.FC = () => {
   const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [editRowId, setEditRowId] = useState<number | null>(null);
+  const [addFields, setAddFields] = useState({ firstName: "", lastName: "" });
   const [editFields, setEditFields] = useState({ firstName: "", lastName: "" });
   const [dialogOpen, setDialogOpen] = useState(false);
   const [employeeToDelete, setEmployeeToDelete] = useState<number | null>(null);
   const [filter, setFilter] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [errors, setErrors] = useState({ firstName: "", lastName: "" });
+  const [isValid, setIsValid] = useState(false);
+  const [isAttempted, setIsAttempted] = useState(false);
 
   useEffect(() => {
     const fetchEmployees = async () => {
@@ -52,18 +56,49 @@ const ManageEmployees: React.FC = () => {
     setTotalCount(filtered.length);
   }, [employees, filter]);
 
+  const validateFields = useCallback(() => {
+    const newErrors = { firstName: "", lastName: "" };
+    const nameRegex = /^[a-zA-Z\s]+$/;
+
+    if (!editFields.firstName) {
+      newErrors.firstName = "El campo es requerido.";
+    } else if (!nameRegex.test(editFields.firstName)) {
+      newErrors.firstName = "El campo solo puede contener letras y espacios.";
+    }
+
+    if (!editFields.lastName) {
+      newErrors.lastName = "El campo es requerido.";
+    } else if (!nameRegex.test(editFields.lastName)) {
+      newErrors.lastName = "El campo solo puede contener letras y espacios.";
+    }
+
+    setErrors(newErrors);
+    setIsValid(!newErrors.firstName && !newErrors.lastName);
+  }, [editFields]);
+
+  useEffect(() => {
+    validateFields();
+  }, [validateFields]);
+
   const handleAddEmployee = () => {
+    setIsAttempted(true);
+    validateFields();
+
+    if (!isValid) return;
+
     const newEmployee: Employee = {
       id: Math.max(...employees.map((employee) => employee.id)) + 1,
-      firstName: editFields.firstName,
-      lastName: editFields.lastName,
+      firstName: addFields.firstName,
+      lastName: addFields.lastName,
     };
     api
       .post("/employees", newEmployee)
       .then(() => {
         setEmployees([...employees, newEmployee]);
         setTotalCount(totalCount + 1);
-        setEditFields({ firstName: "", lastName: "" });
+        setAddFields({ firstName: "", lastName: "" });
+        setErrors({ firstName: "", lastName: "" });
+        setIsAttempted(false);
       })
       .catch((error) => console.error("Error adding employee", error));
   };
@@ -74,9 +109,12 @@ const ManageEmployees: React.FC = () => {
       firstName: employee.firstName,
       lastName: employee.lastName,
     });
+    setErrors({ firstName: "", lastName: "" });
   };
 
   const handleSaveClick = (id: number) => {
+    if (!isValid) return;
+
     const updatedEmployee = {
       ...editFields,
     };
@@ -90,6 +128,7 @@ const ManageEmployees: React.FC = () => {
         );
         setEditRowId(null);
         setEditFields({ firstName: "", lastName: "" });
+        setErrors({ firstName: "", lastName: "" });
       })
       .catch((error) => console.error("Error updating employee", error));
   };
@@ -143,32 +182,37 @@ const ManageEmployees: React.FC = () => {
               label="Nombre"
               variant="outlined"
               sx={{ mr: 2 }}
-              value={editFields.firstName}
+              value={addFields.firstName}
               onChange={(e) =>
-                setEditFields({ ...editFields, firstName: e.target.value })
+                setAddFields({ ...addFields, firstName: e.target.value })
               }
+              error={isAttempted && !!errors.firstName}
+              helperText={isAttempted && errors.firstName}
             />
             <TextField
               label="Apellido"
               variant="outlined"
               sx={{ mr: 2 }}
-              value={editFields.lastName}
+              value={addFields.lastName}
               onChange={(e) =>
-                setEditFields({ ...editFields, lastName: e.target.value })
+                setAddFields({ ...addFields, lastName: e.target.value })
               }
+              error={isAttempted && !!errors.lastName}
+              helperText={isAttempted && errors.lastName}
             />
             <Button
               variant="contained"
               color="primary"
               sx={{ height: "56px" }}
               onClick={handleAddEmployee}
+              disabled={!isValid}
             >
               Agregar Empleado
             </Button>
           </Box>
         </Grid>
       </Grid>
-      <br/>
+      <br />
       {filteredEmployees.length > 0 ? (
         <EditableTable<Employee>
           data={filteredEmployees}
