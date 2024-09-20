@@ -55,36 +55,40 @@ const Dashboard: React.FC = () => {
             onChange={(e) => setFilter(e.target.value)}
           />
         </Grid>
-        <Grid item>
-          <Box display="flex" alignItems="center">
-            <IconButton color="primary" onClick={handlePreviousWeek}>
-              <ArrowBackIosNewRoundedIcon />
-            </IconButton>
-            <IconButton
-              color="primary"
-              disabled={weekOffset === 0}
-              onClick={handleNextWeek}
-            >
-              <ArrowForwardIosRoundedIcon />
-            </IconButton>
-            <Box ml={2}>
-              <Button
-                variant="contained"
-                endIcon={<CalendarTodayRoundedIcon />}
+        {showResults && (
+          <Grid item>
+            <Box display="flex" alignItems="center">
+              <IconButton color="primary" onClick={handlePreviousWeek}>
+                <ArrowBackIosNewRoundedIcon />
+              </IconButton>
+              <IconButton
+                color="primary"
                 disabled={weekOffset === 0}
-                onClick={handleCurrentWeek}
+                onClick={handleNextWeek}
               >
-                Semana Actual
-              </Button>
+                <ArrowForwardIosRoundedIcon />
+              </IconButton>
+              <Box ml={2}>
+                <Button
+                  variant="contained"
+                  endIcon={<CalendarTodayRoundedIcon />}
+                  disabled={weekOffset === 0}
+                  onClick={handleCurrentWeek}
+                >
+                  Semana Actual
+                </Button>
+              </Box>
             </Box>
-          </Box>
-        </Grid>
+          </Grid>
+        )}
       </Grid>
       <br />
       {showResults ? (
         <DropdownTable weekOffset={weekOffset} />
       ) : (
-        <p>No se encontraron empleados con el filtro '{filter}'.</p>
+        <Typography variant="h6" color="textSecondary">
+          No se encontraron empleados que coincidan con la búsqueda.
+        </Typography>
       )}
     </div>
   );
