@@ -16,6 +16,9 @@ import { Employee } from "../models/Employee";
 import api from "../services/api";
 import SearchBar from "../components/SearchBar/SearchBar";
 import PersonAddAlt1RoundedIcon from "@mui/icons-material/PersonAddAlt1Rounded";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFileExcel, faFilePdf } from "@fortawesome/free-solid-svg-icons";
+import { exportFileFormattedDate, exportToExcel, exportToPDF } from "../utils/exportUtils";
 
 const ManageEmployees: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -33,13 +36,9 @@ const ManageEmployees: React.FC = () => {
 
   useEffect(() => {
     const fetchEmployees = async () => {
-      try {
-        const response = await api.get("/employees");
-        setEmployees(response.data);
-        setTotalCount(response.data.length);
-      } catch (error) {
-        console.error("Error fetching employees", error);
-      }
+      const response = await api.get("/employees");
+      setEmployees(response.data);
+      setTotalCount(response.data.length);
     };
 
     fetchEmployees();
@@ -75,14 +74,11 @@ const ManageEmployees: React.FC = () => {
       firstName: addFields.firstName,
       lastName: addFields.lastName,
     };
-    api
-      .post("/employees", newEmployee)
-      .then(() => {
-        setEmployees([...employees, newEmployee]);
-        setTotalCount(totalCount + 1);
-        setAddFields({ firstName: "", lastName: "" });
-      })
-      .catch((error) => console.error("Error adding employee", error));
+    api.post("/employees", newEmployee).then(() => {
+      setEmployees([...employees, newEmployee]);
+      setTotalCount(totalCount + 1);
+      setAddFields({ firstName: "", lastName: "" });
+    });
   };
 
   const handleEditClick = (employee: Employee) => {
@@ -97,18 +93,15 @@ const ManageEmployees: React.FC = () => {
     const updatedEmployee = {
       ...editFields,
     };
-    api
-      .put(`/employees/${id}`, updatedEmployee)
-      .then(() => {
-        setEmployees(
-          employees.map((employee) =>
-            employee.id === id ? { ...employee, ...updatedEmployee } : employee
-          )
-        );
-        setEditRowId(null);
-        setEditFields({ firstName: "", lastName: "" });
-      })
-      .catch((error) => console.error("Error updating employee", error));
+    api.put(`/employees/${id}`, updatedEmployee).then(() => {
+      setEmployees(
+        employees.map((employee) =>
+          employee.id === id ? { ...employee, ...updatedEmployee } : employee
+        )
+      );
+      setEditRowId(null);
+      setEditFields({ firstName: "", lastName: "" });
+    });
   };
 
   const handleOpenDialog = (id: number) => {
@@ -123,24 +116,50 @@ const ManageEmployees: React.FC = () => {
 
   const handleDelete = () => {
     if (employeeToDelete !== null) {
-      api
-        .delete(`/employees/${employeeToDelete}`)
-        .then(() => {
-          setEmployees(
-            employees.filter((employee) => employee.id !== employeeToDelete)
-          );
-          setTotalCount(totalCount - 1);
-          handleCloseDialog();
-        })
-        .catch((error) => console.error("Error deleting employee", error));
+      api.delete(`/employees/${employeeToDelete}`).then(() => {
+        setEmployees(
+          employees.filter((employee) => employee.id !== employeeToDelete)
+        );
+        setTotalCount(totalCount - 1);
+        handleCloseDialog();
+      });
     }
   };
 
   return (
     <Box>
-      <Typography variant="h2" sx={{ flexGrow: 1, margin: "25px 0" }}>
-        Gestionar Empleados
-      </Typography>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        sx={{ mb: 2 }}
+      >
+        <Typography variant="h2" sx={{ flexGrow: 1 }}>
+          Gestionar Empleados
+        </Typography>
+        <Box display="flex" alignItems="center">
+          <Tooltip title="Descargar Excel" arrow>
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{ height: "56px", mr: 1 }}
+              onClick={() => exportToExcel(filteredEmployees, `empleados-${exportFileFormattedDate(new Date())}`)}
+            >
+              <FontAwesomeIcon icon={faFileExcel} size="lg" />
+            </Button>
+          </Tooltip>
+          <Tooltip title="Descargar PDF" arrow>
+            <Button
+              variant="contained"
+              color="secondary"
+              sx={{ height: "56px" }}
+              onClick={() => exportToPDF(filteredEmployees, `empleados-${exportFileFormattedDate(new Date())}`)}
+            >
+              <FontAwesomeIcon icon={faFilePdf} size="lg" />
+            </Button>
+          </Tooltip>
+        </Box>
+      </Box>
       <Grid
         container
         spacing={2}
@@ -221,10 +240,10 @@ const ManageEmployees: React.FC = () => {
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog} color="primary">
+          <Button color="primary" onClick={handleCloseDialog}>
             Cancelar
           </Button>
-          <Button onClick={handleDelete} color="secondary">
+          <Button color="secondary" onClick={handleDelete}>
             Eliminar
           </Button>
         </DialogActions>

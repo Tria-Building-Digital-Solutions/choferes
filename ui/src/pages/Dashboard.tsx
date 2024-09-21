@@ -5,6 +5,13 @@ import SearchBar from "../components/SearchBar/SearchBar";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
 import CalendarTodayRoundedIcon from "@mui/icons-material/CalendarTodayRounded";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFileExcel, faFilePdf } from "@fortawesome/free-solid-svg-icons";
+import {
+  exportFileFormattedDate,
+  exportToExcel,
+  exportToPDF,
+} from "../utils/exportUtils";
 import api from "../services/api";
 import { Employee } from "../models/Employee";
 
@@ -39,9 +46,49 @@ const Dashboard: React.FC = () => {
 
   return (
     <div>
-      <Typography variant="h2" sx={{ flexGrow: 1, margin: "25px 0" }}>
-        Roles
-      </Typography>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        sx={{ mb: 2 }}
+      >
+        <Typography variant="h2" sx={{ flexGrow: 1 }}>
+          Administrar Roles
+        </Typography>
+        <Box display="flex" alignItems="center">
+          <Tooltip title="Descargar Excel" arrow>
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{ height: "56px", mr: 1 }}
+              onClick={() =>
+                exportToExcel(
+                  filteredEmployees,
+                  `roles-${exportFileFormattedDate(new Date())}`
+                )
+              }
+            >
+              <FontAwesomeIcon icon={faFileExcel} size="lg" />
+            </Button>
+          </Tooltip>
+          <Tooltip title="Descargar PDF" arrow>
+            <Button
+              variant="contained"
+              color="secondary"
+              sx={{ height: "56px" }}
+              onClick={() =>
+                exportToPDF(
+                  filteredEmployees,
+                  `roles-${exportFileFormattedDate(new Date())}`
+                )
+              }
+            >
+              <FontAwesomeIcon icon={faFilePdf} size="lg" />
+            </Button>
+          </Tooltip>
+        </Box>
+      </Box>
+
       <Grid
         container
         spacing={2}

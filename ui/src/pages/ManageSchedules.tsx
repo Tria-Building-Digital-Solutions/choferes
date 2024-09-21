@@ -21,6 +21,9 @@ import api from "../services/api";
 import SearchBar from "../components/SearchBar/SearchBar";
 import { getDayOptions } from "../utils/tableUtils";
 import PostAddRoundedIcon from "@mui/icons-material/PostAddRounded";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFileExcel, faFilePdf } from "@fortawesome/free-solid-svg-icons";
+import { exportFileFormattedDate, exportToExcel, exportToPDF } from "../utils/exportUtils";
 
 const ManageSchedules: React.FC = () => {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -46,13 +49,9 @@ const ManageSchedules: React.FC = () => {
 
   useEffect(() => {
     const fetchSchedules = async () => {
-      try {
-        const response = await api.get("/schedules");
-        setSchedules(response.data);
-        setTotalCount(response.data.length);
-      } catch (error) {
-        console.error("Error fetching schedules", error);
-      }
+      const response = await api.get("/schedules");
+      setSchedules(response.data);
+      setTotalCount(response.data.length);
     };
 
     fetchSchedules();
@@ -89,14 +88,11 @@ const ManageSchedules: React.FC = () => {
       day: addFields.day,
       hours: parseInt(addFields.hours, 10),
     };
-    api
-      .post("/schedules", newSchedule)
-      .then(() => {
-        setSchedules([...schedules, newSchedule]);
-        setTotalCount(totalCount + 1);
-        setAddFields({ label: "", day: "", hours: "" });
-      })
-      .catch((error) => console.error("Error adding schedule", error));
+    api.post("/schedules", newSchedule).then(() => {
+      setSchedules([...schedules, newSchedule]);
+      setTotalCount(totalCount + 1);
+      setAddFields({ label: "", day: "", hours: "" });
+    });
   };
 
   const handleEditClick = (schedule: Schedule) => {
@@ -113,18 +109,15 @@ const ManageSchedules: React.FC = () => {
       ...editFields,
       hours: parseInt(editFields.hours, 10),
     };
-    api
-      .put(`/schedules/${id}`, updatedSchedule)
-      .then(() => {
-        setSchedules(
-          schedules.map((schedule) =>
-            schedule.id === id ? { ...schedule, ...updatedSchedule } : schedule
-          )
-        );
-        setEditRowId(null);
-        setEditFields({ label: "", day: "", hours: "" });
-      })
-      .catch((error) => console.error("Error updating schedule", error));
+    api.put(`/schedules/${id}`, updatedSchedule).then(() => {
+      setSchedules(
+        schedules.map((schedule) =>
+          schedule.id === id ? { ...schedule, ...updatedSchedule } : schedule
+        )
+      );
+      setEditRowId(null);
+      setEditFields({ label: "", day: "", hours: "" });
+    });
   };
 
   const handleOpenDialog = (id: number) => {
@@ -139,24 +132,50 @@ const ManageSchedules: React.FC = () => {
 
   const handleDelete = () => {
     if (scheduleToDelete !== null) {
-      api
-        .delete(`/schedules/${scheduleToDelete}`)
-        .then(() => {
-          setSchedules(
-            schedules.filter((schedule) => schedule.id !== scheduleToDelete)
-          );
-          setTotalCount(totalCount - 1);
-          handleCloseDialog();
-        })
-        .catch((error) => console.error("Error deleting schedule", error));
+      api.delete(`/schedules/${scheduleToDelete}`).then(() => {
+        setSchedules(
+          schedules.filter((schedule) => schedule.id !== scheduleToDelete)
+        );
+        setTotalCount(totalCount - 1);
+        handleCloseDialog();
+      });
     }
   };
 
   return (
     <Box>
-      <Typography variant="h2" sx={{ flexGrow: 1, margin: "25px 0" }}>
-        Gestionar Horarios
-      </Typography>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        sx={{ mb: 2 }}
+      >
+        <Typography variant="h2" sx={{ flexGrow: 1 }}>
+          Gestionar Horarios
+        </Typography>
+        <Box display="flex" alignItems="center">
+          <Tooltip title="Descargar Excel" arrow>
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{ height: "56px", mr: 1 }}
+              onClick={() => exportToExcel(filteredSchedules, `horarios-${exportFileFormattedDate(new Date())}`)}
+            >
+              <FontAwesomeIcon icon={faFileExcel} size="lg" />
+            </Button>
+          </Tooltip>
+          <Tooltip title="Descargar PDF" arrow>
+            <Button
+              variant="contained"
+              color="secondary"
+              sx={{ height: "56px" }}
+              onClick={() => exportToPDF(filteredSchedules, `horarios-${exportFileFormattedDate(new Date())}`)}
+            >
+              <FontAwesomeIcon icon={faFilePdf} size="lg" />
+            </Button>
+          </Tooltip>
+        </Box>
+      </Box>
       <Grid
         container
         spacing={2}

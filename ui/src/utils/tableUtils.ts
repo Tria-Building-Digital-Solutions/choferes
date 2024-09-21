@@ -8,6 +8,7 @@ import {
 import { DAYS } from "../constants/constants";
 import { HoursWorked } from "../models/HoursWorked";
 import { Schedule } from "../models/Schedule";
+import { isValidDate } from "./dateUtils";
 
 export const getDayOptions = () => [
   { value: "weekday", label: "Lunes a Jueves" },
@@ -109,8 +110,44 @@ export const calculateTotalHours = (
   }, 0);
 };
 
-const isValidDate = (date: any): boolean => {
-  return date instanceof Date && !isNaN(date.getTime());
+type ColumnTranslations = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  label: string;
+  day: string;
+  hours: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export const getColumnTranslation = (column: string | number | symbol): string => {
+  const translations: ColumnTranslations = {
+    id: "Id",
+    firstName: "Nombre",
+    lastName: "Apellido",
+    label: "Lugar",
+    day: "Día",
+    hours: "Horas",
+    createdAt: "Agregado",
+    updatedAt: "Actualizado",
+  };
+
+  if (typeof column === 'string' && column in translations) {
+    return translations[column as keyof ColumnTranslations];
+  }
+
+  return String(column);
+};
+
+export const getDayTranslation = (day: string): string => {
+  const translations: { [key: string]: string } = {
+    weekday: "Lunes a Jueves",
+    friday: "Viernes",
+    saturday: "Sábado",
+    sunday: "Domingo",
+  };
+  return translations[day] || day;
 };
 
 export const getBackgroundColor = (rowIndex: number) => {

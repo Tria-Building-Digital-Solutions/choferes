@@ -31,7 +31,7 @@ import { STATE, TABLE } from "../../../constants/constants";
 import { HoursWorked } from "../../../models/HoursWorked";
 import { Schedule } from "../../../models/Schedule"; // Mantén esto si lo usas en otro lugar
 import { translateDayToSpanish } from "../../../utils/calculationUtils";
-import { DayOfWeek } from "../../../types/DayOfWeek";
+import { DayOfWeek } from "../../../utils/dayOfWeek";
 
 interface DropdownTableProps {
   filteredEmployees: Employee[];

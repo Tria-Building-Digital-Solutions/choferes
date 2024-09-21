@@ -1,4 +1,4 @@
-import { MonthOfYear } from '../types/MonthOfYear';
+import { MonthOfYear } from './monthOfYear';
 import { translateMonthToSpanish } from './calculationUtils';
 
 export const getCurrentWeekDates = (weekOffset: number) => {
@@ -21,4 +21,8 @@ export const formatHeaderDate = (dateStr: string) => {
   const [day, month] = dateStr.split(" ");
   const transformedMonth = translateMonthToSpanish(month as MonthOfYear);
   return `${day} ${transformedMonth}`;
+};
+
+export const isValidDate = (date: any): boolean => {
+  return date instanceof Date && !isNaN(date.getTime());
 };

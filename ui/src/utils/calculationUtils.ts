@@ -1,5 +1,5 @@
-import { DayOfWeek } from "../types/DayOfWeek";
-import { MonthOfYear } from "../types/MonthOfYear";
+import { DayOfWeek } from "./dayOfWeek";
+import { MonthOfYear } from "./monthOfYear";
 
 export const translateDayToSpanish = (dayInEnglish: DayOfWeek): string => {
   const translationMap: Record<DayOfWeek, string> = {
