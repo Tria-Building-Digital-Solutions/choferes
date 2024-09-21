@@ -66,6 +66,13 @@ const theme = createTheme({
         },
       },
     },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          marginBottom: '25px', 
+        },
+      },
+    },
     MuiButton: {
       styleOverrides: {
         root: {

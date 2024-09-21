@@ -51,7 +51,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [hoursWorked, setHoursWorked] = useState<HoursWorked[]>([]);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [selectedColumn, setSelectedColumn] = useState<
     "weekly" | "biweekly" | "monthly"
   >("weekly");
@@ -98,19 +98,19 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
           new Date(record.date).toISOString().split("T")[0] === formattedDate
       );
 
-      // if (existingRecord) {
-      //   await api.put(`/hours/${existingRecord.id}`, {
-      //     employeeId: employee.id,
-      //     date: formattedDate,
-      //     scheduleId: selectedOption ? selectedOption.id : undefined,
-      //   });
-      // } else {
-      //   await api.post("/hours", {
-      //     employeeId: employee.id,
-      //     date: formattedDate,
-      //     scheduleId: selectedOption ? selectedOption.id : undefined,
-      //   });
-      // }
+      if (existingRecord) {
+        await api.put(`/hours/${existingRecord.id}`, {
+          employeeId: employee.id,
+          date: formattedDate,
+          scheduleId: selectedOption ? selectedOption.id : undefined,
+        });
+      } else {
+        await api.post("/hours", {
+          employeeId: employee.id,
+          date: formattedDate,
+          scheduleId: selectedOption ? selectedOption.id : undefined,
+        });
+      }
 
       setHoursWorked((prevHoursWorked) => [
         ...prevHoursWorked,
@@ -347,7 +347,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
       <Divider />
       <TablePagination
         className="pagination"
-        rowsPerPageOptions={[10, 25, 50]}
+        rowsPerPageOptions={[5, 10, 25]}
         component="div"
         count={sortedEmployees.length}
         rowsPerPage={rowsPerPage}
