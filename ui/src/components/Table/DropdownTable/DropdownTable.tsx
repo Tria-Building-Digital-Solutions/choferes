@@ -98,19 +98,19 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
           new Date(record.date).toISOString().split("T")[0] === formattedDate
       );
 
-      if (existingRecord) {
-        await api.put(`/hours/${existingRecord.id}`, {
-          employeeId: employee.id,
-          date: formattedDate,
-          scheduleId: selectedOption ? selectedOption.id : undefined,
-        });
-      } else {
-        await api.post("/hours", {
-          employeeId: employee.id,
-          date: formattedDate,
-          scheduleId: selectedOption ? selectedOption.id : undefined,
-        });
-      }
+      // if (existingRecord) {
+      //   await api.put(`/hours/${existingRecord.id}`, {
+      //     employeeId: employee.id,
+      //     date: formattedDate,
+      //     scheduleId: selectedOption ? selectedOption.id : undefined,
+      //   });
+      // } else {
+      //   await api.post("/hours", {
+      //     employeeId: employee.id,
+      //     date: formattedDate,
+      //     scheduleId: selectedOption ? selectedOption.id : undefined,
+      //   });
+      // }
 
       setHoursWorked((prevHoursWorked) => [
         ...prevHoursWorked,
@@ -322,7 +322,15 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                   );
                 })}
 
-                <TableCell align="center">
+                <TableCell
+                  align="center"
+                  sx={{
+                    position: "sticky",
+                    right: 0,
+                    zIndex: 2,
+                    backgroundColor: getBackgroundColor(rowIndex),
+                  }}
+                >
                   {calculateTotalHours(
                     currentWeek,
                     hoursWorked,
