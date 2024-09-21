@@ -2,7 +2,16 @@
 
 # dependencies
 /node_modules
-node_modules/
+# FE node_modules
+ui/node_modules/
+# BE node_modules
+api/node_modules/
+
+# FE temporary files
+ui/.eslintcache
+ui/tsconfig.tsbuildinfo
+ui/*.pack
+
 /.pnp
 .pnp.js
 
