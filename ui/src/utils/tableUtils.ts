@@ -9,6 +9,48 @@ import { DAYS } from "../constants/constants";
 import { HoursWorked } from "../models/HoursWorked";
 import { Schedule } from "../models/Schedule";
 import { isValidDate } from "./dateUtils";
+import { Employee } from "../models/Employee";
+import { Dashboard } from "../models/Dashboard";
+import { DayOfWeek } from "./dayOfWeek";
+import { translateDayToSpanish } from "./calculationUtils";
+
+export const collectTableData = (
+  paginatedEmployees: Employee[],
+  currentWeek: { day: string; date: string }[],
+  hoursWorked: HoursWorked[],
+  schedules: Schedule[],
+  selectedColumn: "weekly" | "biweekly" | "monthly"
+): Dashboard[] => {
+  return paginatedEmployees.map((employee) => {
+    const dailyHours = currentWeek.map(({ day, date }) => {
+      const record = hoursWorked.find(
+        (record) =>
+          record.employeeId === employee.id &&
+          new Date(record.date).toISOString().split("T")[0] ===
+            new Date(date).toISOString().split("T")[0]
+      );
+      const hours = record ? String(record.scheduleId) : "Libre";
+      return {
+        day: translateDayToSpanish(day as DayOfWeek),
+        hours,
+      };
+    });
+
+    const totalHours = calculateTotalHours(
+      currentWeek,
+      hoursWorked,
+      schedules,
+      employee.id,
+      selectedColumn
+    );
+
+    return {
+      employeeName: `${employee.firstName} ${employee.lastName}`,
+      dailyHours,
+      totalHours,
+    };
+  });
+};
 
 export const getDayOptions = () => [
   { value: "weekday", label: "Lunes a Jueves" },
@@ -121,7 +163,9 @@ type ColumnTranslations = {
   updatedAt: string;
 };
 
-export const getColumnTranslation = (column: string | number | symbol): string => {
+export const getColumnTranslation = (
+  column: string | number | symbol
+): string => {
   const translations: ColumnTranslations = {
     id: "Id",
     firstName: "Nombre",
@@ -133,7 +177,7 @@ export const getColumnTranslation = (column: string | number | symbol): string =
     updatedAt: "Actualizado",
   };
 
-  if (typeof column === 'string' && column in translations) {
+  if (typeof column === "string" && column in translations) {
     return translations[column as keyof ColumnTranslations];
   }
 
