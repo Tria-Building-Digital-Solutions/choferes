@@ -1,4 +1,8 @@
 export interface BiweeklySummary {
-    firstHalfHours: number; 
-    secondHalfHours: number; 
-  }
+  id?: number;
+  employeeId: number;
+  biweekNumber: number;
+  month: number;
+  year: number;
+  totalHours: number;
+}

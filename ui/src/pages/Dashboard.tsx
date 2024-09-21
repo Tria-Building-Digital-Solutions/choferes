@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, Grid, IconButton, Typography } from "@mui/material";
+import { Box, Button, Grid, Tooltip, Typography } from "@mui/material";
 import DropdownTable from "../components/Table/DropdownTable/DropdownTable";
 import SearchBar from "../components/SearchBar/SearchBar";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
@@ -58,33 +58,49 @@ const Dashboard: React.FC = () => {
         {showResults && (
           <Grid item>
             <Box display="flex" alignItems="center">
-              <IconButton color="primary" onClick={handlePreviousWeek}>
-                <ArrowBackIosNewRoundedIcon />
-              </IconButton>
-              <IconButton
-                color="primary"
-                disabled={weekOffset === 0}
-                onClick={handleNextWeek}
-              >
-                <ArrowForwardIosRoundedIcon />
-              </IconButton>
-              <Box ml={2}>
+              <Tooltip title="Semana Anterior" arrow>
                 <Button
                   variant="contained"
-                  endIcon={<CalendarTodayRoundedIcon />}
-                  disabled={weekOffset === 0}
-                  onClick={handleCurrentWeek}
+                  sx={{ mr: 2, height: "56px" }}
+                  onClick={handlePreviousWeek}
                 >
-                  Semana Actual
+                  <ArrowBackIosNewRoundedIcon />
                 </Button>
-              </Box>
+              </Tooltip>
+              <Tooltip title="Semana Siguiente" arrow>
+                <span>
+                  <Button
+                    variant="contained"
+                    sx={{ mr: 2, height: "56px" }}
+                    disabled={weekOffset === 0}
+                    onClick={handleNextWeek}
+                  >
+                    <ArrowForwardIosRoundedIcon />
+                  </Button>
+                </span>
+              </Tooltip>
+              <Tooltip title="Semana Actual" arrow>
+                <span>
+                  <Button
+                    variant="contained"
+                    sx={{ height: "56px" }}
+                    disabled={weekOffset === 0}
+                    onClick={handleCurrentWeek}
+                  >
+                    <CalendarTodayRoundedIcon />
+                  </Button>
+                </span>
+              </Tooltip>
             </Box>
           </Grid>
         )}
       </Grid>
       <br />
       {showResults ? (
-        <DropdownTable weekOffset={weekOffset} />
+        <DropdownTable
+          filteredEmployees={filteredEmployees}
+          weekOffset={weekOffset}
+        />
       ) : (
         <Typography variant="h6" color="textSecondary">
           No se encontraron empleados que coincidan con la búsqueda.

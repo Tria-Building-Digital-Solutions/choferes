@@ -1,32 +1,24 @@
-import { WeeklySummary } from '../models/WeeklySummary';
+import { MonthOfYear } from '../types/MonthOfYear';
+import { translateMonthToSpanish } from './calculationUtils';
 
-export const getCurrentWeekDates = (offsetWeeks = 0) => {
-  const currentDate = new Date();
-  
-  currentDate.setDate(currentDate.getDate() + offsetWeeks * 7);
-  
-  const currentDay = currentDate.getDay();
-  const startOfWeek = new Date(currentDate);
-  startOfWeek.setDate(currentDate.getDate() - currentDay + 1); 
-  
-  const daysOfWeek: string[] = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-  const monthsOfYear: string[] = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-  
-  const weekDates = daysOfWeek.map((day, index) => {
-    const date = new Date(startOfWeek);
-    date.setDate(startOfWeek.getDate() + index);
+export const getCurrentWeekDates = (weekOffset: number) => {
+  const today = new Date();
+  const firstDayOfWeek = today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1);
+  const startDate = new Date(today.setDate(firstDayOfWeek + weekOffset * 7));
+
+  return Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(startDate);
+    date.setDate(startDate.getDate() + i);
     return {
-      day,
-      date: `${date.getDate()} ${monthsOfYear[date.getMonth()]}`,
+      day: date.toLocaleString('en-US', { weekday: 'long' }), 
+      date: `${date.getDate()} ${date.toLocaleDateString('en-US', { month: 'short' })} ${date.getFullYear()}`,
+      isoDate: date.toISOString(), 
     };
   });
-  
-  return weekDates;
 };
 
-export const initializeWeeklySummary = (employeeId: number): WeeklySummary => {
-  return {
-    weekNumber: 1,
-    totalHours: 0,  
-  }
+export const formatHeaderDate = (dateStr: string) => {
+  const [day, month] = dateStr.split(" ");
+  const transformedMonth = translateMonthToSpanish(month as MonthOfYear);
+  return `${day} ${transformedMonth}`;
 };

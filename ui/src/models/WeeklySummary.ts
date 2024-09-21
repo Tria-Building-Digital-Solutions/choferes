@@ -1,4 +1,8 @@
 export interface WeeklySummary {
-    weekNumber: number;   
-    totalHours: number;   
-  }
+  id?: number;
+  employeeId: number;
+  weekNumber: number;
+  month: number;
+  year: number;
+  totalHours: number;
+}

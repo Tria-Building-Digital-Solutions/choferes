@@ -16,6 +16,7 @@ import {
   MenuItem,
   Tooltip,
   IconButton,
+  Divider,
 } from "@mui/material";
 import { TABLE } from "../../../constants/constants";
 import { ColumnTranslations } from "../../../types/ColumnTransaltion";
@@ -58,6 +59,8 @@ const EditableTable = <T,>({
   setRowsPerPage,
 }: EditableTableProps<T>) => {
   const [isFormValid, setIsFormValid] = useState(false);
+  const [order, setOrder] = useState<"asc" | "desc">("asc");
+  const [orderBy, setOrderBy] = useState<keyof T>(columns[0]);
 
   const validateField = (field: string, value: string): boolean => {
     if (
@@ -91,6 +94,22 @@ const EditableTable = <T,>({
     setPage(newPage);
   };
 
+  const handleSortRequest = (column: keyof T) => {
+    const isAsc = orderBy === column && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
+    setOrderBy(column);
+  };
+
+  const sortedData = [...data].sort((a, b) => {
+    if (a[orderBy] < b[orderBy]) {
+      return order === "asc" ? -1 : 1;
+    }
+    if (a[orderBy] > b[orderBy]) {
+      return order === "asc" ? 1 : -1;
+    }
+    return 0;
+  });
+
   const getColumnTranslation = (column: keyof T): string => {
     const translations: ColumnTranslations<T> = {
       firstName: "Nombre",
@@ -121,7 +140,10 @@ const EditableTable = <T,>({
             <TableRow>
               {columns.map((column) => (
                 <TableCell key={String(column)} className="tableCell">
-                  <TableSortLabel>
+                  <TableSortLabel
+                    direction={orderBy === column ? order : "asc"}
+                    onClick={() => handleSortRequest(column)}
+                  >
                     {getColumnTranslation(column)}
                   </TableSortLabel>
                 </TableCell>
@@ -130,7 +152,7 @@ const EditableTable = <T,>({
             </TableRow>
           </TableHead>
           <TableBody>
-            {data
+            {sortedData
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((row) => (
                 <TableRow key={getRowId(row)}>
@@ -185,6 +207,7 @@ const EditableTable = <T,>({
                       <Tooltip title="Guardar" arrow>
                         <IconButton
                           color="primary"
+                          sx={{ mr: 2 }}
                           onClick={() => handleSaveClick(getRowId(row))}
                           className="saveIconButton"
                           disabled={!isFormValid}
@@ -196,6 +219,7 @@ const EditableTable = <T,>({
                       <Tooltip title="Editar" arrow>
                         <IconButton
                           color="primary"
+                          sx={{ mr: 2 }}
                           onClick={() => handleEditClick(row)}
                           className="saveIconButton"
                         >
@@ -218,7 +242,9 @@ const EditableTable = <T,>({
           </TableBody>
         </Table>
       </TableContainer>
+      <Divider />
       <TablePagination
+        className="pagination"
         rowsPerPageOptions={[5, 10, 25]}
         component="div"
         count={totalCount}
@@ -230,7 +256,6 @@ const EditableTable = <T,>({
           setPage(0);
         }}
         labelRowsPerPage={TABLE.ROWS_PER_PAGE}
-        className="pagination"
       />
     </Paper>
   );

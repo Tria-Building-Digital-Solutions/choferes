@@ -1,16 +1,13 @@
 import { Model, DataTypes } from "sequelize";
 import { Employee } from "./Employee";
-import { BiweeklySummary } from "./BiweeklySummary";
-import { WeeklySummary } from "./WeeklySummary";
 import sequelize from "../config/database";
 
 export class MonthlySummary extends Model {
   public id!: number;
   public employeeId!: number;
-  public month!: string;
-  public weeklySummaries!: WeeklySummary[];
-  public biweeklySummary!: BiweeklySummary; 
-  public monthlyTotal!: number;
+  public month!: number;
+  public year!: number;
+  public totalHours!: number;
 }
 
 MonthlySummary.init(
@@ -22,26 +19,30 @@ MonthlySummary.init(
     },
     employeeId: {
       type: DataTypes.INTEGER,
+      allowNull: false,
       references: {
         model: Employee,
-        key: "id",
+        key: 'id',
       },
-      allowNull: false,
     },
     month: {
-      type: DataTypes.STRING,
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
-    monthlyTotal: {
-      type: DataTypes.FLOAT,
+    year: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    totalHours: {
+      type: DataTypes.DECIMAL(5, 2),
       allowNull: false,
     },
   },
   {
     sequelize,
     modelName: "MonthlySummary",
-    tableName: 'monthly_summary',
+    tableName: "monthly_summary",
   }
 );
 
-MonthlySummary.belongsTo(Employee, { foreignKey: 'employeeId' });
+MonthlySummary.belongsTo(Employee, { foreignKey: "employeeId" });

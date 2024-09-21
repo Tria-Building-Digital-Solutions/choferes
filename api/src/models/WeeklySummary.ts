@@ -6,6 +6,8 @@ export class WeeklySummary extends Model {
   public id!: number;
   public employeeId!: number;
   public weekNumber!: number;
+  public month!: number;
+  public year!: number;
   public totalHours!: number;
 }
 
@@ -18,26 +20,34 @@ WeeklySummary.init(
     },
     employeeId: {
       type: DataTypes.INTEGER,
+      allowNull: false,
       references: {
         model: Employee,
-        key: "id",
+        key: 'id',
       },
-      allowNull: false,
     },
     weekNumber: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    month: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    year: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
     totalHours: {
-      type: DataTypes.FLOAT,
+      type: DataTypes.DECIMAL(5, 2),
       allowNull: false,
     },
   },
   {
     sequelize,
     modelName: "WeeklySummary",
-    tableName: 'weekly_summary',
+    tableName: "weekly_summary",
   }
 );
 
-WeeklySummary.belongsTo(Employee, { foreignKey: 'employeeId' });
+WeeklySummary.belongsTo(Employee, { foreignKey: "employeeId" });

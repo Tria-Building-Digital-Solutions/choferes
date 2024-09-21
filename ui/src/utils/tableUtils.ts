@@ -7,23 +7,7 @@ import {
 } from "date-fns";
 import { DAYS } from "../constants/constants";
 import { HoursWorked } from "../models/HoursWorked";
-import { DaySelection } from "../types/DaySelection";
 import { Schedule } from "../models/Schedule";
-
-const dayMapping: { [key: string]: string } = {
-  "lunes": "weekday",
-  "martes": "weekday",
-  "miércoles": "weekday",
-  "jueves": "weekday",
-  "viernes": "friday",
-  "sábado": "saturday",
-  "domingo": "sunday",
-};
-
-export const getMappedDay = (dayFilter: string) => {
-  const lowerCaseDay = dayFilter.toLowerCase();
-  return dayMapping[lowerCaseDay] || lowerCaseDay; 
-};
 
 export const getDayOptions = () => [
   { value: "weekday", label: "Lunes a Jueves" },
@@ -39,13 +23,13 @@ export const getOptionsForDay = (
   let dayFilter = "";
 
   switch (day.toLowerCase()) {
-    case "viernes":
+    case "friday":
       dayFilter = DAYS.FRIDAY;
       break;
-    case "sábado":
+    case "saturday":
       dayFilter = DAYS.SATURDAY;
       break;
-    case "domingo":
+    case "sunday":
       dayFilter = DAYS.SUNDAY;
       break;
     default:
@@ -87,6 +71,7 @@ const getMonthlyDates = (startDate: Date) => {
 export const calculateTotalHours = (
   currentWeek: { day: string; date: string }[],
   hoursWorked: HoursWorked[],
+  schedules: Schedule[],
   employeeId: number,
   period: "weekly" | "biweekly" | "monthly"
 ): number => {
@@ -108,28 +93,20 @@ export const calculateTotalHours = (
   }
 
   return days.reduce((total, { day }) => {
-    const dayHours =
-      hoursWorked.find(
-        (record) =>
-          record.employeeId === employeeId &&
-          isValidDate(record.date) &&
-          format(record.date, "EEEE") === day
-      )?.hours || 0;
+    const record = hoursWorked.find(
+      (record: HoursWorked) =>
+        record.employeeId === employeeId &&
+        isValidDate(record.date) &&
+        format(record.date, "EEEE") === day
+    );
 
-    return total + dayHours;
+    const scheduleHours = record
+      ? schedules.find((schedule) => schedule.id === record.scheduleId)
+          ?.hours || 0
+      : 0;
+
+    return total + scheduleHours;
   }, 0);
-};
-
-export const convertWeekDataToHoursWorked = (
-  weekData: Record<string, Record<string, DaySelection>>
-): HoursWorked[] => {
-  return Object.entries(weekData).flatMap(([employeeId, days]) =>
-    Object.entries(days).map(([day, selection]) => ({
-      employeeId: parseInt(employeeId),
-      date: new Date(day),
-      hours: (selection as DaySelection).hours,
-    }))
-  );
 };
 
 const isValidDate = (date: any): boolean => {
