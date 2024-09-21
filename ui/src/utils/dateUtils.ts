@@ -1,4 +1,3 @@
-import { WeeklySummary } from '../models/WeeklySummary';
 import { MonthOfYear } from '../types/MonthOfYear';
 import { translateMonthToSpanish } from './calculationUtils';
 
@@ -17,14 +16,6 @@ export const getCurrentWeekDates = (weekOffset: number) => {
     };
   });
 };
-
-export const initializeWeeklySummary = (employeeId: number): WeeklySummary => {
-  return {
-    weekNumber: 1,
-    totalHours: 0,  
-  }
-};
-
 
 export const formatHeaderDate = (dateStr: string) => {
   const [day, month] = dateStr.split(" ");

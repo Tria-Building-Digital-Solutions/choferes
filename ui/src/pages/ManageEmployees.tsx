@@ -9,11 +9,13 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Tooltip,
 } from "@mui/material";
 import EditableTable from "../components/Table/EditableTable/EditableTable";
 import { Employee } from "../models/Employee";
 import api from "../services/api";
 import SearchBar from "../components/SearchBar/SearchBar";
+import PersonAddAlt1RoundedIcon from "@mui/icons-material/PersonAddAlt1Rounded";
 
 const ManageEmployees: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -56,8 +58,10 @@ const ManageEmployees: React.FC = () => {
 
   const validateFields = useCallback(() => {
     const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
-    const isFirstNameValid = nameRegex.test(addFields.firstName) && addFields.firstName !== "";
-    const isLastNameValid = nameRegex.test(addFields.lastName) && addFields.lastName !== "";
+    const isFirstNameValid =
+      nameRegex.test(addFields.firstName) && addFields.firstName !== "";
+    const isLastNameValid =
+      nameRegex.test(addFields.lastName) && addFields.lastName !== "";
     setIsValid(isFirstNameValid && isLastNameValid);
   }, [addFields]);
 
@@ -170,15 +174,17 @@ const ManageEmployees: React.FC = () => {
                 setAddFields({ ...addFields, lastName: e.target.value })
               }
             />
-            <Button
-              variant="contained"
-              color="primary"
-              sx={{ height: "56px" }}
-              onClick={handleAddEmployee}
-              disabled={!isValid}
-            >
-              Agregar Empleado
-            </Button>
+            <Tooltip title="Agregar Empleado" arrow>
+              <Button
+                variant="contained"
+                color="primary"
+                sx={{ height: "56px" }}
+                onClick={handleAddEmployee}
+                disabled={!isValid}
+              >
+                <PersonAddAlt1RoundedIcon />
+              </Button>
+            </Tooltip>
           </Box>
         </Grid>
       </Grid>

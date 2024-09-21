@@ -5,8 +5,10 @@ import sequelize from "../config/database";
 export class BiweeklySummary extends Model {
   public id!: number;
   public employeeId!: number;
-  public firstHalfHours!: number;
-  public secondHalfHours!: number;
+  public biweekNumber!: number;
+  public month!: number;
+  public year!: number;
+  public totalHours!: number;
 }
 
 BiweeklySummary.init(
@@ -18,26 +20,34 @@ BiweeklySummary.init(
     },
     employeeId: {
       type: DataTypes.INTEGER,
+      allowNull: false,
       references: {
         model: Employee,
-        key: "id",
+        key: 'id',
       },
+    },
+    biweekNumber: {
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
-    firstHalfHours: {
-      type: DataTypes.FLOAT,
+    month: {
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
-    secondHalfHours: {
-      type: DataTypes.FLOAT,
+    year: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    totalHours: {
+      type: DataTypes.DECIMAL(5, 2),
       allowNull: false,
     },
   },
   {
     sequelize,
     modelName: "BiweeklySummary",
-    tableName: 'biweekly_summary',
+    tableName: "biweekly_summary",
   }
 );
 
-BiweeklySummary.belongsTo(Employee, { foreignKey: 'employeeId' });
+BiweeklySummary.belongsTo(Employee, { foreignKey: "employeeId" });

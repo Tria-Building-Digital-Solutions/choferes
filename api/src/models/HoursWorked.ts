@@ -1,12 +1,13 @@
 import { Model, DataTypes } from "sequelize";
 import { Employee } from "./Employee";
+import { Schedule } from "./Schedule";
 import sequelize from "../config/database";
 
 export class HoursWorked extends Model {
   public id!: number;
   public employeeId!: number;
   public date!: Date;
-  public hours!: number;
+  public scheduleId!: number;
 }
 
 HoursWorked.init(
@@ -24,9 +25,13 @@ HoursWorked.init(
       type: DataTypes.DATE,
       allowNull: false,
     },
-    hours: {
+    scheduleId: { 
       type: DataTypes.INTEGER,
       allowNull: false,
+      references: {
+        model: Schedule, 
+        key: 'id',
+      },
     },
   },
   {
@@ -37,3 +42,4 @@ HoursWorked.init(
 );
 
 HoursWorked.belongsTo(Employee, { foreignKey: 'employeeId' });
+HoursWorked.belongsTo(Schedule, { foreignKey: 'scheduleId' });

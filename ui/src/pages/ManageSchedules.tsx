@@ -13,12 +13,14 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Tooltip,
 } from "@mui/material";
 import EditableTable from "../components/Table/EditableTable/EditableTable";
 import { Schedule } from "../models/Schedule";
 import api from "../services/api";
 import SearchBar from "../components/SearchBar/SearchBar";
 import { getDayOptions } from "../utils/tableUtils";
+import PostAddRoundedIcon from "@mui/icons-material/PostAddRounded";
 
 const ManageSchedules: React.FC = () => {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -69,7 +71,8 @@ const ManageSchedules: React.FC = () => {
 
   const validateFields = useCallback(() => {
     const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
-    const isLabelValid = nameRegex.test(addFields.label) && addFields.label !== "";
+    const isLabelValid =
+      nameRegex.test(addFields.label) && addFields.label !== "";
     const isDayValid = addFields.day !== "";
     const isHoursValid = /^[0-9]+$/.test(addFields.hours);
     setIsValid(isLabelValid && isDayValid && isHoursValid);
@@ -204,15 +207,17 @@ const ManageSchedules: React.FC = () => {
                 setAddFields({ ...addFields, hours: e.target.value })
               }
             />
-            <Button
-              variant="contained"
-              color="primary"
-              sx={{ height: "56px" }}
-              onClick={handleAddSchedule}
-              disabled={!isValid}
-            >
-              Agregar Horario
-            </Button>
+            <Tooltip title="Agregar Horario" arrow>
+              <Button
+                variant="contained"
+                color="primary"
+                sx={{ height: "56px" }}
+                onClick={handleAddSchedule}
+                disabled={!isValid}
+              >
+                <PostAddRoundedIcon />
+              </Button>
+            </Tooltip>
           </Box>
         </Grid>
       </Grid>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, Grid, IconButton, Typography } from "@mui/material";
+import { Box, Button, Grid, Tooltip, Typography } from "@mui/material";
 import DropdownTable from "../components/Table/DropdownTable/DropdownTable";
 import SearchBar from "../components/SearchBar/SearchBar";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
@@ -35,7 +35,7 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     setShowResults(filteredEmployees.length > 0);
-  }, [filter, employees]);
+  }, [filter, employees, filteredEmployees.length]);
 
   return (
     <div>
@@ -58,26 +58,35 @@ const Dashboard: React.FC = () => {
         {showResults && (
           <Grid item>
             <Box display="flex" alignItems="center">
-              <IconButton color="primary" onClick={handlePreviousWeek}>
-                <ArrowBackIosNewRoundedIcon />
-              </IconButton>
-              <IconButton
-                color="primary"
-                disabled={weekOffset === 0}
-                onClick={handleNextWeek}
-              >
-                <ArrowForwardIosRoundedIcon />
-              </IconButton>
-              <Box ml={2}>
+              <Tooltip title="Semana Anterior" arrow>
                 <Button
                   variant="contained"
-                  endIcon={<CalendarTodayRoundedIcon />}
+                  sx={{ mr: 2, height: "56px" }}
+                  onClick={handlePreviousWeek}
+                >
+                  <ArrowBackIosNewRoundedIcon />
+                </Button>
+              </Tooltip>
+              <Tooltip title="Semana Siguiente" arrow>
+                <Button
+                  variant="contained"
+                  sx={{ mr: 2, height: "56px" }}
+                  disabled={weekOffset === 0}
+                  onClick={handleNextWeek}
+                >
+                  <ArrowForwardIosRoundedIcon />
+                </Button>
+              </Tooltip>
+              <Tooltip title="Semana Actual" arrow>
+                <Button
+                  variant="contained"
+                  sx={{ height: "56px" }}
                   disabled={weekOffset === 0}
                   onClick={handleCurrentWeek}
                 >
-                  Semana Actual
+                  <CalendarTodayRoundedIcon />
                 </Button>
-              </Box>
+              </Tooltip>
             </Box>
           </Grid>
         )}

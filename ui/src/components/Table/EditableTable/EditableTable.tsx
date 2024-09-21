@@ -62,7 +62,12 @@ const EditableTable = <T,>({
   const [orderBy, setOrderBy] = useState<keyof T>(columns[0]);
 
   const validateField = (field: string, value: string): boolean => {
-    if (field === "firstName" || field === "lastName" || field === "label" || field === "day") {
+    if (
+      field === "firstName" ||
+      field === "lastName" ||
+      field === "label" ||
+      field === "day"
+    ) {
       return /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/.test(value);
     } else if (field === "hours") {
       return /^[0-9]+$/.test(value);
@@ -235,6 +240,7 @@ const EditableTable = <T,>({
         </Table>
       </TableContainer>
       <TablePagination
+        className="pagination"
         rowsPerPageOptions={[5, 10, 25]}
         component="div"
         count={totalCount}
@@ -246,7 +252,6 @@ const EditableTable = <T,>({
           setPage(0);
         }}
         labelRowsPerPage={TABLE.ROWS_PER_PAGE}
-        className="pagination"
       />
     </Paper>
   );

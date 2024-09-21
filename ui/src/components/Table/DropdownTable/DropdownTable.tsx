@@ -16,10 +16,12 @@ import {
   Divider,
   Typography,
 } from "@mui/material";
-import { formatHeaderDate, getCurrentWeekDates } from "../../../utils/dateUtils";
+import {
+  formatHeaderDate,
+  getCurrentWeekDates,
+} from "../../../utils/dateUtils";
 import {
   calculateTotalHours,
-  convertWeekDataToHoursWorked,
   getBackgroundColor,
   getOptionsForDay,
 } from "../../../utils/tableUtils";
@@ -27,16 +29,19 @@ import api from "../../../services/api";
 import { Employee } from "../../../models/Employee";
 import { STATE, TABLE } from "../../../constants/constants";
 import { HoursWorked } from "../../../models/HoursWorked";
-import { Schedule } from "../../../models/Schedule";
+import { Schedule } from "../../../models/Schedule"; // Mantén esto si lo usas en otro lugar
 import { translateDayToSpanish } from "../../../utils/calculationUtils";
 import { DayOfWeek } from "../../../types/DayOfWeek";
 
 interface DropdownTableProps {
-  filteredEmployees: Employee[]; 
+  filteredEmployees: Employee[];
   weekOffset: number;
 }
 
-const DropdownTable: React.FC<DropdownTableProps> = ({ filteredEmployees, weekOffset }) => {
+const DropdownTable: React.FC<DropdownTableProps> = ({
+  filteredEmployees,
+  weekOffset,
+}) => {
   const currentWeek = useMemo(
     () => getCurrentWeekDates(weekOffset),
     [weekOffset]
@@ -44,9 +49,6 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ filteredEmployees, weekOf
 
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
-  const [weekData, setWeekData] = useState<
-    Record<number, Record<string, { label: string; hours: number }>>
-  >({});
   const [hoursWorked, setHoursWorked] = useState<HoursWorked[]>([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -66,15 +68,14 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ filteredEmployees, weekOf
       setSchedules(response.data);
     };
 
-    const fetchWeekData = async () => {
-      const response = await api.get(`/hours?weekOffset=${weekOffset}`);
-      setWeekData(response.data);
-      setHoursWorked(convertWeekDataToHoursWorked(response.data));
+    const fetchHoursWorked = async () => {
+      const response = await api.get("/hours");
+      setHoursWorked(response.data);
     };
 
     fetchEmployees();
     fetchSchedules();
-    fetchWeekData();
+    fetchHoursWorked();
   }, [weekOffset]);
 
   const handleChange = async (
@@ -87,29 +88,38 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ filteredEmployees, weekOf
     const selectedOption = options.find(
       (option) => option.label === selectedLabel
     );
-    const selectedHours = selectedOption ? selectedOption.hours : 0;
 
     if (employee.id !== undefined) {
-      const date = new Date().toISOString();
+      const formattedDate = new Date(date).toISOString().split("T")[0];
 
-      await api.put(`/hours/${employee.id}`, {
-        employeeId: employee.id,
-        date: new Date(date).toISOString(),
-        hours: selectedHours,
-      });
+      const existingRecord = hoursWorked.find(
+        (record) =>
+          record.employeeId === employee.id &&
+          new Date(record.date).toISOString().split("T")[0] === formattedDate
+      );
 
-      const updatedWeekData = { ...weekData };
-
-      if (!updatedWeekData[employee.id]) {
-        updatedWeekData[employee.id] = {};
+      if (existingRecord) {
+        await api.put(`/hours/${existingRecord.id}`, {
+          employeeId: employee.id,
+          date: formattedDate,
+          scheduleId: selectedOption ? selectedOption.id : undefined,
+        });
+      } else {
+        await api.post("/hours", {
+          employeeId: employee.id,
+          date: formattedDate,
+          scheduleId: selectedOption ? selectedOption.id : undefined,
+        });
       }
 
-      updatedWeekData[employee.id][day] = {
-        label: selectedLabel,
-        hours: selectedHours,
-      };
-
-      setWeekData(updatedWeekData);
+      setHoursWorked((prevHoursWorked) => [
+        ...prevHoursWorked,
+        {
+          employeeId: employee.id,
+          date: new Date(formattedDate),
+          scheduleId: selectedOption ? selectedOption.id : undefined,
+        },
+      ]);
     }
   };
 
@@ -172,7 +182,9 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ filteredEmployees, weekOf
               {currentWeek.map(({ day, date }) => {
                 return (
                   <TableCell key={day} align="center">
-                    {`${translateDayToSpanish(day as DayOfWeek)} ${formatHeaderDate(date)}`}
+                    {`${translateDayToSpanish(
+                      day as DayOfWeek
+                    )} ${formatHeaderDate(date)}`}
                   </TableCell>
                 );
               })}
@@ -229,11 +241,16 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ filteredEmployees, weekOf
                     })
                     .replace(",", "");
                   const isFutureDate = new Date(date) > today;
+
                   const selectedLabel =
-                    employee.id !== undefined &&
-                    weekData[employee.id]?.[day]?.label
-                      ? weekData[employee.id][day].label
-                      : STATE.FREE;
+                    (employee.id !== undefined &&
+                      hoursWorked.find(
+                        (record) =>
+                          record.employeeId === employee.id &&
+                          new Date(record.date).toISOString().split("T")[0] ===
+                            new Date(date).toISOString().split("T")[0]
+                      )?.scheduleId) ||
+                    STATE.FREE;
 
                   const options = getOptionsForDay(day, schedules);
 
@@ -276,109 +293,45 @@ const DropdownTable: React.FC<DropdownTableProps> = ({ filteredEmployees, weekOf
                         <Select
                           value={validLabel}
                           onChange={(e) =>
-                            handleChange(
-                              employee,
-                              day,
-                              new Date(date),
-                              e.target.value
-                            )
+                            handleChange(employee, day, new Date(date), String(e.target.value))
                           }
                           disabled={isFutureDate}
                         >
-                          {sortedOptions.reduce<React.ReactNode[]>(
-                            (acc, option, index) => {
-                              acc.push(
-                                <MenuItem key={option.id} value={option.label}>
-                                  {option.label}
-                                </MenuItem>
-                              );
-                              if (option.label === "Ausencia" && index > 0) {
-                                acc.splice(
-                                  acc.length - 1,
-                                  0,
-                                  <Divider key={`divider-${option.id}`} />
-                                );
-                              }
-                              return acc;
-                            },
-                            []
-                          )}
+                          {sortedOptions.map((option) => (
+                            <MenuItem key={option.id} value={option.label}>
+                              {option.label}
+                            </MenuItem>
+                          ))}
                         </Select>
                       </FormControl>
                     </TableCell>
                   );
                 })}
-                {selectedColumn === "weekly" && (
-                  <TableCell
-                    align="center"
-                    sx={{
-                      position: "sticky",
-                      right: 0,
-                      zIndex: 2,
-                      backgroundColor: getBackgroundColor(rowIndex),
-                    }}
-                  >
-                    {employee.id !== undefined &&
-                      calculateTotalHours(
-                        currentWeek,
-                        hoursWorked,
-                        employee.id,
-                        "weekly"
-                      )}
-                  </TableCell>
-                )}
-                {selectedColumn === "biweekly" && (
-                  <TableCell
-                    align="center"
-                    sx={{
-                      position: "sticky",
-                      right: 0,
-                      zIndex: 2,
-                      backgroundColor: getBackgroundColor(rowIndex),
-                    }}
-                  >
-                    {employee.id !== undefined &&
-                      calculateTotalHours(
-                        currentWeek,
-                        hoursWorked,
-                        employee.id,
-                        "biweekly"
-                      )}
-                  </TableCell>
-                )}
-                {selectedColumn === "monthly" && (
-                  <TableCell
-                    align="center"
-                    sx={{
-                      position: "sticky",
-                      right: 0,
-                      zIndex: 2,
-                      backgroundColor: getBackgroundColor(rowIndex),
-                    }}
-                  >
-                    {employee.id !== undefined &&
-                      calculateTotalHours(
-                        currentWeek,
-                        hoursWorked,
-                        employee.id,
-                        "monthly"
-                      )}
-                  </TableCell>
-                )}
+                <TableCell align="right">
+                  {calculateTotalHours(
+                    currentWeek,
+                    hoursWorked,
+                    schedules,
+                    employee.id,
+                    selectedColumn,
+                  )}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
+      <Divider />
       <TablePagination
-        rowsPerPageOptions={[5, 10, 25]}
+        className="pagination"
+        rowsPerPageOptions={[10, 25, 50]}
         component="div"
-        count={employees.length}
+        count={sortedEmployees.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={(event, newPage) => setPage(newPage)}
         onRowsPerPageChange={(event) => {
-          setRowsPerPage(+event.target.value);
+          setRowsPerPage(parseInt(event.target.value, 10));
           setPage(0);
         }}
         labelRowsPerPage={TABLE.ROWS_PER_PAGE}
