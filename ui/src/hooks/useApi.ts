@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import api from '../services/api';
 
 interface Identifiable {
-  id: number; 
+  id: number;
 }
 
 const useApi = <T extends Identifiable>(url: string) => {

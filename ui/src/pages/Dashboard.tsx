@@ -14,20 +14,32 @@ import {
 } from "../utils/exportUtils";
 import api from "../services/api";
 import { Employee } from "../models/Employee";
+import { Schedule } from "../models/Schedule";
+import { HoursWorked } from "../models/HoursWorked";
 
 const Dashboard: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [hoursWorked, setHoursWorked] = useState<HoursWorked[]>([]);
   const [weekOffset, setWeekOffset] = useState(0);
   const [filter, setFilter] = useState("");
   const [showResults, setShowResults] = useState(true);
 
   useEffect(() => {
-    const fetchEmployees = async () => {
-      const response = await api.get("/employees");
-      setEmployees(response.data);
+    const fetchData = async () => {
+      const [employeesResponse, schedulesResponse, hoursResponse] =
+        await Promise.all([
+          api.get("/employees"),
+          api.get("/schedules"),
+          api.get("/hours"),
+        ]);
+
+      setEmployees(employeesResponse.data);
+      setSchedules(schedulesResponse.data);
+      setHoursWorked(hoursResponse.data);
     };
 
-    fetchEmployees();
+    fetchData();
   }, []);
 
   const handleNextWeek = () => setWeekOffset(weekOffset + 1);
@@ -44,8 +56,17 @@ const Dashboard: React.FC = () => {
     setShowResults(filteredEmployees.length > 0);
   }, [filter, employees, filteredEmployees.length]);
 
+  const handleHoursChange = (
+    employee: Employee,
+    day: string,
+    date: Date,
+    selectedLabel: string
+  ) => {
+    // Implement your logic to handle hours change
+  };
+
   return (
-    <div>
+    <Box>
       <Box
         display="flex"
         justifyContent="space-between"
@@ -143,17 +164,21 @@ const Dashboard: React.FC = () => {
         )}
       </Grid>
       <br />
+
       {showResults ? (
         <DropdownTable
           filteredEmployees={filteredEmployees}
+          schedules={schedules}
+          hoursWorked={hoursWorked}
           weekOffset={weekOffset}
+          onHandleChange={handleHoursChange}
         />
       ) : (
         <Typography variant="h6" color="textSecondary">
           No se encontraron empleados que coincidan con la búsqueda.
         </Typography>
       )}
-    </div>
+    </Box>
   );
 };
 
