@@ -37,7 +37,7 @@ interface DropdownTableProps {
   weekOffset: number;
   schedules: Schedule[];
   hoursWorked: HoursWorked[];
-  onHandleChange: (
+  handleChange: (
     employee: Employee,
     day: string,
     date: Date,
@@ -50,7 +50,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
   weekOffset,
   schedules,
   hoursWorked,
-  onHandleChange,
+  handleChange,
 }) => {
   const currentWeek = useMemo(
     () => getCurrentWeekDates(weekOffset),
@@ -242,7 +242,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                         <Select
                           value={validLabel}
                           onChange={(e) =>
-                            onHandleChange(
+                            handleChange(
                               employee,
                               day,
                               new Date(date),

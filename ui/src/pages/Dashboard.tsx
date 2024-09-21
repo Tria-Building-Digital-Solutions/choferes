@@ -12,35 +12,28 @@ import {
   exportToExcel,
   exportToPDF,
 } from "../utils/exportUtils";
-import api from "../services/api";
 import { Employee } from "../models/Employee";
-import { Schedule } from "../models/Schedule";
-import { HoursWorked } from "../models/HoursWorked";
+import { useEmployees } from "../hooks/useEmployee";
+import { useSchedules } from "../hooks/useSchedule";
+import { useHours } from "../hooks/useHours";
 
 const Dashboard: React.FC = () => {
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [schedules, setSchedules] = useState<Schedule[]>([]);
-  const [hoursWorked, setHoursWorked] = useState<HoursWorked[]>([]);
+  const { employees, fetchEmployees } = useEmployees();
+  const { schedules, fetchSchedules } = useSchedules();
+  const { hoursWorked, fetchHours } = useHours();
   const [weekOffset, setWeekOffset] = useState(0);
   const [filter, setFilter] = useState("");
   const [showResults, setShowResults] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
-      const [employeesResponse, schedulesResponse, hoursResponse] =
-        await Promise.all([
-          api.get("/employees"),
-          api.get("/schedules"),
-          api.get("/hours"),
-        ]);
-
-      setEmployees(employeesResponse.data);
-      setSchedules(schedulesResponse.data);
-      setHoursWorked(hoursResponse.data);
+      await fetchEmployees();
+      await fetchSchedules();
+      await fetchHours();
     };
 
     fetchData();
-  }, []);
+  }, [fetchEmployees, fetchSchedules, fetchHours]);
 
   const handleNextWeek = () => setWeekOffset(weekOffset + 1);
   const handlePreviousWeek = () => setWeekOffset(weekOffset - 1);
@@ -56,13 +49,18 @@ const Dashboard: React.FC = () => {
     setShowResults(filteredEmployees.length > 0);
   }, [filter, employees, filteredEmployees.length]);
 
-  const handleHoursChange = (
+  const handleChange = (
     employee: Employee,
     day: string,
     date: Date,
-    selectedLabel: string
+    selectedLabel: string,
   ) => {
-    // Implement your logic to handle hours change
+    console.log("employee: ", employee);
+    console.log("day: ", day);
+    console.log("date: ", date);
+    console.log("selectedLabel: ", selectedLabel);
+
+    // Update hours worked here
   };
 
   return (
@@ -171,7 +169,7 @@ const Dashboard: React.FC = () => {
           schedules={schedules}
           hoursWorked={hoursWorked}
           weekOffset={weekOffset}
-          onHandleChange={handleHoursChange}
+          handleChange={handleChange}
         />
       ) : (
         <Typography variant="h6" color="textSecondary">
