@@ -189,7 +189,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                 );
               })}
               <TableCell
-                align="right"
+                align="center"
                 sx={{
                   position: "sticky",
                   right: 0,
@@ -281,6 +281,19 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                     ? selectedLabel
                     : sortedOptions[0]?.label || "";
 
+                  const menuItems = sortedOptions.map((option, index) => {
+                    const items = [
+                      <MenuItem key={option.id} value={option.label}>
+                        {option.label}
+                      </MenuItem>,
+                    ];
+
+                    if (option.label === "Ausencia" && index > 0) {
+                      items.unshift(<Divider key="divider" />);
+                    }
+
+                    return items;
+                  });
                   return (
                     <TableCell
                       key={day}
@@ -293,27 +306,29 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                         <Select
                           value={validLabel}
                           onChange={(e) =>
-                            handleChange(employee, day, new Date(date), String(e.target.value))
+                            handleChange(
+                              employee,
+                              day,
+                              new Date(date),
+                              String(e.target.value)
+                            )
                           }
                           disabled={isFutureDate}
                         >
-                          {sortedOptions.map((option) => (
-                            <MenuItem key={option.id} value={option.label}>
-                              {option.label}
-                            </MenuItem>
-                          ))}
+                          {menuItems}
                         </Select>
                       </FormControl>
                     </TableCell>
                   );
                 })}
-                <TableCell align="right">
+
+                <TableCell align="center">
                   {calculateTotalHours(
                     currentWeek,
                     hoursWorked,
                     schedules,
                     employee.id,
-                    selectedColumn,
+                    selectedColumn
                   )}
                 </TableCell>
               </TableRow>

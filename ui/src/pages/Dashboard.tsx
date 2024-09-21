@@ -68,24 +68,28 @@ const Dashboard: React.FC = () => {
                 </Button>
               </Tooltip>
               <Tooltip title="Semana Siguiente" arrow>
-                <Button
-                  variant="contained"
-                  sx={{ mr: 2, height: "56px" }}
-                  disabled={weekOffset === 0}
-                  onClick={handleNextWeek}
-                >
-                  <ArrowForwardIosRoundedIcon />
-                </Button>
+                <span>
+                  <Button
+                    variant="contained"
+                    sx={{ mr: 2, height: "56px" }}
+                    disabled={weekOffset === 0}
+                    onClick={handleNextWeek}
+                  >
+                    <ArrowForwardIosRoundedIcon />
+                  </Button>
+                </span>
               </Tooltip>
               <Tooltip title="Semana Actual" arrow>
-                <Button
-                  variant="contained"
-                  sx={{ height: "56px" }}
-                  disabled={weekOffset === 0}
-                  onClick={handleCurrentWeek}
-                >
-                  <CalendarTodayRoundedIcon />
-                </Button>
+                <span>
+                  <Button
+                    variant="contained"
+                    sx={{ height: "56px" }}
+                    disabled={weekOffset === 0}
+                    onClick={handleCurrentWeek}
+                  >
+                    <CalendarTodayRoundedIcon />
+                  </Button>
+                </span>
               </Tooltip>
             </Box>
           </Grid>

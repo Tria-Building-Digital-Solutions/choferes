@@ -16,6 +16,7 @@ import {
   MenuItem,
   Tooltip,
   IconButton,
+  Divider,
 } from "@mui/material";
 import { TABLE } from "../../../constants/constants";
 import { ColumnTranslations } from "../../../types/ColumnTransaltion";
@@ -206,6 +207,7 @@ const EditableTable = <T,>({
                       <Tooltip title="Guardar" arrow>
                         <IconButton
                           color="primary"
+                          sx={{ mr: 2 }}
                           onClick={() => handleSaveClick(getRowId(row))}
                           className="saveIconButton"
                           disabled={!isFormValid}
@@ -217,6 +219,7 @@ const EditableTable = <T,>({
                       <Tooltip title="Editar" arrow>
                         <IconButton
                           color="primary"
+                          sx={{ mr: 2 }}
                           onClick={() => handleEditClick(row)}
                           className="saveIconButton"
                         >
@@ -239,6 +242,7 @@ const EditableTable = <T,>({
           </TableBody>
         </Table>
       </TableContainer>
+      <Divider />
       <TablePagination
         className="pagination"
         rowsPerPageOptions={[5, 10, 25]}
