@@ -1,8 +1,14 @@
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
-import { SvgIconProps } from "@mui/material";
+import { capitalize, SvgIconProps } from "@mui/material";
 import { getColumnTranslation } from "./stringUtils";
+import { translateDayToSpanish } from "./calculationUtils";
+import { calculateTotalHours } from "./tableUtils";
+import { Employee } from "../models/Employee";
+import { HoursWorked } from "../models/HoursWorked";
+import { Schedule } from "../models/Schedule";
+import { DayOfWeek } from "./dayOfWeek";
 
 export const exportToExcel = (data: any[], fileName: string) => {
   const headers = Object.keys(data[0]).map(getColumnTranslation);
@@ -67,3 +73,46 @@ export const exportFileFormattedDate = (date: Date) => {
     date.getSeconds()
   ).padStart(2, "0")}`;
 };
+
+export const handleExportTableData = (
+  filteredEmployees: Employee[],
+  hoursWorked: HoursWorked[],
+  schedules: Schedule[],
+  currentWeek: { day: string; date: string }[],
+  period: "weekly" | "biweekly" | "monthly"
+) => {
+  const dataForExport = filteredEmployees.map((employee) => {
+    const employeeData: any = {
+      nombre: `${employee.firstName} ${employee.lastName}`,
+    };
+
+    currentWeek.forEach(({ day, date }) => {
+      const dateObject = new Date(date);
+      const selectedRecord = hoursWorked.find(
+        (record) =>
+          record.employeeId === employee.id &&
+          new Date(record.date).toISOString().split("T")[0] ===
+            dateObject.toISOString().split("T")[0]
+      );
+
+      const scheduleLabel =
+        selectedRecord?.scheduleId &&
+        schedules.find((schedule) => schedule.id === selectedRecord.scheduleId)
+          ?.label;
+
+      employeeData[translateDayToSpanish(day as DayOfWeek)] = scheduleLabel || "Libre";
+    });
+
+    employeeData[`total${capitalize(period)}`] = calculateTotalHours(
+      currentWeek,
+      hoursWorked,
+      schedules,
+      employee.id,
+      period
+    );
+
+    return employeeData;
+  });
+
+  return dataForExport;
+}

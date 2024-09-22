@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Table,
   TableBody,
@@ -37,6 +37,7 @@ interface DropdownTableProps {
   weekOffset: number;
   schedules: Schedule[];
   hoursWorked: HoursWorked[];
+  setPeriod: React.Dispatch<React.SetStateAction<"weekly" | "biweekly" | "monthly">>;
   handleChange: (
     employee: Employee,
     day: string,
@@ -50,16 +51,12 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
   weekOffset,
   schedules,
   hoursWorked,
+  setPeriod,
   handleChange,
 }) => {
-  const currentWeek = useMemo(
-    () => getCurrentWeekDates(weekOffset),
-    [weekOffset]
-  );
-
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [selectedColumn, setSelectedColumn] = useState<
+  const [selectedPeriod, setSelectedPeriod] = useState<
     "weekly" | "biweekly" | "monthly"
   >("weekly");
   const [orderDirection, setOrderDirection] = useState<"asc" | "desc">("asc");
@@ -73,6 +70,15 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
         : nameB.localeCompare(nameA);
     });
   }, [filteredEmployees, orderDirection]);
+
+  const currentWeek = useMemo(
+    () => getCurrentWeekDates(weekOffset),
+    [weekOffset]
+  );
+
+  useEffect(() => {
+    setPeriod(selectedPeriod);
+  }, [selectedPeriod, setPeriod]);
 
   const startIndex = page * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
@@ -134,9 +140,9 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                 <FormControl>
                   <InputLabel>Total</InputLabel>
                   <Select
-                    value={selectedColumn}
+                    value={selectedPeriod}
                     onChange={(e) =>
-                      setSelectedColumn(
+                      setSelectedPeriod(
                         e.target.value as "weekly" | "biweekly" | "monthly"
                       )
                     }
@@ -273,7 +279,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                     hoursWorked,
                     schedules,
                     employee.id,
-                    selectedColumn
+                    selectedPeriod
                   )}
                 </TableCell>
               </TableRow>

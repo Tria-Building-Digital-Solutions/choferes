@@ -11,6 +11,7 @@ import {
   exportFileFormattedDate,
   exportToExcel,
   exportToPDF,
+  handleExportTableData,
 } from "../utils/exportUtils";
 import { Employee } from "../models/Employee";
 import { useEmployees } from "../hooks/useEmployee";
@@ -19,6 +20,7 @@ import { useHours } from "../hooks/useHours";
 import { AxiosError } from "axios";
 import { HoursWorked } from "../models/HoursWorked";
 import { getDayType } from "../utils/stringUtils";
+import { getCurrentWeekDates } from "../utils/dateUtils";
 
 const Dashboard: React.FC = () => {
   const { employees, fetchEmployees } = useEmployees();
@@ -28,6 +30,7 @@ const Dashboard: React.FC = () => {
   const [weekOffset, setWeekOffset] = useState(0);
   const [filter, setFilter] = useState("");
   const [showResults, setShowResults] = useState(true);
+  const [period, setPeriod] = useState<"weekly" | "biweekly" | "monthly">("weekly");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -106,6 +109,14 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const dataForExport = handleExportTableData(
+    filteredEmployees,
+    hoursWorked,
+    schedules,
+    getCurrentWeekDates(weekOffset), 
+    period
+  );
+
   return (
     <Box>
       <Box
@@ -125,7 +136,7 @@ const Dashboard: React.FC = () => {
               sx={{ height: "56px", mr: 1 }}
               onClick={() =>
                 exportToExcel(
-                  filteredEmployees,
+                  dataForExport,
                   `roles-${exportFileFormattedDate(new Date())}`
                 )
               }
@@ -140,7 +151,7 @@ const Dashboard: React.FC = () => {
               sx={{ height: "56px" }}
               onClick={() =>
                 exportToPDF(
-                  filteredEmployees,
+                  dataForExport,
                   `roles-${exportFileFormattedDate(new Date())}`
                 )
               }
@@ -212,6 +223,7 @@ const Dashboard: React.FC = () => {
           schedules={schedules}
           hoursWorked={hoursWorked}
           weekOffset={weekOffset}
+          setPeriod={setPeriod}
           handleChange={handleChange}
         />
       ) : (
