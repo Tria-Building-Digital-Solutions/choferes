@@ -64,24 +64,18 @@ const Dashboard: React.FC = () => {
         schedule.label === selectedLabel && schedule.day === getDayType(day)
     );
 
-    console.log("employee: ", employee);
-    console.log("day: ", day);
-    console.log("date: ", date);
-    console.log("selectedLabel: ", selectedLabel);
-    console.log("selectedSchedule: ", selectedSchedule);
-
     if (!selectedSchedule) {
       console.error("No se encontró un horario para el label seleccionado");
       return;
     }
 
-    const formattedDate = new Date(date).toISOString().split("T")[0];
-
     const newHours: HoursWorked = {
       employeeId: employee.id,
-      date: formattedDate,
+      date: date,
       scheduleId: selectedSchedule.id,
     };
+
+    console.log(newHours);
 
     try {
       const existingRecord = hoursWorked.find(
