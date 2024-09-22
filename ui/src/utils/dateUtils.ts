@@ -1,6 +1,34 @@
-import { EnglishAbrevMonthOfYear } from './englishAbrevMonthOfYear';
-import { addDays, eachDayOfInterval, endOfMonth, format, startOfMonth } from 'date-fns';
-import { translateMonthToAbrevSpanish } from './stringUtils';
+import { EnglishAbrevMonthOfYear } from "./englishAbrevMonthOfYear";
+import {
+  addDays,
+  eachDayOfInterval,
+  endOfMonth,
+  format,
+  startOfMonth,
+} from "date-fns";
+import { translateMonthToAbrevSpanish } from "./stringUtils";
+
+export const formatDate = (date: Date, withTimePart: boolean) => {
+  const options: Intl.DateTimeFormatOptions = {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  };
+
+  const formattedDate = date.toLocaleString("es-ES", options);
+
+  const [datePart, timePart] = formattedDate.split(", ");
+
+  if (withTimePart) {
+    return `${datePart} de ${timePart}`;
+  }
+
+  return datePart;
+};
 
 export const isValidDate = (date: any): boolean => {
   return date instanceof Date && !isNaN(date.getTime());
@@ -8,22 +36,35 @@ export const isValidDate = (date: any): boolean => {
 
 export const formatHeaderDate = (dateStr: string) => {
   const [day, month] = dateStr.split(" ");
-  const transformedMonth = translateMonthToAbrevSpanish(month as EnglishAbrevMonthOfYear);
+  const transformedMonth = translateMonthToAbrevSpanish(
+    month as EnglishAbrevMonthOfYear
+  );
   return `${day} ${transformedMonth}`;
+};
+
+export const formatHeaderDateWithYear = (dateStr: string) => {
+  const [day, month, year] = dateStr.split(" ");
+  const transformedMonth = translateMonthToAbrevSpanish(
+    month as EnglishAbrevMonthOfYear
+  );
+  return `${day} ${transformedMonth} ${year}`;
 };
 
 export const getCurrentWeekDates = (weekOffset: number) => {
   const today = new Date();
-  const firstDayOfWeek = today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1);
+  const firstDayOfWeek =
+    today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1);
   const startDate = new Date(today.setDate(firstDayOfWeek + weekOffset * 7));
 
   return Array.from({ length: 7 }, (_, i) => {
     const date = new Date(startDate);
     date.setDate(startDate.getDate() + i);
     return {
-      day: date.toLocaleString('en-US', { weekday: 'long' }), 
-      date: `${date.getDate()} ${date.toLocaleDateString('en-US', { month: 'short' })} ${date.getFullYear()}`,
-      isoDate: date.toISOString(), 
+      day: date.toLocaleString("en-US", { weekday: "long" }),
+      date: `${date.getDate()} ${date.toLocaleDateString("en-US", {
+        month: "short",
+      })} ${date.getFullYear()}`,
+      isoDate: date.toISOString(),
     };
   });
 };

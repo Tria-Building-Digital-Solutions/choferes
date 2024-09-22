@@ -17,11 +17,21 @@ import SearchBar from "../components/SearchBar/SearchBar";
 import PersonAddAlt1RoundedIcon from "@mui/icons-material/PersonAddAlt1Rounded";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileExcel, faFilePdf } from "@fortawesome/free-solid-svg-icons";
-import { exportFileFormattedDate, exportToExcel, exportToPDF } from "../utils/exportUtils";
+import {
+  exportFileFormattedDate,
+  exportToExcel,
+  exportToPDF,
+} from "../utils/exportUtils";
 import { useEmployees } from "../hooks/useEmployee";
 
 const ManageEmployees: React.FC = () => {
-  const { employees, fetchEmployees, handleAddEmployee, handleUpdateEmployee, handleDeleteEmployee } = useEmployees();
+  const {
+    employees,
+    fetchEmployees,
+    handleAddEmployee,
+    handleUpdateEmployee,
+    handleDeleteEmployee,
+  } = useEmployees();
   const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [editRowId, setEditRowId] = useState<number | null>(null);
@@ -127,7 +137,12 @@ const ManageEmployees: React.FC = () => {
               variant="contained"
               color="primary"
               sx={{ height: "56px", mr: 1 }}
-              onClick={() => exportToExcel(filteredEmployees, `empleados-${exportFileFormattedDate(new Date())}`)}
+              onClick={() =>
+                exportToExcel(
+                  filteredEmployees,
+                  `empleados-${exportFileFormattedDate(new Date())}`
+                )
+              }
             >
               <FontAwesomeIcon icon={faFileExcel} size="lg" />
             </Button>
@@ -137,7 +152,12 @@ const ManageEmployees: React.FC = () => {
               variant="contained"
               color="secondary"
               sx={{ height: "56px" }}
-              onClick={() => exportToPDF(filteredEmployees, `empleados-${exportFileFormattedDate(new Date())}`)}
+              onClick={() =>
+                exportToPDF(
+                  filteredEmployees,
+                  `empleados-${exportFileFormattedDate(new Date())}`
+                )
+              }
             >
               <FontAwesomeIcon icon={faFilePdf} size="lg" />
             </Button>
@@ -178,15 +198,17 @@ const ManageEmployees: React.FC = () => {
               }
             />
             <Tooltip title="Agregar Empleado" arrow>
-              <Button
-                variant="contained"
-                color="primary"
-                sx={{ height: "56px" }}
-                onClick={handleAdd}
-                disabled={!isValid}
-              >
-                <PersonAddAlt1RoundedIcon />
-              </Button>
+              <span>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  sx={{ height: "56px" }}
+                  onClick={handleAdd}
+                  disabled={!isValid}
+                >
+                  <PersonAddAlt1RoundedIcon />
+                </Button>
+              </span>
             </Tooltip>
           </Box>
         </Grid>

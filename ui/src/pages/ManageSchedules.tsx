@@ -231,15 +231,17 @@ const ManageSchedules: React.FC = () => {
               }
             />
             <Tooltip title="Agregar Horario" arrow>
-              <Button
-                variant="contained"
-                color="primary"
-                sx={{ height: "56px" }}
-                onClick={handleAdd}
-                disabled={!isValid}
-              >
-                <PostAddRoundedIcon />
-              </Button>
+              <span>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  sx={{ height: "56px" }}
+                  onClick={handleAdd}
+                  disabled={!isValid}
+                >
+                  <PostAddRoundedIcon />
+                </Button>
+              </span>
             </Tooltip>
           </Box>
         </Grid>

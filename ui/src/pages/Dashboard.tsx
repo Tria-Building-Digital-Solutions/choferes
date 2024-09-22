@@ -8,7 +8,6 @@ import CalendarTodayRoundedIcon from "@mui/icons-material/CalendarTodayRounded";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileExcel, faFilePdf } from "@fortawesome/free-solid-svg-icons";
 import {
-  exportFileFormattedDate,
   exportToExcel,
   exportToPDF,
   handleExportTableData,
@@ -30,7 +29,9 @@ const Dashboard: React.FC = () => {
   const [weekOffset, setWeekOffset] = useState(0);
   const [filter, setFilter] = useState("");
   const [showResults, setShowResults] = useState(true);
-  const [period, setPeriod] = useState<"weekly" | "biweekly" | "monthly">("weekly");
+  const [period, setPeriod] = useState<"weekly" | "biweekly" | "monthly">(
+    "weekly"
+  );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -64,7 +65,8 @@ const Dashboard: React.FC = () => {
   ) => {
     const selectedSchedule = schedules.find(
       (schedule) =>
-        schedule.label === selectedLabel && schedule.day === setDayOptionsEnglish(day)
+        schedule.label === selectedLabel &&
+        schedule.day === setDayOptionsEnglish(day)
     );
 
     if (!selectedSchedule) {
@@ -109,11 +111,11 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const dataForExport = handleExportTableData(
+  const { dataForExport, headers, fileName } = handleExportTableData(
     filteredEmployees,
     hoursWorked,
     schedules,
-    getCurrentWeekDates(weekOffset), 
+    getCurrentWeekDates(weekOffset),
     period
   );
 
@@ -134,12 +136,7 @@ const Dashboard: React.FC = () => {
               variant="contained"
               color="primary"
               sx={{ height: "56px", mr: 1 }}
-              onClick={() =>
-                exportToExcel(
-                  dataForExport,
-                  `roles-${exportFileFormattedDate(new Date())}`
-                )
-              }
+              onClick={() => exportToExcel(dataForExport, fileName, headers)}
             >
               <FontAwesomeIcon icon={faFileExcel} size="lg" />
             </Button>
@@ -149,12 +146,7 @@ const Dashboard: React.FC = () => {
               variant="contained"
               color="secondary"
               sx={{ height: "56px" }}
-              onClick={() =>
-                exportToPDF(
-                  dataForExport,
-                  `roles-${exportFileFormattedDate(new Date())}`
-                )
-              }
+              onClick={() => exportToPDF(dataForExport, fileName, headers)}
             >
               <FontAwesomeIcon icon={faFilePdf} size="lg" />
             </Button>

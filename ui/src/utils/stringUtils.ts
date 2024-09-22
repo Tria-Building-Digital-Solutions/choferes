@@ -21,7 +21,7 @@ export const getOptionsForDay = (
       dayFilter = DAYS.SUNDAY;
       break;
     default:
-      dayFilter = "weekday";
+      dayFilter = DAYS.WEEKDAY;
       break;
   }
 
@@ -84,14 +84,15 @@ export const translateDayToAbrevSpanish = (dayInEnglish: EnglishDayOfWeek): stri
   return translationMap[dayInEnglish];
 };
 
+export const translationsDayOptionsToSpanish: { [key: string]: string } = {
+  weekday: "Lunes a Jueves",
+  friday: "Viernes",
+  saturday: "Sábado",
+  sunday: "Domingo",
+};
+
 export const translateDayOptionsToSpanish = (day: string): string => {
-  const translations: { [key: string]: string } = {
-    weekday: "Lunes a Jueves",
-    friday: "Viernes",
-    saturday: "Sábado",
-    sunday: "Domingo",
-  };
-  return translations[day] || day;
+  return translationsDayOptionsToSpanish[day] || day;
 };
 
 export const getDayOptionsSpanish = () => [
@@ -109,4 +110,17 @@ export const setDayOptionsEnglish = (day: string): string => {
   }
 
   return lowerCaseDay;
+};
+
+export const translatePeriodToSpanish = (period: "weekly" | "biweekly" | "monthly"): string => {
+  switch (period) {
+    case "weekly":
+      return "Semanal";
+    case "biweekly":
+      return "Quincenal";
+    case "monthly":
+      return "Mensual";
+    default:
+      return "";
+  }
 };

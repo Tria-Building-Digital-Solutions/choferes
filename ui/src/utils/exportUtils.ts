@@ -1,21 +1,45 @@
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
-import { capitalize, SvgIconProps } from "@mui/material";
-import { translateColumnHeaderToSpanish, translateDayToAbrevSpanish } from "./stringUtils";
+import {
+  translateColumnHeaderToSpanish,
+  translateDayOptionsToSpanish,
+  translateDayToAbrevSpanish,
+  translatePeriodToSpanish,
+  translationsDayOptionsToSpanish,
+} from "./stringUtils";
 import { calculateTotalHours } from "./tableUtils";
 import { Employee } from "../models/Employee";
 import { HoursWorked } from "../models/HoursWorked";
 import { Schedule } from "../models/Schedule";
 import { EnglishDayOfWeek } from "./englishDayOfWeek";
+import { formatHeaderDateWithYear, formatDate } from "./dateUtils";
 
-export const exportToExcel = (data: any[], fileName: string) => {
-  const headers = Object.keys(data[0]).map(translateColumnHeaderToSpanish);
+export const exportToExcel = (
+  data: any[],
+  fileName: string,
+  customHeaders?: string[]
+) => {
+  const headers =
+    customHeaders || Object.keys(data[0]).map(translateColumnHeaderToSpanish);
 
   const translatedData = data.map((row) => {
     const translatedRow: any = {};
     Object.keys(row).forEach((key, index) => {
-      translatedRow[headers[index]] = row[key];
+      let value = row[key];
+      
+      if (typeof value === 'string') {
+        const dateValue = new Date(value);
+        value = !isNaN(dateValue.getTime())
+          ? formatDate(dateValue, false)
+          : value;
+      }
+
+      if (typeof value === 'string' && Object.keys(translationsDayOptionsToSpanish).includes(value)) {
+        value = translateDayOptionsToSpanish(value);
+      }
+
+      translatedRow[headers[index]] = value;
     });
     return translatedRow;
   });
@@ -27,12 +51,34 @@ export const exportToExcel = (data: any[], fileName: string) => {
   XLSX.writeFile(workbook, `${fileName}.xlsx`);
 };
 
-export const exportToPDF = (data: any[], fileName: string) => {
+
+export const exportToPDF = (
+  data: any[],
+  fileName: string,
+  customHeaders?: string[]
+) => {
   const doc = new jsPDF();
 
-  const headers = [Object.keys(data[0]).map(translateColumnHeaderToSpanish)];
+  const headers = customHeaders
+    ? [customHeaders]
+    : [Object.keys(data[0]).map(translateColumnHeaderToSpanish)];
 
-  const tableData = data.map((row) => Object.values(row));
+  const tableData = data.map((row) => {
+    return Object.values(row).map((value) => {
+      if (typeof value === 'string') {
+        const dateValue = new Date(value);
+        value = !isNaN(dateValue.getTime())
+          ? formatDate(dateValue, false) 
+          : value; 
+      }
+
+      if (typeof value === 'string' && Object.keys(translationsDayOptionsToSpanish).includes(value)) {
+        value = translateDayOptionsToSpanish(value);
+      }
+
+      return value;
+    });
+  });
 
   doc.autoTable({
     head: headers,
@@ -42,25 +88,6 @@ export const exportToPDF = (data: any[], fileName: string) => {
   doc.save(`${fileName}.pdf`);
 };
 
-export const exportMenuItems = (
-  data: any[],
-  fileName: string,
-  excelIcon: React.ReactElement<SvgIconProps>,
-  pdfIcon: React.ReactElement<SvgIconProps>
-) => {
-  return [
-    {
-      text: "Descargar Excel",
-      onClick: () => exportToExcel(data, fileName),
-      icon: excelIcon,
-    },
-    {
-      text: "Descargar PDF",
-      onClick: () => exportToPDF(data, fileName),
-      icon: pdfIcon,
-    },
-  ];
-};
 
 export const exportFileFormattedDate = (date: Date) => {
   return `${String(date.getDate()).padStart(2, "0")}-${String(
@@ -80,6 +107,12 @@ export const handleExportTableData = (
   currentWeek: { day: string; date: string }[],
   period: "weekly" | "biweekly" | "monthly"
 ) => {
+  const headers = [
+    "Nombre",
+    ...currentWeek.map(({ date }) => formatHeaderDateWithYear(date)),
+    `Total ${translatePeriodToSpanish(period)}`,
+  ];
+
   const dataForExport = filteredEmployees.map((employee) => {
     const employeeData: any = {
       Nombre: `${employee.firstName} ${employee.lastName}`,
@@ -99,19 +132,25 @@ export const handleExportTableData = (
         schedules.find((schedule) => schedule.id === selectedRecord.scheduleId)
           ?.label;
 
-      employeeData[translateDayToAbrevSpanish(day as EnglishDayOfWeek)] = scheduleLabel || "Libre";
+      employeeData[translateDayToAbrevSpanish(day as EnglishDayOfWeek)] =
+        scheduleLabel || "Libre";
     });
 
-    employeeData[`Total ${capitalize(period)}`] = calculateTotalHours(
-      currentWeek,
-      hoursWorked,
-      schedules,
-      employee.id,
-      period
-    );
+    employeeData[`Total ${translatePeriodToSpanish(period)}`] =
+      calculateTotalHours(
+        currentWeek,
+        hoursWorked,
+        schedules,
+        employee.id,
+        period
+      );
 
     return employeeData;
   });
 
-  return dataForExport;
-}
+  return {
+    dataForExport,
+    headers,
+    fileName: `roles-${exportFileFormattedDate(new Date())}`,
+  };
+};
