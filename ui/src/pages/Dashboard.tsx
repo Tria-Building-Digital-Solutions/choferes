@@ -16,11 +16,15 @@ import { Employee } from "../models/Employee";
 import { useEmployees } from "../hooks/useEmployee";
 import { useSchedules } from "../hooks/useSchedule";
 import { useHours } from "../hooks/useHours";
+import { AxiosError } from "axios";
+import { HoursWorked } from "../models/HoursWorked";
+import { getDayType } from "../utils/stringUtils";
 
 const Dashboard: React.FC = () => {
   const { employees, fetchEmployees } = useEmployees();
   const { schedules, fetchSchedules } = useSchedules();
-  const { hoursWorked, fetchHours } = useHours();
+  const { hoursWorked, fetchHours, handleAddHours, handleUpdateHours } =
+    useHours();
   const [weekOffset, setWeekOffset] = useState(0);
   const [filter, setFilter] = useState("");
   const [showResults, setShowResults] = useState(true);
@@ -49,18 +53,63 @@ const Dashboard: React.FC = () => {
     setShowResults(filteredEmployees.length > 0);
   }, [filter, employees, filteredEmployees.length]);
 
-  const handleChange = (
+  const handleChange = async (
     employee: Employee,
     day: string,
     date: Date,
-    selectedLabel: string,
+    selectedLabel: string
   ) => {
+    const selectedSchedule = schedules.find(
+      (schedule) =>
+        schedule.label === selectedLabel && schedule.day === getDayType(day)
+    );
+
     console.log("employee: ", employee);
     console.log("day: ", day);
     console.log("date: ", date);
     console.log("selectedLabel: ", selectedLabel);
+    console.log("selectedSchedule: ", selectedSchedule);
 
-    // Update hours worked here
+    if (!selectedSchedule) {
+      console.error("No se encontró un horario para el label seleccionado");
+      return;
+    }
+
+    const formattedDate = new Date(date).toISOString().split("T")[0];
+
+    const newHours: HoursWorked = {
+      employeeId: employee.id,
+      date: formattedDate,
+      scheduleId: selectedSchedule.id,
+    };
+
+    try {
+      const existingRecord = hoursWorked.find(
+        (record) =>
+          record.employeeId === employee.id &&
+          record.date.getTime() === date.getTime()
+      );
+
+      if (existingRecord) {
+        await handleUpdateHours(existingRecord.id!, {
+          scheduleId: selectedSchedule.id,
+        });
+      } else {
+        await handleAddHours(newHours);
+      }
+
+      await fetchHours();
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      if (axiosError.response) {
+        console.log(
+          "Error en la respuesta del servidor:",
+          axiosError.response.data
+        );
+      } else {
+        console.log("Error desconocido:", error);
+      }
+    }
   };
 
   return (

@@ -1,8 +1,8 @@
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
-import { getColumnTranslation } from "./tableUtils";
 import { SvgIconProps } from "@mui/material";
+import { getColumnTranslation } from "./stringUtils";
 
 export const exportToExcel = (data: any[], fileName: string) => {
   const headers = Object.keys(data[0]).map(getColumnTranslation);

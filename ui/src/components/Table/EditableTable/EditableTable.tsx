@@ -19,10 +19,10 @@ import {
   Divider,
 } from "@mui/material";
 import { TABLE } from "../../../constants/constants";
-import { getColumnTranslation, getDayOptions, getDayTranslation } from "../../../utils/tableUtils";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
+import { getColumnTranslation, getDayOptions, getDayTranslation } from "../../../utils/stringUtils";
 
 type EditableTableProps<T> = {
   data: T[];

@@ -13,15 +13,15 @@ import {
 } from "@mui/material";
 import EditableTable from "../components/Table/EditableTable/EditableTable";
 import { Employee } from "../models/Employee";
-import api from "../services/api";
 import SearchBar from "../components/SearchBar/SearchBar";
 import PersonAddAlt1RoundedIcon from "@mui/icons-material/PersonAddAlt1Rounded";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileExcel, faFilePdf } from "@fortawesome/free-solid-svg-icons";
 import { exportFileFormattedDate, exportToExcel, exportToPDF } from "../utils/exportUtils";
+import { useEmployees } from "../hooks/useEmployee";
 
 const ManageEmployees: React.FC = () => {
-  const [employees, setEmployees] = useState<Employee[]>([]);
+  const { employees, fetchEmployees, handleAddEmployee, handleUpdateEmployee, handleDeleteEmployee } = useEmployees();
   const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [editRowId, setEditRowId] = useState<number | null>(null);
@@ -35,14 +35,12 @@ const ManageEmployees: React.FC = () => {
   const [isValid, setIsValid] = useState(false);
 
   useEffect(() => {
-    const fetchEmployees = async () => {
-      const response = await api.get("/employees");
-      setEmployees(response.data);
-      setTotalCount(response.data.length);
+    const fetchData = async () => {
+      await fetchEmployees();
     };
 
-    fetchEmployees();
-  }, []);
+    fetchData();
+  }, [fetchEmployees]);
 
   useEffect(() => {
     const filtered = employees.filter((employee) =>
@@ -68,17 +66,14 @@ const ManageEmployees: React.FC = () => {
     validateFields();
   }, [validateFields]);
 
-  const handleAddEmployee = () => {
+  const handleAdd = () => {
     const newEmployee: Employee = {
       id: Math.max(...employees.map((employee) => employee.id)) + 1,
       firstName: addFields.firstName,
       lastName: addFields.lastName,
     };
-    api.post("/employees", newEmployee).then(() => {
-      setEmployees([...employees, newEmployee]);
-      setTotalCount(totalCount + 1);
-      setAddFields({ firstName: "", lastName: "" });
-    });
+    handleAddEmployee(newEmployee);
+    setAddFields({ firstName: "", lastName: "" });
   };
 
   const handleEditClick = (employee: Employee) => {
@@ -93,15 +88,9 @@ const ManageEmployees: React.FC = () => {
     const updatedEmployee = {
       ...editFields,
     };
-    api.put(`/employees/${id}`, updatedEmployee).then(() => {
-      setEmployees(
-        employees.map((employee) =>
-          employee.id === id ? { ...employee, ...updatedEmployee } : employee
-        )
-      );
-      setEditRowId(null);
-      setEditFields({ firstName: "", lastName: "" });
-    });
+    handleUpdateEmployee(id, updatedEmployee);
+    setEditRowId(null);
+    setEditFields({ firstName: "", lastName: "" });
   };
 
   const handleOpenDialog = (id: number) => {
@@ -116,13 +105,8 @@ const ManageEmployees: React.FC = () => {
 
   const handleDelete = () => {
     if (employeeToDelete !== null) {
-      api.delete(`/employees/${employeeToDelete}`).then(() => {
-        setEmployees(
-          employees.filter((employee) => employee.id !== employeeToDelete)
-        );
-        setTotalCount(totalCount - 1);
-        handleCloseDialog();
-      });
+      handleDeleteEmployee(employeeToDelete);
+      handleCloseDialog();
     }
   };
 
@@ -198,7 +182,7 @@ const ManageEmployees: React.FC = () => {
                 variant="contained"
                 color="primary"
                 sx={{ height: "56px" }}
-                onClick={handleAddEmployee}
+                onClick={handleAdd}
                 disabled={!isValid}
               >
                 <PersonAddAlt1RoundedIcon />

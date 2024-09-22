@@ -23,14 +23,14 @@ import {
 import {
   calculateTotalHours,
   getBackgroundColor,
-  getOptionsForDay,
 } from "../../../utils/tableUtils";
 import { Employee } from "../../../models/Employee";
 import { STATE, TABLE } from "../../../constants/constants";
 import { HoursWorked } from "../../../models/HoursWorked";
-import { Schedule } from "../../../models/Schedule"; // Mantén esto si lo usas en otro lugar
+import { Schedule } from "../../../models/Schedule"; 
 import { translateDayToSpanish } from "../../../utils/calculationUtils";
 import { DayOfWeek } from "../../../utils/dayOfWeek";
+import { getOptionsForDay } from "../../../utils/stringUtils";
 
 interface DropdownTableProps {
   filteredEmployees: Employee[];
@@ -175,6 +175,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                       year: "numeric",
                     })
                     .replace(",", "");
+                  const dateObject = new Date(date);
                   const isFutureDate = new Date(date) > today;
 
                   const selectedLabel =
@@ -183,7 +184,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                         (record) =>
                           record.employeeId === employee.id &&
                           new Date(record.date).toISOString().split("T")[0] ===
-                            new Date(date).toISOString().split("T")[0]
+                            dateObject.toISOString().split("T")[0]
                       )?.scheduleId) ||
                     STATE.FREE;
 
@@ -245,7 +246,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                             handleChange(
                               employee,
                               day,
-                              new Date(date),
+                              dateObject,
                               String(e.target.value)
                             )
                           }
