@@ -130,28 +130,30 @@ const Dashboard: React.FC = () => {
         <Typography variant="h2" sx={{ flexGrow: 1 }}>
           Administrar Roles
         </Typography>
-        <Box display="flex" alignItems="center">
-          <Tooltip title="Descargar Excel" arrow>
-            <Button
-              variant="contained"
-              color="primary"
-              sx={{ height: "56px", mr: 1 }}
-              onClick={() => exportToExcel(dataForExport, fileName, headers)}
-            >
-              <FontAwesomeIcon icon={faFileExcel} size="lg" />
-            </Button>
-          </Tooltip>
-          <Tooltip title="Descargar PDF" arrow>
-            <Button
-              variant="contained"
-              color="secondary"
-              sx={{ height: "56px" }}
-              onClick={() => exportToPDF(dataForExport, fileName, headers)}
-            >
-              <FontAwesomeIcon icon={faFilePdf} size="lg" />
-            </Button>
-          </Tooltip>
-        </Box>
+        {showResults && (
+          <Box display="flex" alignItems="center">
+            <Tooltip title="Descargar Excel" arrow>
+              <Button
+                variant="contained"
+                color="primary"
+                sx={{ height: "56px", mr: 1 }}
+                onClick={() => exportToExcel(dataForExport, fileName, headers)}
+              >
+                <FontAwesomeIcon icon={faFileExcel} size="lg" />
+              </Button>
+            </Tooltip>
+            <Tooltip title="Descargar PDF" arrow>
+              <Button
+                variant="contained"
+                color="secondary"
+                sx={{ height: "56px" }}
+                onClick={() => exportToPDF(dataForExport, fileName, headers)}
+              >
+                <FontAwesomeIcon icon={faFilePdf} size="lg" />
+              </Button>
+            </Tooltip>
+          </Box>
+        )}
       </Box>
 
       <Grid

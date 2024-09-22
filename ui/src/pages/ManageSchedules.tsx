@@ -147,38 +147,40 @@ const ManageSchedules: React.FC = () => {
         <Typography variant="h2" sx={{ flexGrow: 1 }}>
           Gestionar Horarios
         </Typography>
-        <Box display="flex" alignItems="center">
-          <Tooltip title="Descargar Excel" arrow>
-            <Button
-              variant="contained"
-              color="primary"
-              sx={{ height: "56px", mr: 1 }}
-              onClick={() =>
-                exportToExcel(
-                  filteredSchedules,
-                  `horarios-${exportFileFormattedDate(new Date())}`
-                )
-              }
-            >
-              <FontAwesomeIcon icon={faFileExcel} size="lg" />
-            </Button>
-          </Tooltip>
-          <Tooltip title="Descargar PDF" arrow>
-            <Button
-              variant="contained"
-              color="secondary"
-              sx={{ height: "56px" }}
-              onClick={() =>
-                exportToPDF(
-                  filteredSchedules,
-                  `horarios-${exportFileFormattedDate(new Date())}`
-                )
-              }
-            >
-              <FontAwesomeIcon icon={faFilePdf} size="lg" />
-            </Button>
-          </Tooltip>
-        </Box>
+        {filteredSchedules.length > 0 && (
+          <Box display="flex" alignItems="center">
+            <Tooltip title="Descargar Excel" arrow>
+              <Button
+                variant="contained"
+                color="primary"
+                sx={{ height: "56px", mr: 1 }}
+                onClick={() =>
+                  exportToExcel(
+                    filteredSchedules,
+                    `horarios-${exportFileFormattedDate(new Date())}`
+                  )
+                }
+              >
+                <FontAwesomeIcon icon={faFileExcel} size="lg" />
+              </Button>
+            </Tooltip>
+            <Tooltip title="Descargar PDF" arrow>
+              <Button
+                variant="contained"
+                color="secondary"
+                sx={{ height: "56px" }}
+                onClick={() =>
+                  exportToPDF(
+                    filteredSchedules,
+                    `horarios-${exportFileFormattedDate(new Date())}`
+                  )
+                }
+              >
+                <FontAwesomeIcon icon={faFilePdf} size="lg" />
+              </Button>
+            </Tooltip>
+          </Box>
+        )}
       </Box>
       <Grid
         container

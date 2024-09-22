@@ -131,38 +131,40 @@ const ManageEmployees: React.FC = () => {
         <Typography variant="h2" sx={{ flexGrow: 1 }}>
           Gestionar Empleados
         </Typography>
-        <Box display="flex" alignItems="center">
-          <Tooltip title="Descargar Excel" arrow>
-            <Button
-              variant="contained"
-              color="primary"
-              sx={{ height: "56px", mr: 1 }}
-              onClick={() =>
-                exportToExcel(
-                  filteredEmployees,
-                  `empleados-${exportFileFormattedDate(new Date())}`
-                )
-              }
-            >
-              <FontAwesomeIcon icon={faFileExcel} size="lg" />
-            </Button>
-          </Tooltip>
-          <Tooltip title="Descargar PDF" arrow>
-            <Button
-              variant="contained"
-              color="secondary"
-              sx={{ height: "56px" }}
-              onClick={() =>
-                exportToPDF(
-                  filteredEmployees,
-                  `empleados-${exportFileFormattedDate(new Date())}`
-                )
-              }
-            >
-              <FontAwesomeIcon icon={faFilePdf} size="lg" />
-            </Button>
-          </Tooltip>
-        </Box>
+        {filteredEmployees.length > 0 && (
+          <Box display="flex" alignItems="center">
+            <Tooltip title="Descargar Excel" arrow>
+              <Button
+                variant="contained"
+                color="primary"
+                sx={{ height: "56px", mr: 1 }}
+                onClick={() =>
+                  exportToExcel(
+                    filteredEmployees,
+                    `empleados-${exportFileFormattedDate(new Date())}`
+                  )
+                }
+              >
+                <FontAwesomeIcon icon={faFileExcel} size="lg" />
+              </Button>
+            </Tooltip>
+            <Tooltip title="Descargar PDF" arrow>
+              <Button
+                variant="contained"
+                color="secondary"
+                sx={{ height: "56px" }}
+                onClick={() =>
+                  exportToPDF(
+                    filteredEmployees,
+                    `empleados-${exportFileFormattedDate(new Date())}`
+                  )
+                }
+              >
+                <FontAwesomeIcon icon={faFilePdf} size="lg" />
+              </Button>
+            </Tooltip>
+          </Box>
+        )}
       </Box>
       <Grid
         container
