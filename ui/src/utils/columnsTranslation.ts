@@ -1,0 +1,10 @@
+export type ColumnsTranslation = {
+    id: string;
+    firstName: string;
+    lastName: string;
+    label: string;
+    day: string;
+    hours: string;
+    createdAt: string;
+    updatedAt: string;
+  };

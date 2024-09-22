@@ -1,4 +1,4 @@
-export type MonthOfYear =
+export type EnglishAbrevMonthOfYear =
   | "Jan"
   | "Feb"
   | "Mar"

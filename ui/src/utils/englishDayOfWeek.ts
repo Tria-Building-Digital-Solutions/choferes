@@ -1,4 +1,4 @@
-export type DayOfWeek =
+export type EnglishDayOfWeek =
   | "Sunday"
   | "Monday"
   | "Tuesday"

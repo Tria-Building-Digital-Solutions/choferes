@@ -19,7 +19,7 @@ import { useSchedules } from "../hooks/useSchedule";
 import { useHours } from "../hooks/useHours";
 import { AxiosError } from "axios";
 import { HoursWorked } from "../models/HoursWorked";
-import { getDayType } from "../utils/stringUtils";
+import { setDayOptionsEnglish } from "../utils/stringUtils";
 import { getCurrentWeekDates } from "../utils/dateUtils";
 
 const Dashboard: React.FC = () => {
@@ -64,7 +64,7 @@ const Dashboard: React.FC = () => {
   ) => {
     const selectedSchedule = schedules.find(
       (schedule) =>
-        schedule.label === selectedLabel && schedule.day === getDayType(day)
+        schedule.label === selectedLabel && schedule.day === setDayOptionsEnglish(day)
     );
 
     if (!selectedSchedule) {

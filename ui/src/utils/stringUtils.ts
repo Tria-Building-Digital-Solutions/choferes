@@ -1,21 +1,58 @@
 import { DAYS } from "../constants/constants";
 import { Schedule } from "../models/Schedule";
+import { ColumnsTranslation } from "./columnsTranslation";
+import { EnglishDayOfWeek } from "./englishDayOfWeek";
+import { EnglishAbrevMonthOfYear } from "./englishAbrevMonthOfYear";
 
-type ColumnTranslations = {
-  id: string;
-  firstName: string;
-  lastName: string;
-  label: string;
-  day: string;
-  hours: string;
-  createdAt: string;
-  updatedAt: string;
+export const getOptionsForDay = (
+  day: string,
+  schedules: Schedule[]
+): Schedule[] => {
+  let dayFilter = "";
+
+  switch (day.toLowerCase()) {
+    case "friday":
+      dayFilter = DAYS.FRIDAY;
+      break;
+    case "saturday":
+      dayFilter = DAYS.SATURDAY;
+      break;
+    case "sunday":
+      dayFilter = DAYS.SUNDAY;
+      break;
+    default:
+      dayFilter = "weekday";
+      break;
+  }
+
+  return schedules.filter((schedule) => schedule.day === dayFilter);
 };
 
-export const getColumnTranslation = (
+export const translateMonthToAbrevSpanish = (
+  monthInEnglish: EnglishAbrevMonthOfYear
+): string => {
+  const translationMap: Record<EnglishAbrevMonthOfYear, string> = {
+    Jan: "Ene",
+    Feb: "Feb",
+    Mar: "Mar",
+    Apr: "Abr",
+    May: "May",
+    Jun: "Jun",
+    Jul: "Jul",
+    Aug: "Ago",
+    Sep: "Set",
+    Oct: "Oct",
+    Nov: "Nov",
+    Dec: "Dic",
+  };
+
+  return translationMap[monthInEnglish];
+};
+
+export const translateColumnHeaderToSpanish = (
   column: string | number | symbol
 ): string => {
-  const translations: ColumnTranslations = {
+  const translations: ColumnsTranslation = {
     id: "Id",
     firstName: "Nombre",
     lastName: "Apellido",
@@ -27,23 +64,27 @@ export const getColumnTranslation = (
   };
 
   if (typeof column === "string" && column in translations) {
-    return translations[column as keyof ColumnTranslations];
+    return translations[column as keyof ColumnsTranslation];
   }
 
   return String(column);
 };
 
-export const getDayType = (day: string): string => {
-  const lowerCaseDay = day.toLowerCase();
+export const translateDayToAbrevSpanish = (dayInEnglish: EnglishDayOfWeek): string => {
+  const translationMap: Record<EnglishDayOfWeek, string> = {
+    Sunday: "Dom",
+    Monday: "Lun",
+    Tuesday: "Mar",
+    Wednesday: "Mié",
+    Thursday: "Jue",
+    Friday: "Vie",
+    Saturday: "Sáb",
+  };
 
-  if (["monday", "tuesday", "wednesday", "thursday"].includes(lowerCaseDay)) {
-    return "weekday";
-  }
-
-  return lowerCaseDay;
+  return translationMap[dayInEnglish];
 };
 
-export const getDayTranslation = (day: string): string => {
+export const translateDayOptionsToSpanish = (day: string): string => {
   const translations: { [key: string]: string } = {
     weekday: "Lunes a Jueves",
     friday: "Viernes",
@@ -53,33 +94,19 @@ export const getDayTranslation = (day: string): string => {
   return translations[day] || day;
 };
 
-export const getDayOptions = () => [
-    { value: "weekday", label: "Lunes a Jueves" },
-    { value: "friday", label: "Viernes" },
-    { value: "saturday", label: "Sábado" },
-    { value: "sunday", label: "Domingo" },
-  ];
-  
-  export const getOptionsForDay = (
-    day: string,
-    schedules: Schedule[]
-  ): Schedule[] => {
-    let dayFilter = "";
-  
-    switch (day.toLowerCase()) {
-      case "friday":
-        dayFilter = DAYS.FRIDAY;
-        break;
-      case "saturday":
-        dayFilter = DAYS.SATURDAY;
-        break;
-      case "sunday":
-        dayFilter = DAYS.SUNDAY;
-        break;
-      default:
-        dayFilter = "weekday";
-        break;
-    }
-  
-    return schedules.filter((schedule) => schedule.day === dayFilter);
-  };
+export const getDayOptionsSpanish = () => [
+  { value: "weekday", label: "Lunes a Jueves" },
+  { value: "friday", label: "Viernes" },
+  { value: "saturday", label: "Sábado" },
+  { value: "sunday", label: "Domingo" },
+];
+
+export const setDayOptionsEnglish = (day: string): string => {
+  const lowerCaseDay = day.toLowerCase();
+
+  if (["monday", "tuesday", "wednesday", "thursday"].includes(lowerCaseDay)) {
+    return "weekday";
+  }
+
+  return lowerCaseDay;
+};

@@ -1,6 +1,16 @@
-import { MonthOfYear } from './monthOfYear';
-import { translateMonthToSpanish } from './calculationUtils';
+import { EnglishAbrevMonthOfYear } from './englishAbrevMonthOfYear';
 import { addDays, eachDayOfInterval, endOfMonth, format, startOfMonth } from 'date-fns';
+import { translateMonthToAbrevSpanish } from './stringUtils';
+
+export const isValidDate = (date: any): boolean => {
+  return date instanceof Date && !isNaN(date.getTime());
+};
+
+export const formatHeaderDate = (dateStr: string) => {
+  const [day, month] = dateStr.split(" ");
+  const transformedMonth = translateMonthToAbrevSpanish(month as EnglishAbrevMonthOfYear);
+  return `${day} ${transformedMonth}`;
+};
 
 export const getCurrentWeekDates = (weekOffset: number) => {
   const today = new Date();
@@ -16,16 +26,6 @@ export const getCurrentWeekDates = (weekOffset: number) => {
       isoDate: date.toISOString(), 
     };
   });
-};
-
-export const formatHeaderDate = (dateStr: string) => {
-  const [day, month] = dateStr.split(" ");
-  const transformedMonth = translateMonthToSpanish(month as MonthOfYear);
-  return `${day} ${transformedMonth}`;
-};
-
-export const isValidDate = (date: any): boolean => {
-  return date instanceof Date && !isNaN(date.getTime());
 };
 
 export const getDatesForPeriod = (startDate: Date, daysCount: number) => {

@@ -3,9 +3,9 @@ import { Schedule } from "../models/Schedule";
 import { getBiweeklyDates, getMonthlyDates, isValidDate } from "./dateUtils";
 import { Employee } from "../models/Employee";
 import { Dashboard } from "../models/Dashboard";
-import { DayOfWeek } from "./dayOfWeek";
-import { translateDayToSpanish } from "./calculationUtils";
+import { EnglishDayOfWeek } from "./englishDayOfWeek";
 import { format } from "date-fns";
+import { translateDayToAbrevSpanish } from "./stringUtils";
 
 export const collectTableData = (
   paginatedEmployees: Employee[],
@@ -24,7 +24,7 @@ export const collectTableData = (
       );
       const hours = record ? String(record.scheduleId) : "Libre";
       return {
-        day: translateDayToSpanish(day as DayOfWeek),
+        day: translateDayToAbrevSpanish(day as EnglishDayOfWeek),
         hours,
       };
     });

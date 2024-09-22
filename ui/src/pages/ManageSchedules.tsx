@@ -27,7 +27,7 @@ import {
   exportToPDF,
 } from "../utils/exportUtils";
 import { useSchedules } from "../hooks/useSchedule";
-import { getDayOptions } from "../utils/stringUtils";
+import { getDayOptionsSpanish } from "../utils/stringUtils";
 
 const ManageSchedules: React.FC = () => {
   const {
@@ -213,7 +213,7 @@ const ManageSchedules: React.FC = () => {
                   setAddFields({ ...addFields, day: e.target.value })
                 }
               >
-                {getDayOptions().map((option) => (
+                {getDayOptionsSpanish().map((option) => (
                   <MenuItem key={option.value} value={option.value}>
                     {option.label}
                   </MenuItem>

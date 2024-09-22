@@ -28,9 +28,8 @@ import { Employee } from "../../../models/Employee";
 import { STATE, TABLE } from "../../../constants/constants";
 import { HoursWorked } from "../../../models/HoursWorked";
 import { Schedule } from "../../../models/Schedule"; 
-import { translateDayToSpanish } from "../../../utils/calculationUtils";
-import { DayOfWeek } from "../../../utils/dayOfWeek";
-import { getOptionsForDay } from "../../../utils/stringUtils";
+import { EnglishDayOfWeek } from "../../../utils/englishDayOfWeek";
+import { getOptionsForDay, translateDayToAbrevSpanish } from "../../../utils/stringUtils";
 
 interface DropdownTableProps {
   filteredEmployees: Employee[];
@@ -128,8 +127,8 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
               </TableCell>
               {currentWeek.map(({ day, date }) => (
                 <TableCell key={day} align="center">
-                  {`${translateDayToSpanish(
-                    day as DayOfWeek
+                  {`${translateDayToAbrevSpanish(
+                    day as EnglishDayOfWeek
                   )} ${formatHeaderDate(date)}`}
                 </TableCell>
               ))}

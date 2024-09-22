@@ -2,16 +2,15 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import { capitalize, SvgIconProps } from "@mui/material";
-import { getColumnTranslation } from "./stringUtils";
-import { translateDayToSpanish } from "./calculationUtils";
+import { translateColumnHeaderToSpanish, translateDayToAbrevSpanish } from "./stringUtils";
 import { calculateTotalHours } from "./tableUtils";
 import { Employee } from "../models/Employee";
 import { HoursWorked } from "../models/HoursWorked";
 import { Schedule } from "../models/Schedule";
-import { DayOfWeek } from "./dayOfWeek";
+import { EnglishDayOfWeek } from "./englishDayOfWeek";
 
 export const exportToExcel = (data: any[], fileName: string) => {
-  const headers = Object.keys(data[0]).map(getColumnTranslation);
+  const headers = Object.keys(data[0]).map(translateColumnHeaderToSpanish);
 
   const translatedData = data.map((row) => {
     const translatedRow: any = {};
@@ -31,7 +30,7 @@ export const exportToExcel = (data: any[], fileName: string) => {
 export const exportToPDF = (data: any[], fileName: string) => {
   const doc = new jsPDF();
 
-  const headers = [Object.keys(data[0]).map(getColumnTranslation)];
+  const headers = [Object.keys(data[0]).map(translateColumnHeaderToSpanish)];
 
   const tableData = data.map((row) => Object.values(row));
 
@@ -83,7 +82,7 @@ export const handleExportTableData = (
 ) => {
   const dataForExport = filteredEmployees.map((employee) => {
     const employeeData: any = {
-      nombre: `${employee.firstName} ${employee.lastName}`,
+      Nombre: `${employee.firstName} ${employee.lastName}`,
     };
 
     currentWeek.forEach(({ day, date }) => {
@@ -100,10 +99,10 @@ export const handleExportTableData = (
         schedules.find((schedule) => schedule.id === selectedRecord.scheduleId)
           ?.label;
 
-      employeeData[translateDayToSpanish(day as DayOfWeek)] = scheduleLabel || "Libre";
+      employeeData[translateDayToAbrevSpanish(day as EnglishDayOfWeek)] = scheduleLabel || "Libre";
     });
 
-    employeeData[`total${capitalize(period)}`] = calculateTotalHours(
+    employeeData[`Total ${capitalize(period)}`] = calculateTotalHours(
       currentWeek,
       hoursWorked,
       schedules,

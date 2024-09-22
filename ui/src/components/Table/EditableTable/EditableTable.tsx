@@ -22,7 +22,7 @@ import { TABLE } from "../../../constants/constants";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
-import { getColumnTranslation, getDayOptions, getDayTranslation } from "../../../utils/stringUtils";
+import { translateColumnHeaderToSpanish, getDayOptionsSpanish, translateDayOptionsToSpanish } from "../../../utils/stringUtils";
 
 type EditableTableProps<T> = {
   data: T[];
@@ -121,7 +121,7 @@ const EditableTable = <T,>({
                     direction={orderBy === column ? order : "asc"}
                     onClick={() => handleSortRequest(column)}
                   >
-                    {getColumnTranslation(column)}
+                    {translateColumnHeaderToSpanish(column)}
                   </TableSortLabel>
                 </TableCell>
               ))}
@@ -146,7 +146,7 @@ const EditableTable = <T,>({
                                 setEditField(String(column), e.target.value)
                               }
                             >
-                              {getDayOptions().map((option) => (
+                              {getDayOptionsSpanish().map((option) => (
                                 <MenuItem
                                   key={option.value}
                                   value={option.value}
@@ -172,7 +172,7 @@ const EditableTable = <T,>({
                           />
                         )
                       ) : column === "day" ? (
-                        getDayTranslation(row[column as keyof T] as string) ||
+                        translateDayOptionsToSpanish(row[column as keyof T] as string) ||
                         null
                       ) : (
                         (row[column] as React.ReactNode)
