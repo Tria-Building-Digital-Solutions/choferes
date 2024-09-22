@@ -1,8 +1,14 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
-node_modules/
+ui/node_modules/
+api/node_modules/
+
+# FE temporary files
+ui/.eslintcache
+ui/tsconfig.tsbuildinfo
+ui/*.pack
+
 /.pnp
 .pnp.js
 

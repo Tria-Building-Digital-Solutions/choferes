@@ -13,12 +13,12 @@ import {
 interface MenuItemProps {
   text: string;
   onClick?: () => void;
-  icon?: React.ReactElement<SvgIconProps>;
-  subMenuItems?: MenuItemProps[]; 
+  icon?: React.ReactElement<SvgIconProps> | React.ReactElement;
+  subMenuItems?: MenuItemProps[];
 }
 
 interface MenuComponentProps {
-  icon?: React.ReactElement<SvgIconProps>;
+  icon?: React.ReactElement<SvgIconProps> | React.ReactElement;
   buttonText?: string;
   menuItems: MenuItemProps[];
 }
@@ -29,7 +29,9 @@ const MenuComponent: React.FC<MenuComponentProps> = ({
   menuItems,
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [subMenuAnchorEl, setSubMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const [subMenuAnchorEl, setSubMenuAnchorEl] = useState<null | HTMLElement>(
+    null
+  );
   const open = Boolean(anchorEl);
   const openSubMenu = Boolean(subMenuAnchorEl);
 
@@ -39,7 +41,7 @@ const MenuComponent: React.FC<MenuComponentProps> = ({
 
   const handleClose = () => {
     setAnchorEl(null);
-    setSubMenuAnchorEl(null); 
+    setSubMenuAnchorEl(null);
   };
 
   const handleSubMenuClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -51,6 +53,7 @@ const MenuComponent: React.FC<MenuComponentProps> = ({
       {icon && (
         <IconButton
           color="inherit"
+          sx={{ height: "56px" }}
           aria-controls={open ? "generic-menu" : undefined}
           aria-haspopup="true"
           aria-expanded={open ? "true" : undefined}
@@ -62,6 +65,7 @@ const MenuComponent: React.FC<MenuComponentProps> = ({
 
       {buttonText && !icon && (
         <Button
+          sx={{ height: "56px" }}
           aria-controls={open ? "generic-menu" : undefined}
           aria-haspopup="true"
           aria-expanded={open ? "true" : undefined}
@@ -87,13 +91,12 @@ const MenuComponent: React.FC<MenuComponentProps> = ({
                 if (item.onClick) item.onClick();
                 if (!item.subMenuItems) handleClose();
               }}
-              onMouseEnter={item.subMenuItems ? handleSubMenuClick : undefined} 
+              onMouseEnter={item.subMenuItems ? handleSubMenuClick : undefined}
             >
               {item.icon && <ListItemIcon>{item.icon}</ListItemIcon>}
               <ListItemText primary={item.text} />
               {item.subMenuItems && (
-                <IconButton onClick={handleSubMenuClick}>
-                </IconButton>
+                <IconButton onClick={handleSubMenuClick}></IconButton>
               )}
             </MenuItem>
 
@@ -105,13 +108,15 @@ const MenuComponent: React.FC<MenuComponentProps> = ({
               >
                 {item.subMenuItems.map((subItem, subIndex) => (
                   <MenuItem key={subIndex} onClick={subItem.onClick}>
-                    {subItem.icon && <ListItemIcon>{subItem.icon}</ListItemIcon>}
+                    {subItem.icon && (
+                      <ListItemIcon>{subItem.icon}</ListItemIcon>
+                    )}
                     <ListItemText primary={subItem.text} />
                   </MenuItem>
                 ))}
               </Menu>
             )}
-            
+
             {index < menuItems.length - 1 && <Divider />}
           </div>
         ))}

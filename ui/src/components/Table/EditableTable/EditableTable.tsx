@@ -19,11 +19,10 @@ import {
   Divider,
 } from "@mui/material";
 import { TABLE } from "../../../constants/constants";
-import { ColumnTranslations } from "../../../types/ColumnTransaltion";
-import { getDayOptions } from "../../../utils/tableUtils";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
+import { getColumnTranslation, getDayOptions, getDayTranslation } from "../../../utils/stringUtils";
 
 type EditableTableProps<T> = {
   data: T[];
@@ -109,28 +108,6 @@ const EditableTable = <T,>({
     }
     return 0;
   });
-
-  const getColumnTranslation = (column: keyof T): string => {
-    const translations: ColumnTranslations<T> = {
-      firstName: "Nombre",
-      lastName: "Apellido",
-      label: "Lugar",
-      day: "Día",
-      hours: "Horas",
-    } as any;
-
-    return translations[column] || String(column);
-  };
-
-  const getDayTranslation = (day: string): string => {
-    const translations: { [key: string]: string } = {
-      weekday: "Lunes a Jueves",
-      friday: "Viernes",
-      saturday: "Sábado",
-      sunday: "Domingo",
-    };
-    return translations[day] || day;
-  };
 
   return (
     <Paper sx={{ width: "100%" }}>

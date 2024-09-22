@@ -5,23 +5,39 @@ import SearchBar from "../components/SearchBar/SearchBar";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
 import CalendarTodayRoundedIcon from "@mui/icons-material/CalendarTodayRounded";
-import api from "../services/api";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFileExcel, faFilePdf } from "@fortawesome/free-solid-svg-icons";
+import {
+  exportFileFormattedDate,
+  exportToExcel,
+  exportToPDF,
+} from "../utils/exportUtils";
 import { Employee } from "../models/Employee";
+import { useEmployees } from "../hooks/useEmployee";
+import { useSchedules } from "../hooks/useSchedule";
+import { useHours } from "../hooks/useHours";
+import { AxiosError } from "axios";
+import { HoursWorked } from "../models/HoursWorked";
+import { getDayType } from "../utils/stringUtils";
 
 const Dashboard: React.FC = () => {
-  const [employees, setEmployees] = useState<Employee[]>([]);
+  const { employees, fetchEmployees } = useEmployees();
+  const { schedules, fetchSchedules } = useSchedules();
+  const { hoursWorked, fetchHours, handleAddHours, handleUpdateHours } =
+    useHours();
   const [weekOffset, setWeekOffset] = useState(0);
   const [filter, setFilter] = useState("");
   const [showResults, setShowResults] = useState(true);
 
   useEffect(() => {
-    const fetchEmployees = async () => {
-      const response = await api.get("/employees");
-      setEmployees(response.data);
+    const fetchData = async () => {
+      await fetchEmployees();
+      await fetchSchedules();
+      await fetchHours();
     };
 
-    fetchEmployees();
-  }, []);
+    fetchData();
+  }, [fetchEmployees, fetchSchedules, fetchHours]);
 
   const handleNextWeek = () => setWeekOffset(weekOffset + 1);
   const handlePreviousWeek = () => setWeekOffset(weekOffset - 1);
@@ -37,11 +53,104 @@ const Dashboard: React.FC = () => {
     setShowResults(filteredEmployees.length > 0);
   }, [filter, employees, filteredEmployees.length]);
 
+  const handleChange = async (
+    employee: Employee,
+    day: string,
+    date: Date,
+    selectedLabel: string
+  ) => {
+    const selectedSchedule = schedules.find(
+      (schedule) =>
+        schedule.label === selectedLabel && schedule.day === getDayType(day)
+    );
+
+    if (!selectedSchedule) {
+      console.error("No se encontró un horario para el label seleccionado");
+      return;
+    }
+
+    const newHours: HoursWorked = {
+      employeeId: employee.id,
+      date: date,
+      scheduleId: selectedSchedule.id,
+    };
+
+    console.log(newHours);
+
+    try {
+      const existingRecord = hoursWorked.find(
+        (record) =>
+          record.employeeId === employee.id &&
+          record.date.getTime() === date.getTime()
+      );
+
+      if (existingRecord) {
+        await handleUpdateHours(existingRecord.id!, {
+          scheduleId: selectedSchedule.id,
+        });
+      } else {
+        await handleAddHours(newHours);
+      }
+
+      await fetchHours();
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      if (axiosError.response) {
+        console.log(
+          "Error en la respuesta del servidor:",
+          axiosError.response.data
+        );
+      } else {
+        console.log("Error desconocido:", error);
+      }
+    }
+  };
+
   return (
-    <div>
-      <Typography variant="h2" sx={{ flexGrow: 1, margin: "25px 0" }}>
-        Roles
-      </Typography>
+    <Box>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        sx={{ mb: 2 }}
+      >
+        <Typography variant="h2" sx={{ flexGrow: 1 }}>
+          Administrar Roles
+        </Typography>
+        <Box display="flex" alignItems="center">
+          <Tooltip title="Descargar Excel" arrow>
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{ height: "56px", mr: 1 }}
+              onClick={() =>
+                exportToExcel(
+                  filteredEmployees,
+                  `roles-${exportFileFormattedDate(new Date())}`
+                )
+              }
+            >
+              <FontAwesomeIcon icon={faFileExcel} size="lg" />
+            </Button>
+          </Tooltip>
+          <Tooltip title="Descargar PDF" arrow>
+            <Button
+              variant="contained"
+              color="secondary"
+              sx={{ height: "56px" }}
+              onClick={() =>
+                exportToPDF(
+                  filteredEmployees,
+                  `roles-${exportFileFormattedDate(new Date())}`
+                )
+              }
+            >
+              <FontAwesomeIcon icon={faFilePdf} size="lg" />
+            </Button>
+          </Tooltip>
+        </Box>
+      </Box>
+
       <Grid
         container
         spacing={2}
@@ -96,17 +205,21 @@ const Dashboard: React.FC = () => {
         )}
       </Grid>
       <br />
+
       {showResults ? (
         <DropdownTable
           filteredEmployees={filteredEmployees}
+          schedules={schedules}
+          hoursWorked={hoursWorked}
           weekOffset={weekOffset}
+          handleChange={handleChange}
         />
       ) : (
         <Typography variant="h6" color="textSecondary">
           No se encontraron empleados que coincidan con la búsqueda.
         </Typography>
       )}
-    </div>
+    </Box>
   );
 };
 

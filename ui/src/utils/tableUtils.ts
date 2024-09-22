@@ -1,71 +1,48 @@
-import {
-  addDays,
-  startOfMonth,
-  endOfMonth,
-  eachDayOfInterval,
-  format,
-} from "date-fns";
-import { DAYS } from "../constants/constants";
 import { HoursWorked } from "../models/HoursWorked";
 import { Schedule } from "../models/Schedule";
+import { getBiweeklyDates, getMonthlyDates, isValidDate } from "./dateUtils";
+import { Employee } from "../models/Employee";
+import { Dashboard } from "../models/Dashboard";
+import { DayOfWeek } from "./dayOfWeek";
+import { translateDayToSpanish } from "./calculationUtils";
+import { format } from "date-fns";
 
-export const getDayOptions = () => [
-  { value: "weekday", label: "Lunes a Jueves" },
-  { value: "friday", label: "Viernes" },
-  { value: "saturday", label: "Sábado" },
-  { value: "sunday", label: "Domingo" },
-];
+export const collectTableData = (
+  paginatedEmployees: Employee[],
+  currentWeek: { day: string; date: string }[],
+  hoursWorked: HoursWorked[],
+  schedules: Schedule[],
+  selectedColumn: "weekly" | "biweekly" | "monthly"
+): Dashboard[] => {
+  return paginatedEmployees.map((employee) => {
+    const dailyHours = currentWeek.map(({ day, date }) => {
+      const record = hoursWorked.find(
+        (record) =>
+          record.employeeId === employee.id &&
+          new Date(record.date).toISOString().split("T")[0] ===
+            new Date(date).toISOString().split("T")[0]
+      );
+      const hours = record ? String(record.scheduleId) : "Libre";
+      return {
+        day: translateDayToSpanish(day as DayOfWeek),
+        hours,
+      };
+    });
 
-export const getOptionsForDay = (
-  day: string,
-  schedules: Schedule[]
-): Schedule[] => {
-  let dayFilter = "";
+    const totalHours = calculateTotalHours(
+      currentWeek,
+      hoursWorked,
+      schedules,
+      employee.id,
+      selectedColumn
+    );
 
-  switch (day.toLowerCase()) {
-    case "friday":
-      dayFilter = DAYS.FRIDAY;
-      break;
-    case "saturday":
-      dayFilter = DAYS.SATURDAY;
-      break;
-    case "sunday":
-      dayFilter = DAYS.SUNDAY;
-      break;
-    default:
-      dayFilter = "weekday";
-      break;
-  }
-
-  return schedules.filter((schedule) => schedule.day === dayFilter);
-};
-
-const getDatesForPeriod = (startDate: Date, daysCount: number) => {
-  return eachDayOfInterval({
-    start: startDate,
-    end: addDays(startDate, daysCount - 1),
-  }).map((date) => ({
-    day: format(date, "EEEE"),
-    date: format(date, "dd-MM-yyyy"),
-  }));
-};
-
-const getBiweeklyDates = (startDate: Date) => {
-  const firstWeek = getDatesForPeriod(startDate, 7);
-  const secondWeekStart = addDays(startDate, 7);
-  const secondWeek = getDatesForPeriod(secondWeekStart, 7);
-  return [...firstWeek, ...secondWeek];
-};
-
-const getMonthlyDates = (startDate: Date) => {
-  const firstDayOfMonth = startOfMonth(startDate);
-  const lastDayOfMonth = endOfMonth(startDate);
-  return eachDayOfInterval({ start: firstDayOfMonth, end: lastDayOfMonth }).map(
-    (date) => ({
-      day: format(date, "EEEE"),
-      date: format(date, "dd-MM-yyyy"),
-    })
-  );
+    return {
+      employeeName: `${employee.firstName} ${employee.lastName}`,
+      dailyHours,
+      totalHours,
+    };
+  });
 };
 
 export const calculateTotalHours = (
@@ -107,10 +84,6 @@ export const calculateTotalHours = (
 
     return total + scheduleHours;
   }, 0);
-};
-
-const isValidDate = (date: any): boolean => {
-  return date instanceof Date && !isNaN(date.getTime());
 };
 
 export const getBackgroundColor = (rowIndex: number) => {

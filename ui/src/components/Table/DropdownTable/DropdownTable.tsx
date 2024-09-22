@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Table,
   TableBody,
@@ -23,105 +23,46 @@ import {
 import {
   calculateTotalHours,
   getBackgroundColor,
-  getOptionsForDay,
 } from "../../../utils/tableUtils";
-import api from "../../../services/api";
 import { Employee } from "../../../models/Employee";
 import { STATE, TABLE } from "../../../constants/constants";
 import { HoursWorked } from "../../../models/HoursWorked";
-import { Schedule } from "../../../models/Schedule"; // Mantén esto si lo usas en otro lugar
+import { Schedule } from "../../../models/Schedule"; 
 import { translateDayToSpanish } from "../../../utils/calculationUtils";
-import { DayOfWeek } from "../../../types/DayOfWeek";
+import { DayOfWeek } from "../../../utils/dayOfWeek";
+import { getOptionsForDay } from "../../../utils/stringUtils";
 
 interface DropdownTableProps {
   filteredEmployees: Employee[];
   weekOffset: number;
+  schedules: Schedule[];
+  hoursWorked: HoursWorked[];
+  handleChange: (
+    employee: Employee,
+    day: string,
+    date: Date,
+    selectedLabel: string
+  ) => void;
 }
 
 const DropdownTable: React.FC<DropdownTableProps> = ({
   filteredEmployees,
   weekOffset,
+  schedules,
+  hoursWorked,
+  handleChange,
 }) => {
   const currentWeek = useMemo(
     () => getCurrentWeekDates(weekOffset),
     [weekOffset]
   );
 
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [schedules, setSchedules] = useState<Schedule[]>([]);
-  const [hoursWorked, setHoursWorked] = useState<HoursWorked[]>([]);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [selectedColumn, setSelectedColumn] = useState<
     "weekly" | "biweekly" | "monthly"
   >("weekly");
   const [orderDirection, setOrderDirection] = useState<"asc" | "desc">("asc");
-
-  useEffect(() => {
-    const fetchEmployees = async () => {
-      const response = await api.get("/employees");
-      setEmployees(response.data);
-    };
-
-    const fetchSchedules = async () => {
-      const response = await api.get("/schedules");
-      setSchedules(response.data);
-    };
-
-    const fetchHoursWorked = async () => {
-      const response = await api.get("/hours");
-      setHoursWorked(response.data);
-    };
-
-    fetchEmployees();
-    fetchSchedules();
-    fetchHoursWorked();
-  }, [weekOffset]);
-
-  const handleChange = async (
-    employee: Employee,
-    day: string,
-    date: Date,
-    selectedLabel: string
-  ) => {
-    const options = getOptionsForDay(day, schedules);
-    const selectedOption = options.find(
-      (option) => option.label === selectedLabel
-    );
-
-    if (employee.id !== undefined) {
-      const formattedDate = new Date(date).toISOString().split("T")[0];
-
-      const existingRecord = hoursWorked.find(
-        (record) =>
-          record.employeeId === employee.id &&
-          new Date(record.date).toISOString().split("T")[0] === formattedDate
-      );
-
-      // if (existingRecord) {
-      //   await api.put(`/hours/${existingRecord.id}`, {
-      //     employeeId: employee.id,
-      //     date: formattedDate,
-      //     scheduleId: selectedOption ? selectedOption.id : undefined,
-      //   });
-      // } else {
-      //   await api.post("/hours", {
-      //     employeeId: employee.id,
-      //     date: formattedDate,
-      //     scheduleId: selectedOption ? selectedOption.id : undefined,
-      //   });
-      // }
-
-      setHoursWorked((prevHoursWorked) => [
-        ...prevHoursWorked,
-        {
-          employeeId: employee.id,
-          date: new Date(formattedDate),
-          scheduleId: selectedOption ? selectedOption.id : undefined,
-        },
-      ]);
-    }
-  };
 
   const sortedEmployees = useMemo(() => {
     return [...filteredEmployees].sort((a, b) => {
@@ -146,7 +87,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
     })
     .replace(",", "");
 
-  if (!employees || employees.length === 0) {
+  if (!filteredEmployees || filteredEmployees.length === 0) {
     return (
       <Typography variant="h6" color="textSecondary">
         No se encontraron empleados disponibles.
@@ -179,22 +120,16 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                   Empleados
                 </TableSortLabel>
               </TableCell>
-              {currentWeek.map(({ day, date }) => {
-                return (
-                  <TableCell key={day} align="center">
-                    {`${translateDayToSpanish(
-                      day as DayOfWeek
-                    )} ${formatHeaderDate(date)}`}
-                  </TableCell>
-                );
-              })}
+              {currentWeek.map(({ day, date }) => (
+                <TableCell key={day} align="center">
+                  {`${translateDayToSpanish(
+                    day as DayOfWeek
+                  )} ${formatHeaderDate(date)}`}
+                </TableCell>
+              ))}
               <TableCell
                 align="center"
-                sx={{
-                  position: "sticky",
-                  right: 0,
-                  zIndex: 2,
-                }}
+                sx={{ position: "sticky", right: 0, zIndex: 2 }}
               >
                 <FormControl>
                   <InputLabel>Total</InputLabel>
@@ -240,6 +175,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                       year: "numeric",
                     })
                     .replace(",", "");
+                  const dateObject = new Date(date);
                   const isFutureDate = new Date(date) > today;
 
                   const selectedLabel =
@@ -248,7 +184,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                         (record) =>
                           record.employeeId === employee.id &&
                           new Date(record.date).toISOString().split("T")[0] ===
-                            new Date(date).toISOString().split("T")[0]
+                            dateObject.toISOString().split("T")[0]
                       )?.scheduleId) ||
                     STATE.FREE;
 
@@ -294,6 +230,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
 
                     return items;
                   });
+
                   return (
                     <TableCell
                       key={day}
@@ -309,7 +246,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                             handleChange(
                               employee,
                               day,
-                              new Date(date),
+                              dateObject,
                               String(e.target.value)
                             )
                           }
@@ -347,7 +284,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
       <Divider />
       <TablePagination
         className="pagination"
-        rowsPerPageOptions={[10, 25, 50]}
+        rowsPerPageOptions={[5, 10, 25]}
         component="div"
         count={sortedEmployees.length}
         rowsPerPage={rowsPerPage}
