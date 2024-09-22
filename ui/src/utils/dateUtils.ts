@@ -96,3 +96,26 @@ export const getMonthlyDates = (startDate: Date) => {
     })
   );
 };
+
+const getEndOfNextWeek = (today: Date): Date => {
+  let dayOfWeek = today.getDay();
+
+  if (dayOfWeek === 0) {
+    dayOfWeek = 7;
+  }
+
+  const daysUntilEndOfNextWeek = 14 - dayOfWeek; 
+  const endOfNextWeek = new Date(today);
+  endOfNextWeek.setDate(today.getDate() + daysUntilEndOfNextWeek);
+  endOfNextWeek.setHours(23, 59, 59, 999);
+
+  return endOfNextWeek;
+};
+
+export const isValidDateForSelect = (date: Date): boolean => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); 
+  const endOfNextWeek = getEndOfNextWeek(today); 
+  return date <= endOfNextWeek;
+};
+

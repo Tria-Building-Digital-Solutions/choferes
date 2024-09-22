@@ -19,6 +19,7 @@ import {
 import {
   formatHeaderDate,
   getCurrentWeekDates,
+  isValidDateForSelect,
 } from "../../../utils/dateUtils";
 import {
   calculateTotalHours,
@@ -27,16 +28,21 @@ import {
 import { Employee } from "../../../models/Employee";
 import { STATE, TABLE } from "../../../constants/constants";
 import { HoursWorked } from "../../../models/HoursWorked";
-import { Schedule } from "../../../models/Schedule"; 
+import { Schedule } from "../../../models/Schedule";
 import { EnglishDayOfWeek } from "../../../utils/englishDayOfWeek";
-import { getOptionsForDay, translateDayToAbrevSpanish } from "../../../utils/stringUtils";
+import {
+  getOptionsForDay,
+  translateDayToAbrevSpanish,
+} from "../../../utils/stringUtils";
 
 interface DropdownTableProps {
   filteredEmployees: Employee[];
   weekOffset: number;
   schedules: Schedule[];
   hoursWorked: HoursWorked[];
-  setPeriod: React.Dispatch<React.SetStateAction<"weekly" | "biweekly" | "monthly">>;
+  setPeriod: React.Dispatch<
+    React.SetStateAction<"weekly" | "biweekly" | "monthly">
+  >;
   handleChange: (
     employee: Employee,
     day: string,
@@ -181,7 +187,6 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                     })
                     .replace(",", "");
                   const dateObject = new Date(date);
-                  const isFutureDate = new Date(date) > today;
 
                   const selectedLabel =
                     (employee.id !== undefined &&
@@ -241,7 +246,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                       key={day}
                       sx={{
                         backgroundColor:
-                          todayString === formattedDate ? "#F0F2F5" : "inherit",
+                          todayString === formattedDate ? "#e4f5ed" : "inherit",
                       }}
                     >
                       <FormControl fullWidth>
@@ -255,7 +260,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                               String(e.target.value)
                             )
                           }
-                          disabled={isFutureDate}
+                          disabled={!isValidDateForSelect(dateObject)} 
                         >
                           {menuItems}
                         </Select>

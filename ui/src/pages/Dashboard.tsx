@@ -19,7 +19,7 @@ import { useHours } from "../hooks/useHours";
 import { AxiosError } from "axios";
 import { HoursWorked } from "../models/HoursWorked";
 import { setDayOptionsEnglish } from "../utils/stringUtils";
-import { getCurrentWeekDates } from "../utils/dateUtils";
+import { getCurrentWeekDates, isValidDateForSelect } from "../utils/dateUtils";
 
 const Dashboard: React.FC = () => {
   const { employees, fetchEmployees } = useEmployees();
@@ -186,7 +186,11 @@ const Dashboard: React.FC = () => {
                   <Button
                     variant="contained"
                     sx={{ mr: 2, height: "56px" }}
-                    disabled={weekOffset === 0}
+                    disabled={
+                      !isValidDateForSelect(
+                        new Date(getCurrentWeekDates(weekOffset + 1)[0].isoDate)
+                      )
+                    }
                     onClick={handleNextWeek}
                   >
                     <ArrowForwardIosRoundedIcon />
