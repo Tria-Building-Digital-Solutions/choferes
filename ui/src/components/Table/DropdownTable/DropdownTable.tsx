@@ -34,6 +34,7 @@ import {
   getOptionsForDay,
   translateDayToAbrevSpanish,
 } from "../../../utils/stringUtils";
+import { getWeekNumber } from "../../../utils/hoursUtils";
 
 interface DropdownTableProps {
   filteredEmployees: Employee[];
@@ -112,6 +113,11 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
         <Table stickyHeader aria-label="sticky table">
           <TableHead>
             <TableRow>
+              <TableCell align="center" colSpan={currentWeek.length + 2}>
+                Semana {getWeekNumber(today)}
+              </TableCell>
+            </TableRow>
+            <TableRow>
               <TableCell
                 className="employee-column"
                 sx={{
@@ -165,7 +171,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
           <TableBody>
             {paginatedEmployees.map((employee, rowIndex) => (
               <TableRow
-                key={`${employee.firstName}-${employee.lastName}-${rowIndex}`}
+                key={employee.id}
                 sx={{ backgroundColor: getBackgroundColor(rowIndex) }}
               >
                 <TableCell
@@ -187,7 +193,6 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                     })
                     .replace(",", "");
                   const dateObject = new Date(date);
-
                   const existingRecord = hoursWorked.find(
                     (record) =>
                       record.employeeId === employee.id &&
@@ -202,7 +207,6 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                     : STATE.FREE;
 
                   const options = getOptionsForDay(day, schedules);
-
                   const priorityOptions = [
                     "Ausencia",
                     "Cubre Almuerzo",
@@ -294,7 +298,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
         count={sortedEmployees.length}
         rowsPerPage={rowsPerPage}
         page={page}
-        onPageChange={(event, newPage) => setPage(newPage)}
+        onPageChange={(_event, newPage) => setPage(newPage)}
         onRowsPerPageChange={(event) => {
           setRowsPerPage(parseInt(event.target.value, 10));
           setPage(0);
