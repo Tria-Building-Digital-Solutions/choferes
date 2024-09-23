@@ -14,6 +14,8 @@ import {
   Select,
   MenuItem,
   Tooltip,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import EditableTable from "../components/Table/EditableTable/EditableTable";
 import { Schedule } from "../models/Schedule";
@@ -63,7 +65,7 @@ const ManageSchedules: React.FC = () => {
     };
 
     fetchData();
-  },[fetchSchedules]);
+  }, [fetchSchedules]);
 
   useEffect(() => {
     const filtered = schedules.filter((schedule) =>
@@ -136,6 +138,9 @@ const ManageSchedules: React.FC = () => {
     }
   };
 
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+
   return (
     <Box>
       <Box
@@ -144,7 +149,7 @@ const ManageSchedules: React.FC = () => {
         alignItems="center"
         sx={{ mb: 2 }}
       >
-        <Typography variant="h2" sx={{ flexGrow: 1 }}>
+        <Typography variant={isSmallScreen ? 'h4' : 'h2'} sx={{ flexGrow: 1 }}>
           Gestionar Horarios
         </Typography>
         {filteredSchedules.length > 0 && (

@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, Grid, Tooltip, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Grid,
+  Tooltip,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import DropdownTable from "../components/Table/DropdownTable/DropdownTable";
 import SearchBar from "../components/SearchBar/SearchBar";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
@@ -16,7 +24,9 @@ import { Employee } from "../models/Employee";
 import { useEmployees } from "../hooks/useEmployee";
 import { useSchedules } from "../hooks/useSchedule";
 import { useHours } from "../hooks/useHours";
-import { AxiosError } from "axios";
+import { useWeeklySummaries } from "../hooks/useWeeklySummary";
+import { useBiweeklySummaries } from "../hooks/useBiweeklySummary";
+import { useMonthlySummaries } from "../hooks/useMonthlySummary";
 import { HoursWorked } from "../models/HoursWorked";
 import { setDayOptionsEnglish } from "../utils/stringUtils";
 import { getCurrentWeekDates, isValidDateForSelect } from "../utils/dateUtils";
@@ -26,6 +36,12 @@ const Dashboard: React.FC = () => {
   const { schedules, fetchSchedules } = useSchedules();
   const { hoursWorked, fetchHours, handleAddHours, handleUpdateHours } =
     useHours();
+  const { weeklySummaries, handleAddWeeklySummary, handleUpdateWeeklySummary } =
+    useWeeklySummaries();
+  const { biweeklySummaries, handleAddBiweeklySummary, handleUpdateBiweeklySummary } =
+    useBiweeklySummaries();
+  const { monthlySummaries, handleAddMonthlySummary, handleUpdateMonthlySummary } =
+    useMonthlySummaries();
   const [weekOffset, setWeekOffset] = useState(0);
   const [filter, setFilter] = useState("");
   const [showResults, setShowResults] = useState(true);
@@ -80,35 +96,23 @@ const Dashboard: React.FC = () => {
       scheduleId: selectedSchedule.id,
     };
 
-    try {
-      const existingRecord = hoursWorked.find((record) => {
-        const recordDate = new Date(record.date);
-        return (
-          record.employeeId === employee.id &&
-          recordDate.getTime() === date.getTime()
-        );
+    const existingRecord = hoursWorked.find((record) => {
+      const recordDate = new Date(record.date);
+      return (
+        record.employeeId === employee.id &&
+        recordDate.getTime() === date.getTime()
+      );
+    });
+
+    if (existingRecord) {
+      await handleUpdateHours(existingRecord.id!, {
+        scheduleId: selectedSchedule.id,
       });
-
-      if (existingRecord) {
-        await handleUpdateHours(existingRecord.id!, {
-          scheduleId: selectedSchedule.id,
-        });
-      } else {
-        await handleAddHours(newHours);
-      }
-
-      await fetchHours();
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      if (axiosError.response) {
-        console.log(
-          "Error en la respuesta del servidor:",
-          axiosError.response.data
-        );
-      } else {
-        console.log("Error desconocido:", error);
-      }
+    } else {
+      await handleAddHours(newHours);
     }
+
+    await fetchHours();
   };
 
   const { dataForExport, headers, fileName } = handleExportTableData(
@@ -119,6 +123,9 @@ const Dashboard: React.FC = () => {
     period
   );
 
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+
   return (
     <Box>
       <Box
@@ -127,7 +134,7 @@ const Dashboard: React.FC = () => {
         alignItems="center"
         sx={{ mb: 2 }}
       >
-        <Typography variant="h2" sx={{ flexGrow: 1 }}>
+        <Typography variant={isSmallScreen ? "h4" : "h2"} sx={{ flexGrow: 1 }}>
           Administrar Roles
         </Typography>
         {showResults && (

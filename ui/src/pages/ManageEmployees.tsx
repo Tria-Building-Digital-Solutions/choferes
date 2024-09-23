@@ -10,6 +10,8 @@ import {
   DialogContent,
   DialogTitle,
   Tooltip,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import EditableTable from "../components/Table/EditableTable/EditableTable";
 import { Employee } from "../models/Employee";
@@ -120,6 +122,9 @@ const ManageEmployees: React.FC = () => {
     }
   };
 
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+
   return (
     <Box>
       <Box
@@ -128,7 +133,7 @@ const ManageEmployees: React.FC = () => {
         alignItems="center"
         sx={{ mb: 2 }}
       >
-        <Typography variant="h2" sx={{ flexGrow: 1 }}>
+        <Typography variant={isSmallScreen ? 'h4' : 'h2'} sx={{ flexGrow: 1 }}>
           Gestionar Empleados
         </Typography>
         {filteredEmployees.length > 0 && (
