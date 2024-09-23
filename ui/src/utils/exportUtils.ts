@@ -113,7 +113,13 @@ export const handleExportTableData = (
     `Total ${translatePeriodToSpanish(period)}`,
   ];
 
-  const dataForExport = filteredEmployees.map((employee) => {
+  const sortedEmployees = filteredEmployees.sort((a, b) => {
+    const fullNameA = `${a.firstName} ${a.lastName}`.toLowerCase();
+    const fullNameB = `${b.firstName} ${b.lastName}`.toLowerCase();
+    return fullNameA.localeCompare(fullNameB);
+  });
+
+  const dataForExport = sortedEmployees.map((employee) => {
     const employeeData: any = {
       Nombre: `${employee.firstName} ${employee.lastName}`,
     };
