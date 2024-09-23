@@ -63,7 +63,7 @@ const ManageSchedules: React.FC = () => {
     };
 
     fetchData();
-  }, [fetchSchedules]);
+  },[fetchSchedules]);
 
   useEffect(() => {
     const filtered = schedules.filter((schedule) =>

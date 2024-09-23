@@ -80,8 +80,6 @@ const Dashboard: React.FC = () => {
       scheduleId: selectedSchedule.id,
     };
 
-    console.log(newHours);
-
     try {
       const existingRecord = hoursWorked.find(
         (record) =>
