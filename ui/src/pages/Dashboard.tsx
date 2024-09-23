@@ -76,16 +76,18 @@ const Dashboard: React.FC = () => {
 
     const newHours: HoursWorked = {
       employeeId: employee.id,
-      date: date,
+      date,
       scheduleId: selectedSchedule.id,
     };
 
     try {
-      const existingRecord = hoursWorked.find(
-        (record) =>
+      const existingRecord = hoursWorked.find((record) => {
+        const recordDate = new Date(record.date);
+        return (
           record.employeeId === employee.id &&
-          record.date.getTime() === date.getTime()
-      );
+          recordDate.getTime() === date.getTime()
+        );
+      });
 
       if (existingRecord) {
         await handleUpdateHours(existingRecord.id!, {

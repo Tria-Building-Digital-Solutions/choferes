@@ -52,6 +52,6 @@ export const useMonthlySummaries = () => {
     fetchMonthlySummaries,
     handleAddMonthlySummary,
     handleUpdateMonthlySummary,
-    handleDeleteMonthlySummary,ff
+    handleDeleteMonthlySummary,
   };
 };

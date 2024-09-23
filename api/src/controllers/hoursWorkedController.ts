@@ -3,9 +3,9 @@ import * as hoursWorkedService from "../services/hoursWorkedService";
 
 export const createHoursWorked = async (req: Request, res: Response) => {
   try {
-    const { employeeId, date, hours, scheduleId } = req.body;
+    const { employeeId, date, scheduleId } = req.body;
 
-    if (!employeeId || !date || !hours || !scheduleId) {
+    if (!employeeId || !date || !scheduleId) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
