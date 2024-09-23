@@ -1,8 +1,8 @@
-import { DAYS } from "../constants/constants";
 import { Schedule } from "../models/Schedule";
 import { ColumnsTranslation } from "./columnsTranslation";
 import { EnglishDayOfWeek } from "./englishDayOfWeek";
 import { EnglishAbrevMonthOfYear } from "./englishAbrevMonthOfYear";
+import { DAYS } from "../constants/constants";
 
 export const getOptionsForDay = (
   day: string,

@@ -17,6 +17,9 @@ import {
   Typography,
   Box,
 } from "@mui/material";
+import { Employee } from "../../../models/Employee";
+import { Schedule } from "../../../models/Schedule";
+import { HoursWorked } from "../../../models/HoursWorked";
 import {
   formatDate,
   formatHeaderDate,
@@ -27,16 +30,13 @@ import {
   calculateTotalHours,
   getBackgroundColor,
 } from "../../../utils/tableUtils";
-import { Employee } from "../../../models/Employee";
-import { STATE, TABLE } from "../../../constants/constants";
-import { HoursWorked } from "../../../models/HoursWorked";
-import { Schedule } from "../../../models/Schedule";
-import { EnglishDayOfWeek } from "../../../utils/englishDayOfWeek";
 import {
   getOptionsForDay,
   translateDayToAbrevSpanish,
 } from "../../../utils/stringUtils";
 import { getWeekNumber } from "../../../utils/hoursUtils";
+import { EnglishDayOfWeek } from "../../../utils/englishDayOfWeek";
+import { STATE, TABLE } from "../../../constants/constants";
 
 interface DropdownTableProps {
   filteredEmployees: Employee[];

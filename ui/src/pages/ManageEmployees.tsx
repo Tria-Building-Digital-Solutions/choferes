@@ -14,17 +14,20 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import EditableTable from "../components/Table/EditableTable/EditableTable";
-import { Employee } from "../models/Employee";
 import SearchBar from "../components/SearchBar/SearchBar";
-import PersonAddAlt1RoundedIcon from "@mui/icons-material/PersonAddAlt1Rounded";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFileExcel, faFilePdf } from "@fortawesome/free-solid-svg-icons";
+import SplitButton from "../components/SplitButton/SplitButton";
+import { Employee } from "../models/Employee";
+import { useEmployees } from "../hooks/useEmployee";
 import {
+  createExportOptions,
   exportFileFormattedDate,
   exportToExcel,
   exportToPDF,
 } from "../utils/exportUtils";
-import { useEmployees } from "../hooks/useEmployee";
+import PersonAddAlt1RoundedIcon from "@mui/icons-material/PersonAddAlt1Rounded";
+import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFileExcel, faFilePdf } from "@fortawesome/free-solid-svg-icons";
 
 const ManageEmployees: React.FC = () => {
   const {
@@ -133,42 +136,22 @@ const ManageEmployees: React.FC = () => {
         alignItems="center"
         sx={{ mb: 2 }}
       >
-        <Typography variant={isSmallScreen ? 'h4' : 'h2'} sx={{ flexGrow: 1 }}>
+        <Typography variant={isSmallScreen ? "h4" : "h2"} sx={{ flexGrow: 1 }}>
           Gestionar Empleados
         </Typography>
         {filteredEmployees.length > 0 && (
-          <Box display="flex" alignItems="center">
-            <Tooltip title="Descargar Excel" arrow>
-              <Button
-                variant="contained"
-                color="primary"
-                sx={{ height: "56px", mr: 1 }}
-                onClick={() =>
-                  exportToExcel(
-                    filteredEmployees,
-                    `empleados-${exportFileFormattedDate(new Date())}`
-                  )
-                }
-              >
-                <FontAwesomeIcon icon={faFileExcel} size="lg" />
-              </Button>
-            </Tooltip>
-            <Tooltip title="Descargar PDF" arrow>
-              <Button
-                variant="contained"
-                color="secondary"
-                sx={{ height: "56px" }}
-                onClick={() =>
-                  exportToPDF(
-                    filteredEmployees,
-                    `empleados-${exportFileFormattedDate(new Date())}`
-                  )
-                }
-              >
-                <FontAwesomeIcon icon={faFilePdf} size="lg" />
-              </Button>
-            </Tooltip>
-          </Box>
+          <SplitButton
+            options={createExportOptions(
+              <FontAwesomeIcon icon={faFileExcel} size="lg" />,
+              <FontAwesomeIcon icon={faFilePdf} size="lg" />,
+              exportToExcel,
+              exportToPDF,
+              filteredEmployees,
+              `empleados-${exportFileFormattedDate(new Date())}`
+            )}
+            defaultIndex={0}
+            buttonIcon={<DownloadRoundedIcon />}
+          />
         )}
       </Box>
       <Grid

@@ -1,6 +1,9 @@
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import { Employee } from "../models/Employee";
+import { HoursWorked } from "../models/HoursWorked";
+import { Schedule } from "../models/Schedule";
 import {
   translateColumnHeaderToSpanish,
   translateDayOptionsToSpanish,
@@ -9,11 +12,8 @@ import {
   translationsDayOptionsToSpanish,
 } from "./stringUtils";
 import { calculateTotalHours } from "./tableUtils";
-import { Employee } from "../models/Employee";
-import { HoursWorked } from "../models/HoursWorked";
-import { Schedule } from "../models/Schedule";
-import { EnglishDayOfWeek } from "./englishDayOfWeek";
 import { formatHeaderDateWithYear, formatDate } from "./dateUtils";
+import { EnglishDayOfWeek } from "./englishDayOfWeek";
 
 export const exportToExcel = (
   data: any[],
@@ -27,15 +27,18 @@ export const exportToExcel = (
     const translatedRow: any = {};
     Object.keys(row).forEach((key, index) => {
       let value = row[key];
-      
-      if (typeof value === 'string') {
+
+      if (typeof value === "string") {
         const dateValue = new Date(value);
         value = !isNaN(dateValue.getTime())
           ? formatDate(dateValue, false)
           : value;
       }
 
-      if (typeof value === 'string' && Object.keys(translationsDayOptionsToSpanish).includes(value)) {
+      if (
+        typeof value === "string" &&
+        Object.keys(translationsDayOptionsToSpanish).includes(value)
+      ) {
         value = translateDayOptionsToSpanish(value);
       }
 
@@ -51,7 +54,6 @@ export const exportToExcel = (
   XLSX.writeFile(workbook, `${fileName}.xlsx`);
 };
 
-
 export const exportToPDF = (
   data: any[],
   fileName: string,
@@ -65,14 +67,17 @@ export const exportToPDF = (
 
   const tableData = data.map((row) => {
     return Object.values(row).map((value) => {
-      if (typeof value === 'string') {
+      if (typeof value === "string") {
         const dateValue = new Date(value);
         value = !isNaN(dateValue.getTime())
-          ? formatDate(dateValue, false) 
-          : value; 
+          ? formatDate(dateValue, false)
+          : value;
       }
 
-      if (typeof value === 'string' && Object.keys(translationsDayOptionsToSpanish).includes(value)) {
+      if (
+        typeof value === "string" &&
+        Object.keys(translationsDayOptionsToSpanish).includes(value)
+      ) {
         value = translateDayOptionsToSpanish(value);
       }
 
@@ -87,7 +92,6 @@ export const exportToPDF = (
 
   doc.save(`${fileName}.pdf`);
 };
-
 
 export const exportFileFormattedDate = (date: Date) => {
   return `${String(date.getDate()).padStart(2, "0")}-${String(
@@ -159,4 +163,27 @@ export const handleExportTableData = (
     headers,
     fileName: `roles-${exportFileFormattedDate(new Date())}`,
   };
+};
+
+export const createExportOptions = (
+  excelIcon: JSX.Element,
+  pdfIcon: JSX.Element,
+  exportToExcel: (dataForExport: any, fileName: string, headers?: any) => any,
+  exportToPDF: (dataForExport: any, fileName: string, headers?: any) => any,
+  dataForExport: any,
+  fileName: string,
+  headers?: any,
+) => {
+  return [
+    {
+      label: "Descargar Excel",
+      icon: excelIcon,
+      action: () => exportToExcel(dataForExport, fileName, headers),
+    },
+    {
+      label: "Descargar PDF",
+      icon: pdfIcon,
+      action: () => exportToPDF(dataForExport, fileName, headers),
+    },
+  ];
 };

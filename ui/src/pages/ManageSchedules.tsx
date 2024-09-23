@@ -18,18 +18,21 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import EditableTable from "../components/Table/EditableTable/EditableTable";
-import { Schedule } from "../models/Schedule";
 import SearchBar from "../components/SearchBar/SearchBar";
-import PostAddRoundedIcon from "@mui/icons-material/PostAddRounded";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFileExcel, faFilePdf } from "@fortawesome/free-solid-svg-icons";
+import SplitButton from "../components/SplitButton/SplitButton";
+import { Schedule } from "../models/Schedule";
+import { useSchedules } from "../hooks/useSchedule";
 import {
+  createExportOptions,
   exportFileFormattedDate,
   exportToExcel,
   exportToPDF,
 } from "../utils/exportUtils";
-import { useSchedules } from "../hooks/useSchedule";
 import { getDayOptionsSpanish } from "../utils/stringUtils";
+import PostAddRoundedIcon from "@mui/icons-material/PostAddRounded";
+import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFileExcel, faFilePdf } from "@fortawesome/free-solid-svg-icons";
 
 const ManageSchedules: React.FC = () => {
   const {
@@ -153,38 +156,18 @@ const ManageSchedules: React.FC = () => {
           Gestionar Horarios
         </Typography>
         {filteredSchedules.length > 0 && (
-          <Box display="flex" alignItems="center">
-            <Tooltip title="Descargar Excel" arrow>
-              <Button
-                variant="contained"
-                color="primary"
-                sx={{ height: "56px", mr: 1 }}
-                onClick={() =>
-                  exportToExcel(
-                    filteredSchedules,
-                    `horarios-${exportFileFormattedDate(new Date())}`
-                  )
-                }
-              >
-                <FontAwesomeIcon icon={faFileExcel} size="lg" />
-              </Button>
-            </Tooltip>
-            <Tooltip title="Descargar PDF" arrow>
-              <Button
-                variant="contained"
-                color="secondary"
-                sx={{ height: "56px" }}
-                onClick={() =>
-                  exportToPDF(
-                    filteredSchedules,
-                    `horarios-${exportFileFormattedDate(new Date())}`
-                  )
-                }
-              >
-                <FontAwesomeIcon icon={faFilePdf} size="lg" />
-              </Button>
-            </Tooltip>
-          </Box>
+          <SplitButton
+          options={createExportOptions(
+            <FontAwesomeIcon icon={faFileExcel} size="lg" />,
+            <FontAwesomeIcon icon={faFilePdf} size="lg" />,
+            exportToExcel,
+            exportToPDF,
+            filteredSchedules,
+            `empleados-${exportFileFormattedDate(new Date())}`
+          )}
+          defaultIndex={0}
+          buttonIcon={<DownloadRoundedIcon />}
+        />
         )}
       </Box>
       <Grid

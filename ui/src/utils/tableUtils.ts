@@ -1,11 +1,11 @@
-import { HoursWorked } from "../models/HoursWorked";
-import { Schedule } from "../models/Schedule";
-import { getBiweeklyDates, getMonthlyDates, isValidDate } from "./dateUtils";
-import { Employee } from "../models/Employee";
-import { Dashboard } from "../models/Dashboard";
-import { EnglishDayOfWeek } from "./englishDayOfWeek";
 import { format } from "date-fns";
+import { Employee } from "../models/Employee";
+import { Schedule } from "../models/Schedule";
+import { HoursWorked } from "../models/HoursWorked";
+import { Dashboard } from "../models/Dashboard";
 import { translateDayToAbrevSpanish } from "./stringUtils";
+import { getBiweeklyDates, getMonthlyDates, isValidDate } from "./dateUtils";
+import { EnglishDayOfWeek } from "./englishDayOfWeek";
 
 export const collectTableData = (
   paginatedEmployees: Employee[],

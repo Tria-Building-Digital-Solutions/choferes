@@ -10,38 +10,32 @@ import {
 } from "@mui/material";
 import DropdownTable from "../components/Table/DropdownTable/DropdownTable";
 import SearchBar from "../components/SearchBar/SearchBar";
-import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
-import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
-import CalendarTodayRoundedIcon from "@mui/icons-material/CalendarTodayRounded";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFileExcel, faFilePdf } from "@fortawesome/free-solid-svg-icons";
+import SplitButton from "../components/SplitButton/SplitButton";
+import { Employee } from "../models/Employee";
+import { HoursWorked } from "../models/HoursWorked";
+import { useEmployees } from "../hooks/useEmployee";
+import { useSchedules } from "../hooks/useSchedule";
+import { useHours } from "../hooks/useHours";
 import {
+  createExportOptions,
   exportToExcel,
   exportToPDF,
   handleExportTableData,
 } from "../utils/exportUtils";
-import { Employee } from "../models/Employee";
-import { useEmployees } from "../hooks/useEmployee";
-import { useSchedules } from "../hooks/useSchedule";
-import { useHours } from "../hooks/useHours";
-import { useWeeklySummaries } from "../hooks/useWeeklySummary";
-import { useBiweeklySummaries } from "../hooks/useBiweeklySummary";
-import { useMonthlySummaries } from "../hooks/useMonthlySummary";
-import { HoursWorked } from "../models/HoursWorked";
 import { setDayOptionsEnglish } from "../utils/stringUtils";
 import { getCurrentWeekDates, isValidDateForSelect } from "../utils/dateUtils";
+import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
+import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
+import CalendarTodayRoundedIcon from "@mui/icons-material/CalendarTodayRounded";
+import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFileExcel, faFilePdf } from "@fortawesome/free-solid-svg-icons";
 
 const Dashboard: React.FC = () => {
   const { employees, fetchEmployees } = useEmployees();
   const { schedules, fetchSchedules } = useSchedules();
   const { hoursWorked, fetchHours, handleAddHours, handleUpdateHours } =
     useHours();
-  const { weeklySummaries, handleAddWeeklySummary, handleUpdateWeeklySummary } =
-    useWeeklySummaries();
-  const { biweeklySummaries, handleAddBiweeklySummary, handleUpdateBiweeklySummary } =
-    useBiweeklySummaries();
-  const { monthlySummaries, handleAddMonthlySummary, handleUpdateMonthlySummary } =
-    useMonthlySummaries();
   const [weekOffset, setWeekOffset] = useState(0);
   const [filter, setFilter] = useState("");
   const [showResults, setShowResults] = useState(true);
@@ -55,7 +49,6 @@ const Dashboard: React.FC = () => {
       await fetchSchedules();
       await fetchHours();
     };
-
     fetchData();
   }, [fetchEmployees, fetchSchedules, fetchHours]);
 
@@ -104,6 +97,9 @@ const Dashboard: React.FC = () => {
       );
     });
 
+    // const scheduleHours = selectedSchedule.hours;
+    // const totalHours = existingRecord ? scheduleHours : scheduleHours;
+
     if (existingRecord) {
       await handleUpdateHours(existingRecord.id!, {
         scheduleId: selectedSchedule.id,
@@ -111,6 +107,33 @@ const Dashboard: React.FC = () => {
     } else {
       await handleAddHours(newHours);
     }
+
+    // const weekNumber = getWeekNumber(date);
+    // const month = date.getMonth() + 1;
+    // const year = date.getFullYear();
+
+    // const existingSummary = weeklySummaries.find(
+    //   (summary) =>
+    //     summary.employeeId === employee.id &&
+    //     summary.weekNumber === weekNumber &&
+    //     summary.month === month &&
+    //     summary.year === year
+    // );
+
+    // if (existingSummary) {
+    //   await handleUpdateWeeklySummary(existingSummary.id!, {
+    //     totalHours: existingSummary.totalHours + totalHours,
+    //   });
+    // } else {
+    //   const newWeeklySummary = {
+    //     employeeId: employee.id,
+    //     weekNumber,
+    //     month,
+    //     year,
+    //     totalHours,
+    //   };
+    //   await handleAddWeeklySummary(newWeeklySummary);
+    // }
 
     await fetchHours();
   };
@@ -138,28 +161,19 @@ const Dashboard: React.FC = () => {
           Administrar Roles
         </Typography>
         {showResults && (
-          <Box display="flex" alignItems="center">
-            <Tooltip title="Descargar Excel" arrow>
-              <Button
-                variant="contained"
-                color="primary"
-                sx={{ height: "56px", mr: 1 }}
-                onClick={() => exportToExcel(dataForExport, fileName, headers)}
-              >
-                <FontAwesomeIcon icon={faFileExcel} size="lg" />
-              </Button>
-            </Tooltip>
-            <Tooltip title="Descargar PDF" arrow>
-              <Button
-                variant="contained"
-                color="secondary"
-                sx={{ height: "56px" }}
-                onClick={() => exportToPDF(dataForExport, fileName, headers)}
-              >
-                <FontAwesomeIcon icon={faFilePdf} size="lg" />
-              </Button>
-            </Tooltip>
-          </Box>
+          <SplitButton
+            options={createExportOptions(
+              <FontAwesomeIcon icon={faFileExcel} size="lg" />,
+              <FontAwesomeIcon icon={faFilePdf} size="lg" />,
+              exportToExcel,
+              exportToPDF, 
+              dataForExport, 
+              fileName,
+              headers
+            )}
+            defaultIndex={0}
+            buttonIcon={<DownloadRoundedIcon />}
+          />
         )}
       </Box>
 

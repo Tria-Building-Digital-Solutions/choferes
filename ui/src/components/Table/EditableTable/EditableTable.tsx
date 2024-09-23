@@ -18,11 +18,15 @@ import {
   IconButton,
   Divider,
 } from "@mui/material";
-import { TABLE } from "../../../constants/constants";
+import {
+  translateColumnHeaderToSpanish,
+  getDayOptionsSpanish,
+  translateDayOptionsToSpanish,
+} from "../../../utils/stringUtils";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
-import { translateColumnHeaderToSpanish, getDayOptionsSpanish, translateDayOptionsToSpanish } from "../../../utils/stringUtils";
+import { TABLE } from "../../../constants/constants";
 
 type EditableTableProps<T> = {
   data: T[];
@@ -172,8 +176,9 @@ const EditableTable = <T,>({
                           />
                         )
                       ) : column === "day" ? (
-                        translateDayOptionsToSpanish(row[column as keyof T] as string) ||
-                        null
+                        translateDayOptionsToSpanish(
+                          row[column as keyof T] as string
+                        ) || null
                       ) : (
                         (row[column] as React.ReactNode)
                       )}
