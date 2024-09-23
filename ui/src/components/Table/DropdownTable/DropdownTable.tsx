@@ -188,15 +188,18 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                     .replace(",", "");
                   const dateObject = new Date(date);
 
-                  const selectedLabel =
-                    (employee.id !== undefined &&
-                      hoursWorked.find(
-                        (record) =>
-                          record.employeeId === employee.id &&
-                          new Date(record.date).toISOString().split("T")[0] ===
-                            dateObject.toISOString().split("T")[0]
-                      )?.scheduleId) ||
-                    STATE.FREE;
+                  const existingRecord = hoursWorked.find(
+                    (record) =>
+                      record.employeeId === employee.id &&
+                      new Date(record.date).toISOString().split("T")[0] ===
+                        dateObject.toISOString().split("T")[0]
+                  );
+
+                  const selectedLabel = existingRecord
+                    ? schedules.find(
+                        (schedule) => schedule.id === existingRecord.scheduleId
+                      )?.label || STATE.FREE
+                    : STATE.FREE;
 
                   const options = getOptionsForDay(day, schedules);
 
@@ -221,26 +224,6 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                     return a.label.localeCompare(b.label);
                   });
 
-                  const validLabel = sortedOptions.some(
-                    (option) => option.label === selectedLabel
-                  )
-                    ? selectedLabel
-                    : sortedOptions[0]?.label || "";
-
-                  const menuItems = sortedOptions.map((option, index) => {
-                    const items = [
-                      <MenuItem key={option.id} value={option.label}>
-                        {option.label}
-                      </MenuItem>,
-                    ];
-
-                    if (option.label === "Ausencia" && index > 0) {
-                      items.unshift(<Divider key="divider" />);
-                    }
-
-                    return items;
-                  });
-
                   return (
                     <TableCell
                       key={day}
@@ -251,7 +234,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                     >
                       <FormControl fullWidth>
                         <Select
-                          value={validLabel}
+                          value={selectedLabel}
                           onChange={(e) =>
                             handleChange(
                               employee,
@@ -260,9 +243,21 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                               String(e.target.value)
                             )
                           }
-                          disabled={!isValidDateForSelect(dateObject)} 
+                          disabled={!isValidDateForSelect(dateObject)}
                         >
-                          {menuItems}
+                          {sortedOptions.map((option, index) => {
+                            const items = [
+                              <MenuItem key={option.id} value={option.label}>
+                                {option.label}
+                              </MenuItem>,
+                            ];
+
+                            if (option.label === "Ausencia" && index > 0) {
+                              items.unshift(<Divider key="divider" />);
+                            }
+
+                            return items;
+                          })}
                         </Select>
                       </FormControl>
                     </TableCell>
