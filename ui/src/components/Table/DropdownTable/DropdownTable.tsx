@@ -15,8 +15,10 @@ import {
   TableSortLabel,
   Divider,
   Typography,
+  Box,
 } from "@mui/material";
 import {
+  formatDate,
   formatHeaderDate,
   getCurrentWeekDates,
   isValidDateForSelect,
@@ -114,7 +116,9 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
           <TableHead>
             <TableRow>
               <TableCell align="center" colSpan={currentWeek.length + 2}>
-                Semana {getWeekNumber(today)}
+                <Typography variant="body2">
+                  Semana {getWeekNumber(new Date(currentWeek[0]?.date))}
+                </Typography>
               </TableCell>
             </TableRow>
             <TableRow>
@@ -291,20 +295,26 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
         </Table>
       </TableContainer>
       <Divider />
-      <TablePagination
-        className="pagination"
-        rowsPerPageOptions={[5, 10, 25]}
-        component="div"
-        count={sortedEmployees.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={(_event, newPage) => setPage(newPage)}
-        onRowsPerPageChange={(event) => {
-          setRowsPerPage(parseInt(event.target.value, 10));
-          setPage(0);
-        }}
-        labelRowsPerPage={TABLE.ROWS_PER_PAGE}
-      />
+      <Box display="flex" justifyContent="space-between" alignItems="center">
+        <Typography variant="body2" sx={{ ml: 2 }}>
+          Semana del {formatDate(new Date(currentWeek[0]?.date), false)} al{" "}
+          {formatDate(new Date(currentWeek[6]?.date), false)}
+        </Typography>
+        <TablePagination
+          className="pagination"
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={sortedEmployees.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={(_event, newPage) => setPage(newPage)}
+          onRowsPerPageChange={(event) => {
+            setRowsPerPage(parseInt(event.target.value, 10));
+            setPage(0);
+          }}
+          labelRowsPerPage={TABLE.ROWS_PER_PAGE}
+        />
+      </Box>
     </Paper>
   );
 };
