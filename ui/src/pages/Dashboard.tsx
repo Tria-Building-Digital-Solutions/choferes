@@ -13,9 +13,13 @@ import SearchBar from "../components/SearchBar/SearchBar";
 import SplitButton from "../components/SplitButton/SplitButton";
 import { Employee } from "../models/Employee";
 import { HoursWorked } from "../models/HoursWorked";
+import { WeeklySummary } from "../models/WeeklySummary";
+import { BiweeklySummary } from "../models/BiweeklySummary";
+import { MonthlySummary } from "../models/MonthlySummary";
 import { useEmployees } from "../hooks/useEmployee";
 import { useSchedules } from "../hooks/useSchedule";
 import { useHours } from "../hooks/useHours";
+import { useSummaries } from "../hooks/useSummaries";
 import {
   createExportOptions,
   exportToExcel,
@@ -24,6 +28,7 @@ import {
 } from "../utils/exportUtils";
 import { setDayOptionsEnglish } from "../utils/stringUtils";
 import { getCurrentWeekDates, isValidDateForSelect } from "../utils/dateUtils";
+import { getBiweekNumber, getWeekNumber } from "../utils/dateUtils";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
 import CalendarTodayRoundedIcon from "@mui/icons-material/CalendarTodayRounded";
@@ -36,6 +41,16 @@ const Dashboard: React.FC = () => {
   const { schedules, fetchSchedules } = useSchedules();
   const { hoursWorked, fetchHours, handleAddHours, handleUpdateHours } =
     useHours();
+  const {
+    weeklySummaries,
+    biweeklySummaries,
+    monthlySummaries,
+    fetchWeeklySummaries,
+    fetchBiweeklySummaries,
+    fetchMonthlySummaries,
+    handleSummaryChange,
+    handleSummaryUpdate,
+  } = useSummaries();
   const [weekOffset, setWeekOffset] = useState(0);
   const [filter, setFilter] = useState("");
   const [showResults, setShowResults] = useState(true);
@@ -48,9 +63,19 @@ const Dashboard: React.FC = () => {
       await fetchEmployees();
       await fetchSchedules();
       await fetchHours();
+      await fetchWeeklySummaries();
+      await fetchBiweeklySummaries();
+      await fetchMonthlySummaries();
     };
     fetchData();
-  }, [fetchEmployees, fetchSchedules, fetchHours]);
+  }, [
+    fetchEmployees,
+    fetchSchedules,
+    fetchHours,
+    fetchWeeklySummaries,
+    fetchBiweeklySummaries,
+    fetchMonthlySummaries,
+  ]);
 
   const handleNextWeek = () => setWeekOffset(weekOffset + 1);
   const handlePreviousWeek = () => setWeekOffset(weekOffset - 1);
@@ -89,7 +114,7 @@ const Dashboard: React.FC = () => {
       scheduleId: selectedSchedule.id,
     };
 
-    const existingRecord = hoursWorked.find((record) => {
+    const existingHoursWorkedRecord = hoursWorked.find((record) => {
       const recordDate = new Date(record.date);
       return (
         record.employeeId === employee.id &&
@@ -97,43 +122,89 @@ const Dashboard: React.FC = () => {
       );
     });
 
-    // const scheduleHours = selectedSchedule.hours;
-    // const totalHours = existingRecord ? scheduleHours : scheduleHours;
-
-    if (existingRecord) {
-      await handleUpdateHours(existingRecord.id!, {
+    if (existingHoursWorkedRecord) {
+      await handleUpdateHours(existingHoursWorkedRecord.id!, {
         scheduleId: selectedSchedule.id,
       });
     } else {
       await handleAddHours(newHours);
     }
 
-    // const weekNumber = getWeekNumber(date);
-    // const month = date.getMonth() + 1;
-    // const year = date.getFullYear();
+    const weekNumber = getWeekNumber(date);
+    const biweekNumber = getBiweekNumber(date);
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
 
-    // const existingSummary = weeklySummaries.find(
-    //   (summary) =>
-    //     summary.employeeId === employee.id &&
-    //     summary.weekNumber === weekNumber &&
-    //     summary.month === month &&
-    //     summary.year === year
-    // );
+    const newWeeklySummary: WeeklySummary = {
+      employeeId: employee.id,
+      weekNumber,
+      month,
+      year,
+      totalHours: selectedSchedule.hours,
+    };
 
-    // if (existingSummary) {
-    //   await handleUpdateWeeklySummary(existingSummary.id!, {
-    //     totalHours: existingSummary.totalHours + totalHours,
-    //   });
-    // } else {
-    //   const newWeeklySummary = {
-    //     employeeId: employee.id,
-    //     weekNumber,
-    //     month,
-    //     year,
-    //     totalHours,
-    //   };
-    //   await handleAddWeeklySummary(newWeeklySummary);
-    // }
+    const newBiweeklySummary: BiweeklySummary = {
+      employeeId: employee.id,
+      biweekNumber,
+      month,
+      year,
+      totalHours: selectedSchedule.hours,
+    };
+
+    const newMonthlySummary: MonthlySummary = {
+      employeeId: employee.id,
+      month,
+      year,
+      totalHours: selectedSchedule.hours,
+    };
+
+    const existingWeeklySummaryRecord = weeklySummaries.find((record) => {
+      return (
+        record.employeeId === employee.id &&
+        record.weekNumber === weekNumber &&
+        record.year === year
+      );
+    });
+
+    const existingBiweeklySummaryRecord = biweeklySummaries.find((record) => {
+      return (
+        record.employeeId === employee.id &&
+        record.biweekNumber === biweekNumber &&
+        record.year === year
+      );
+    });
+
+    const existingMonthlySummaryRecord = monthlySummaries.find((record) => {
+      return (
+        record.employeeId === employee.id &&
+        record.month === month &&
+        record.year === year
+      );
+    });
+
+    if (existingWeeklySummaryRecord) {
+      await handleSummaryUpdate("weekly", existingWeeklySummaryRecord.id!, {
+        totalHours: existingWeeklySummaryRecord.totalHours + selectedSchedule.hours,
+      });
+    } else {
+      await handleSummaryChange("weekly", newWeeklySummary);
+    }
+
+    if (existingBiweeklySummaryRecord) {
+      await handleSummaryUpdate("biweekly", existingBiweeklySummaryRecord.id!, {
+        totalHours: existingBiweeklySummaryRecord.totalHours + selectedSchedule.hours,
+      });
+    } else {
+      await handleSummaryChange("biweekly", newBiweeklySummary);
+    }
+    
+    if (existingMonthlySummaryRecord) {
+      await handleSummaryUpdate("monthly", existingMonthlySummaryRecord.id!, {
+        totalHours: existingMonthlySummaryRecord.totalHours + selectedSchedule.hours,
+      });
+    } else {
+      await handleSummaryChange("monthly", newMonthlySummary);
+    }
 
     await fetchHours();
   };
@@ -166,8 +237,8 @@ const Dashboard: React.FC = () => {
               <FontAwesomeIcon icon={faFileExcel} size="lg" />,
               <FontAwesomeIcon icon={faFilePdf} size="lg" />,
               exportToExcel,
-              exportToPDF, 
-              dataForExport, 
+              exportToPDF,
+              dataForExport,
               fileName,
               headers
             )}

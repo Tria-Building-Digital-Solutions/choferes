@@ -42,6 +42,8 @@ export const useMonthlySummaries = () => {
     setTotalCount((prev) => prev - 1);
   };
 
+  const totalMonthlyHours = MonthlySummaryService.calculateTotalMonthlyHours(monthlySummaries);
+
   useEffect(() => {
     fetchMonthlySummaries();
   }, [fetchMonthlySummaries]);
@@ -53,5 +55,6 @@ export const useMonthlySummaries = () => {
     handleAddMonthlySummary,
     handleUpdateMonthlySummary,
     handleDeleteMonthlySummary,
+    totalMonthlyHours
   };
 };

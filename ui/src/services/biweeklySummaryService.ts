@@ -2,23 +2,27 @@ import { BiweeklySummary } from "../models/BiweeklySummary";
 import api from "./api";
 
 export const fetchBiweeklySummaries = async () => {
-  const response = await api.get("/api/biweekly-summary");
+  const response = await api.get("/biweekly-summary");
   return response.data;
 };
 
 export const addBiweeklySummary = async (
   newBiweeklySummary: BiweeklySummary
 ) => {
-  await api.post("/api/biweekly-summary", newBiweeklySummary);
+  await api.post("/biweekly-summary", newBiweeklySummary);
 };
 
 export const updateBiweeklySummary = async (
   id: number,
   updatedBiweeklySummary: Partial<BiweeklySummary>
 ) => {
-  await api.put(`/api/biweekly-summary/${id}`, updatedBiweeklySummary);
+  await api.put(`/biweekly-summary/${id}`, updatedBiweeklySummary);
 };
 
 export const deleteBiweeklySummary = async (id: number) => {
-  await api.delete(`/api/biweekly-summary/${id}`);
+  await api.delete(`/biweekly-summary/${id}`);
+};
+
+export const calculateTotalBiweeklyHours = (biweeklySummaries: BiweeklySummary[]) => {
+  return biweeklySummaries.reduce((total, summary) => total + summary.totalHours, 0);
 };

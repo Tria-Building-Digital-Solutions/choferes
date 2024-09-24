@@ -119,3 +119,23 @@ export const isValidDateForSelect = (date: Date): boolean => {
   return date <= endOfNextWeek;
 };
 
+export const getWeekNumber = (date: Date): number => {
+  const startDate = new Date(date.getFullYear(), 0, 1);
+  const days = Math.floor(
+    (date.valueOf() - startDate.valueOf()) / (24 * 60 * 60 * 1000)
+  );
+  return Math.ceil((days + startDate.getDay() + 1) / 7);
+};
+
+export const getBiweekNumber = (date: Date): number => {
+  const start = new Date(date.getFullYear(), 0, 1);
+  const daysDifference = Math.floor(
+    (date.getTime() - start.getTime()) / (24 * 60 * 60 * 1000)
+  );
+  const weekNumber = Math.floor(daysDifference / 7) + 1;
+  return Math.ceil(weekNumber / 2);
+};
+
+export const getMonthNumber = (date: Date): number => {
+  return date.getMonth() + 1;
+};

@@ -40,6 +40,8 @@ export const useWeeklySummaries = () => {
     setTotalCount((prev) => prev - 1);
   };
 
+  const totalWeeklyHours = WeeklySummaryService.calculateTotalWeeklyHours(weeklySummaries);
+
   useEffect(() => {
     fetchWeeklySummaries();
   }, [fetchWeeklySummaries]);
@@ -51,5 +53,6 @@ export const useWeeklySummaries = () => {
     handleAddWeeklySummary,
     handleUpdateWeeklySummary,
     handleDeleteWeeklySummary,
+    totalWeeklyHours
   };
 };

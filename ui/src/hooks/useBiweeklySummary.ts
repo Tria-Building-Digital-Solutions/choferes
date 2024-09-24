@@ -47,6 +47,8 @@ export const useBiweeklySummaries = () => {
     setTotalCount((prev) => prev - 1);
   };
 
+  const totalBiweeklyHours = BiweeklySummaryService.calculateTotalBiweeklyHours(biweeklySummaries);
+
   useEffect(() => {
     fetchBiweeklySummaries();
   }, [fetchBiweeklySummaries]);
@@ -58,5 +60,6 @@ export const useBiweeklySummaries = () => {
     handleAddBiweeklySummary,
     handleUpdateBiweeklySummary,
     handleDeleteBiweeklySummary,
+    totalBiweeklyHours,
   };
 };

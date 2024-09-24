@@ -20,21 +20,20 @@ import {
 import { Employee } from "../../../models/Employee";
 import { Schedule } from "../../../models/Schedule";
 import { HoursWorked } from "../../../models/HoursWorked";
+import { useSummaries } from "../../../hooks/useSummaries";
 import {
   formatDate,
   formatHeaderDate,
   getCurrentWeekDates,
+  getMonthNumber,
   isValidDateForSelect,
 } from "../../../utils/dateUtils";
-import {
-  calculateTotalHours,
-  getBackgroundColor,
-} from "../../../utils/tableUtils";
+import { getBackgroundColor } from "../../../utils/tableUtils";
 import {
   getOptionsForDay,
   translateDayToAbrevSpanish,
 } from "../../../utils/stringUtils";
-import { getWeekNumber } from "../../../utils/hoursUtils";
+import { getBiweekNumber, getWeekNumber } from "../../../utils/dateUtils";
 import { EnglishDayOfWeek } from "../../../utils/englishDayOfWeek";
 import { STATE, TABLE } from "../../../constants/constants";
 
@@ -62,6 +61,8 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
   setPeriod,
   handleChange,
 }) => {
+  const { weeklySummaries, biweeklySummaries, monthlySummaries } =
+    useSummaries();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [selectedPeriod, setSelectedPeriod] = useState<
@@ -108,6 +109,35 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
       </Typography>
     );
   }
+
+  const getTotalForPeriod = (employeeId: number) => {
+    const weekNumber = getWeekNumber(new Date(currentWeek[0]?.date));
+
+    if (selectedPeriod === "weekly") {
+      const summary = weeklySummaries.find(
+        (summary) => summary.employeeId === employeeId && summary.weekNumber === weekNumber
+      );
+      return summary ? summary.totalHours : 0;
+    }
+
+    if (selectedPeriod === "biweekly") {
+      const biweekNumber = getBiweekNumber(new Date(currentWeek[0]?.date));
+      const summary = biweeklySummaries.find(
+        (summary) => summary.employeeId === employeeId && summary.biweekNumber === biweekNumber
+      );
+      return summary ? summary.totalHours : 0;
+    }
+
+    if (selectedPeriod === "monthly") {
+      const month = getMonthNumber(new Date(currentWeek[0]?.date));
+      const summary = monthlySummaries.find(
+        (summary) => summary.employeeId === employeeId && summary.month === month
+      );
+      return summary ? summary.totalHours : 0;
+    }
+
+    return 0;
+  };
 
   return (
     <Paper sx={{ width: "100%" }}>
@@ -281,13 +311,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                     backgroundColor: getBackgroundColor(rowIndex),
                   }}
                 >
-                  {calculateTotalHours(
-                    currentWeek,
-                    hoursWorked,
-                    schedules,
-                    employee.id,
-                    selectedPeriod
-                  )}
+                  {getTotalForPeriod(employee.id)}
                 </TableCell>
               </TableRow>
             ))}
