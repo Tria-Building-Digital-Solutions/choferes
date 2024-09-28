@@ -70,6 +70,11 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
   >("weekly");
   const [orderDirection, setOrderDirection] = useState<"asc" | "desc">("asc");
 
+  const currentWeek = useMemo(
+    () => getCurrentWeekDates(weekOffset),
+    [weekOffset]
+  );
+
   const sortedEmployees = useMemo(() => {
     return [...filteredEmployees].sort((a, b) => {
       const nameA = `${a.firstName} ${a.lastName}`;
@@ -80,14 +85,64 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
     });
   }, [filteredEmployees, orderDirection]);
 
-  const currentWeek = useMemo(
-    () => getCurrentWeekDates(weekOffset),
-    [weekOffset]
-  );
-
   useEffect(() => {
     setPeriod(selectedPeriod);
   }, [selectedPeriod, setPeriod]);
+
+  const getTotalForPeriod = useMemo(() => {
+    return filteredEmployees.map((employee) => {
+      const weekNumber = getWeekNumber(new Date(currentWeek[0]?.date));
+
+      if (selectedPeriod === "weekly") {
+        const summary = weeklySummaries.find(
+          (summary) =>
+            summary.employeeId === employee.id &&
+            summary.weekNumber === weekNumber
+        );
+        return {
+          employeeId: employee.id,
+          totalHours: summary ? summary.totalHours : 0,
+        };
+      }
+
+      if (selectedPeriod === "biweekly") {
+        const biweekNumber = getBiweekNumber(new Date(currentWeek[0]?.date));
+        const summary = biweeklySummaries.find(
+          (summary) =>
+            summary.employeeId === employee.id &&
+            summary.biweekNumber === biweekNumber
+        );
+        return {
+          employeeId: employee.id,
+          totalHours: summary ? summary.totalHours : 0,
+        };
+      }
+
+      if (selectedPeriod === "monthly") {
+        const month = getMonthNumber(new Date(currentWeek[0]?.date));
+        const summary = monthlySummaries.find(
+          (summary) =>
+            summary.employeeId === employee.id && summary.month === month
+        );
+        return {
+          employeeId: employee.id,
+          totalHours: summary ? summary.totalHours : 0,
+        };
+      }
+
+      return {
+        employeeId: employee.id,
+        totalHours: 0,
+      };
+    });
+  }, [
+    filteredEmployees,
+    selectedPeriod,
+    weeklySummaries,
+    biweeklySummaries,
+    monthlySummaries,
+    currentWeek,
+  ]);
 
   const startIndex = page * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
@@ -109,35 +164,6 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
       </Typography>
     );
   }
-
-  const getTotalForPeriod = (employeeId: number) => {
-    const weekNumber = getWeekNumber(new Date(currentWeek[0]?.date));
-
-    if (selectedPeriod === "weekly") {
-      const summary = weeklySummaries.find(
-        (summary) => summary.employeeId === employeeId && summary.weekNumber === weekNumber
-      );
-      return summary ? summary.totalHours : 0;
-    }
-
-    if (selectedPeriod === "biweekly") {
-      const biweekNumber = getBiweekNumber(new Date(currentWeek[0]?.date));
-      const summary = biweeklySummaries.find(
-        (summary) => summary.employeeId === employeeId && summary.biweekNumber === biweekNumber
-      );
-      return summary ? summary.totalHours : 0;
-    }
-
-    if (selectedPeriod === "monthly") {
-      const month = getMonthNumber(new Date(currentWeek[0]?.date));
-      const summary = monthlySummaries.find(
-        (summary) => summary.employeeId === employeeId && summary.month === month
-      );
-      return summary ? summary.totalHours : 0;
-    }
-
-    return 0;
-  };
 
   return (
     <Paper sx={{ width: "100%" }}>
@@ -234,19 +260,24 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                         dateObject.toISOString().split("T")[0]
                   );
 
-                  const selectedLabel = existingRecord
-                    ? schedules.find(
-                        (schedule) => schedule.id === existingRecord.scheduleId
-                      )?.label || STATE.FREE
-                    : STATE.FREE;
-
                   const options = getOptionsForDay(day, schedules);
+                  const validLabels = options.map((option) => option.label);
                   const priorityOptions = [
                     "Ausencia",
                     "Cubre Almuerzo",
                     "Libre",
                     "Salida Programada",
                   ];
+
+                  const selectedLabel = existingRecord
+                    ? schedules.find(
+                        (schedule) => schedule.id === existingRecord.scheduleId
+                      )?.label || STATE.FREE
+                    : STATE.FREE;
+
+                  const finalSelectedLabel = validLabels.includes(selectedLabel)
+                    ? selectedLabel
+                    : validLabels[0] || "";
 
                   const sortedOptions = [...options].sort((a, b) => {
                     const indexA = priorityOptions.indexOf(a.label);
@@ -272,7 +303,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                     >
                       <FormControl fullWidth>
                         <Select
-                          value={selectedLabel}
+                          value={finalSelectedLabel}
                           onChange={(e) =>
                             handleChange(
                               employee,
@@ -311,7 +342,9 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                     backgroundColor: getBackgroundColor(rowIndex),
                   }}
                 >
-                  {getTotalForPeriod(employee.id)}
+                  {getTotalForPeriod.find(
+                    (emp) => emp.employeeId === employee.id
+                  )?.totalHours || 0}
                 </TableCell>
               </TableRow>
             ))}
