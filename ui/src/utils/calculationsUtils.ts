@@ -176,15 +176,15 @@ async function updateSummary(
     newSummary: WeeklySummary | BiweeklySummary | MonthlySummary
   ) => Promise<void>
 ) {
-  if (existingSummary) {
-    const previousHoursWorked = hoursWorked.find((record) => {
-      const recordDate = new Date(record.date);
-      return (
-        record.employeeId === employee.id &&
-        recordDate.getTime() === date.getTime()
-      );
-    });
+  const previousHoursWorked = hoursWorked.find((record) => {
+    const recordDate = new Date(record.date);
+    return (
+      record.employeeId === employee.id &&
+      recordDate.getTime() === date.getTime()
+    );
+  });
 
+  if (existingSummary) {
     if (previousHoursWorked) {
       const previousSchedule = schedules.find(
         (schedule) => schedule.id === previousHoursWorked.scheduleId
@@ -202,3 +202,4 @@ async function updateSummary(
     await handleSummaryChange(type, newSummary);
   }
 }
+

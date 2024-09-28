@@ -36,6 +36,7 @@ import {
 import { getBiweekNumber, getWeekNumber } from "../../../utils/dateUtils";
 import { EnglishDayOfWeek } from "../../../utils/englishDayOfWeek";
 import { STATE, TABLE } from "../../../constants/constants";
+import { format } from "date-fns";
 
 interface DropdownTableProps {
   filteredEmployees: Employee[];
@@ -93,46 +94,27 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
     return filteredEmployees.map((employee) => {
       const weekNumber = getWeekNumber(new Date(currentWeek[0]?.date));
 
-      if (selectedPeriod === "weekly") {
-        const summary = weeklySummaries.find(
-          (summary) =>
-            summary.employeeId === employee.id &&
-            summary.weekNumber === weekNumber
-        );
-        return {
-          employeeId: employee.id,
-          totalHours: summary ? summary.totalHours : 0,
-        };
-      }
-
-      if (selectedPeriod === "biweekly") {
-        const biweekNumber = getBiweekNumber(new Date(currentWeek[0]?.date));
-        const summary = biweeklySummaries.find(
-          (summary) =>
-            summary.employeeId === employee.id &&
-            summary.biweekNumber === biweekNumber
-        );
-        return {
-          employeeId: employee.id,
-          totalHours: summary ? summary.totalHours : 0,
-        };
-      }
-
-      if (selectedPeriod === "monthly") {
-        const month = getMonthNumber(new Date(currentWeek[0]?.date));
-        const summary = monthlySummaries.find(
-          (summary) =>
-            summary.employeeId === employee.id && summary.month === month
-        );
-        return {
-          employeeId: employee.id,
-          totalHours: summary ? summary.totalHours : 0,
-        };
-      }
+      const summary =
+        selectedPeriod === "weekly"
+          ? weeklySummaries.find(
+              (s) => s.employeeId === employee.id && s.weekNumber === weekNumber
+            )
+          : selectedPeriod === "biweekly"
+          ? biweeklySummaries.find(
+              (s) =>
+                s.employeeId === employee.id &&
+                s.biweekNumber ===
+                  getBiweekNumber(new Date(currentWeek[0]?.date))
+            )
+          : monthlySummaries.find(
+              (s) =>
+                s.employeeId === employee.id &&
+                s.month === getMonthNumber(new Date(currentWeek[0]?.date))
+            );
 
       return {
         employeeId: employee.id,
-        totalHours: 0,
+        totalHours: summary ? summary.totalHours : 0,
       };
     });
   }, [
@@ -147,15 +129,6 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
   const startIndex = page * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
   const paginatedEmployees = sortedEmployees.slice(startIndex, endIndex);
-
-  const today = new Date();
-  const todayString = today
-    .toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    })
-    .replace(",", "");
 
   if (!filteredEmployees || filteredEmployees.length === 0) {
     return (
@@ -180,19 +153,15 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
             <TableRow>
               <TableCell
                 className="employee-column"
-                sx={{
-                  position: "sticky",
-                  left: 0,
-                  zIndex: 3,
-                }}
+                sx={{ position: "sticky", left: 0, zIndex: 3 }}
               >
                 <TableSortLabel
                   direction={orderDirection}
-                  onClick={() => {
+                  onClick={() =>
                     setOrderDirection((prev) =>
                       prev === "asc" ? "desc" : "asc"
-                    );
-                  }}
+                    )
+                  }
                 >
                   Empleados
                 </TableSortLabel>
@@ -245,19 +214,11 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                   {employee.firstName} {employee.lastName}
                 </TableCell>
                 {currentWeek.map(({ day, date }) => {
-                  const formattedDate = new Date(date)
-                    .toLocaleDateString("en-GB", {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                    })
-                    .replace(",", "");
-                  const dateObject = new Date(date);
                   const existingRecord = hoursWorked.find(
                     (record) =>
                       record.employeeId === employee.id &&
                       new Date(record.date).toISOString().split("T")[0] ===
-                        dateObject.toISOString().split("T")[0]
+                        new Date(date).toISOString().split("T")[0]
                   );
 
                   const options = getOptionsForDay(day, schedules);
@@ -292,13 +253,16 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
 
                     return a.label.localeCompare(b.label);
                   });
-
+                  
                   return (
                     <TableCell
                       key={day}
                       sx={{
                         backgroundColor:
-                          todayString === formattedDate ? "#e4f5ed" : "inherit",
+                          format(new Date(), "yyyy-MM-dd") ===
+                          format(new Date(date), "yyyy-MM-dd")
+                            ? "#e4f5ed"
+                            : "inherit",
                       }}
                     >
                       <FormControl fullWidth>
@@ -308,11 +272,11 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                             handleChange(
                               employee,
                               day,
-                              dateObject,
-                              String(e.target.value)
+                              new Date(date),
+                              e.target.value
                             )
                           }
-                          disabled={!isValidDateForSelect(dateObject)}
+                          disabled={!isValidDateForSelect(new Date(date))}
                         >
                           {sortedOptions.map((option, index) => {
                             const items = [
@@ -364,7 +328,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
           count={sortedEmployees.length}
           rowsPerPage={rowsPerPage}
           page={page}
-          onPageChange={(_event, newPage) => setPage(newPage)}
+          onPageChange={(_, newPage) => setPage(newPage)}
           onRowsPerPageChange={(event) => {
             setRowsPerPage(parseInt(event.target.value, 10));
             setPage(0);
