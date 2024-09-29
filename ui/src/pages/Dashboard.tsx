@@ -11,6 +11,9 @@ import {
 import DropdownTable from "../components/Table/DropdownTable/DropdownTable";
 import SearchBar from "../components/SearchBar/SearchBar";
 import SplitButton from "../components/SplitButton/SplitButton";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { Employee } from "../models/Employee";
 import { useEmployees } from "../hooks/useEmployee";
 import { useSchedules } from "../hooks/useSchedule";
@@ -18,6 +21,7 @@ import { useHours } from "../hooks/useHours";
 import { useWeeklySummaries } from "../hooks/useWeeklySummary";
 import { useMonthlySummaries } from "../hooks/useMonthlySummary";
 import { useBiweeklySummaries } from "../hooks/useBiweeklySummary";
+import { useSummaries } from "../hooks/useSummaries";
 import {
   createExportOptions,
   exportToExcel,
@@ -39,7 +43,8 @@ import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileExcel, faFilePdf } from "@fortawesome/free-solid-svg-icons";
 import { updateHoursAndSummaries } from "../utils/calculationsUtils";
-import { useSummaries } from "../hooks/useSummaries";
+import { es } from "date-fns/locale";
+import { differenceInCalendarWeeks } from "date-fns";
 
 const Dashboard: React.FC = () => {
   const { employees, fetchEmployees } = useEmployees();
@@ -58,6 +63,7 @@ const Dashboard: React.FC = () => {
   const [period, setPeriod] = useState<"weekly" | "biweekly" | "monthly">(
     "weekly"
   );
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [filter, setFilter] = useState("");
   const [showResults, setShowResults] = useState(true);
 
@@ -108,6 +114,14 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     setShowResults(filteredEmployees.length > 0);
   }, [filter, employees, filteredEmployees.length]);
+
+  const handleDateChange = (newDate: Date | null) => {
+    setSelectedDate(newDate);
+    if (newDate) {
+      const today = new Date();
+      setWeekOffset(differenceInCalendarWeeks(newDate, today) + 1);
+    }
+  };
 
   const handleChange = async (
     employee: Employee,
@@ -235,7 +249,7 @@ const Dashboard: React.FC = () => {
                 <span>
                   <Button
                     variant="contained"
-                    sx={{ height: "56px" }}
+                    sx={{ mr: 2, height: "56px" }}
                     disabled={weekOffset === 0}
                     onClick={handleCurrentWeek}
                   >
@@ -243,6 +257,16 @@ const Dashboard: React.FC = () => {
                   </Button>
                 </span>
               </Tooltip>
+              <LocalizationProvider
+                dateAdapter={AdapterDateFns}
+                adapterLocale={es}
+              >
+                <DatePicker
+                  label="Seleccione una fecha"
+                  value={selectedDate}
+                  onChange={handleDateChange}
+                />
+              </LocalizationProvider>
             </Box>
           </Grid>
         )}
