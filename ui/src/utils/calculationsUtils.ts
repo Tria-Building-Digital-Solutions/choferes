@@ -62,6 +62,8 @@ export const updateHoursAndSummaries = async (
       await handleAddHours(newHours);
     }
 
+    await fetchHours();
+
     const totalWeeklyHours = hoursWorked
       .filter((record) => {
         const recordWeekNumber = getWeekNumber(new Date(record.date));
@@ -147,7 +149,6 @@ export const updateHoursAndSummaries = async (
       handleSummaryChange
     );
 
-    await fetchHours();
     await fetchWeeklySummaries();
     await fetchBiweeklySummaries();
     await fetchMonthlySummaries();
@@ -198,7 +199,8 @@ async function createOrUpdateSummary(
       totalHours,
     });
   } else {
-    let newSummary: WeeklySummary | BiweeklySummary | MonthlySummary | null = null;
+    let newSummary: WeeklySummary | BiweeklySummary | MonthlySummary | null =
+      null;
 
     if (type === "weekly") {
       newSummary = {

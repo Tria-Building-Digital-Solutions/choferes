@@ -20,7 +20,9 @@ import {
 import { Employee } from "../../../models/Employee";
 import { Schedule } from "../../../models/Schedule";
 import { HoursWorked } from "../../../models/HoursWorked";
-import { useSummaries } from "../../../hooks/useSummaries";
+import { useWeeklySummaries } from "../../../hooks/useWeeklySummary";
+import { useBiweeklySummaries } from "../../../hooks/useBiweeklySummary";
+import { useMonthlySummaries } from "../../../hooks/useMonthlySummary";
 import {
   formatDate,
   formatHeaderDate,
@@ -68,8 +70,9 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
   setPeriod,
   handleChange,
 }) => {
-  const { weeklySummaries, biweeklySummaries, monthlySummaries } =
-    useSummaries();
+  const { weeklySummaries } = useWeeklySummaries();
+  const { biweeklySummaries } = useBiweeklySummaries();
+  const { monthlySummaries } = useMonthlySummaries();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [selectedPeriod, setSelectedPeriod] = useState<
@@ -147,9 +150,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
           <TableHead>
             <TableRow>
               <TableCell align="center" colSpan={currentWeek.length + 2}>
-                <Typography variant="body2">
-                  Semana {weekNumber}
-                </Typography>
+                <Typography variant="body2">Semana {weekNumber}</Typography>
               </TableCell>
             </TableRow>
             <TableRow>
@@ -308,9 +309,11 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                     backgroundColor: getBackgroundColor(rowIndex),
                   }}
                 >
-                  {getTotalForPeriod.find(
-                    (emp) => emp.employeeId === employee.id
-                  )?.totalHours || 0}
+                  {
+                    getTotalForPeriod.find(
+                      (emp) => emp.employeeId === employee.id
+                    )?.totalHours
+                  }
                 </TableCell>
               </TableRow>
             ))}

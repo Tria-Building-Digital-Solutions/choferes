@@ -4,30 +4,21 @@ import { useMonthlySummaries } from "./useMonthlySummary";
 
 export const useSummaries = () => {
   const {
-    weeklySummaries,
-    fetchWeeklySummaries,
     handleAddWeeklySummary,
     handleUpdateWeeklySummary,
     handleDeleteWeeklySummary,
-    totalWeeklyHours,
   } = useWeeklySummaries();
 
   const {
-    biweeklySummaries,
-    fetchBiweeklySummaries,
     handleAddBiweeklySummary,
     handleUpdateBiweeklySummary,
     handleDeleteBiweeklySummary,
-    totalBiweeklyHours,
   } = useBiweeklySummaries();
 
   const {
-    monthlySummaries,
-    fetchMonthlySummaries,
     handleAddMonthlySummary,
     handleUpdateMonthlySummary,
     handleDeleteMonthlySummary,
-    totalMonthlyHours,
   } = useMonthlySummaries();
 
   const handleSummaryChange = async (
@@ -71,15 +62,6 @@ export const useSummaries = () => {
   };
 
   return {
-    weeklySummaries,
-    biweeklySummaries,
-    monthlySummaries,
-    totalWeeklyHours,
-    totalBiweeklyHours,
-    totalMonthlyHours,
-    fetchWeeklySummaries,
-    fetchBiweeklySummaries,
-    fetchMonthlySummaries,
     handleSummaryChange,
     handleSummaryUpdate,
     handleSummaryDelete

@@ -15,7 +15,9 @@ import { Employee } from "../models/Employee";
 import { useEmployees } from "../hooks/useEmployee";
 import { useSchedules } from "../hooks/useSchedule";
 import { useHours } from "../hooks/useHours";
-import { useSummaries } from "../hooks/useSummaries";
+import { useWeeklySummaries } from "../hooks/useWeeklySummary";
+import { useMonthlySummaries } from "../hooks/useMonthlySummary";
+import { useBiweeklySummaries } from "../hooks/useBiweeklySummary";
 import {
   createExportOptions,
   exportToExcel,
@@ -37,22 +39,17 @@ import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileExcel, faFilePdf } from "@fortawesome/free-solid-svg-icons";
 import { updateHoursAndSummaries } from "../utils/calculationsUtils";
+import { useSummaries } from "../hooks/useSummaries";
 
 const Dashboard: React.FC = () => {
   const { employees, fetchEmployees } = useEmployees();
   const { schedules, fetchSchedules } = useSchedules();
   const { hoursWorked, fetchHours, handleAddHours, handleUpdateHours } =
     useHours();
-  const {
-    weeklySummaries,
-    biweeklySummaries,
-    monthlySummaries,
-    fetchWeeklySummaries,
-    fetchBiweeklySummaries,
-    fetchMonthlySummaries,
-    handleSummaryChange,
-    handleSummaryUpdate,
-  } = useSummaries();
+  const { handleSummaryChange, handleSummaryUpdate } = useSummaries();
+  const { weeklySummaries, fetchWeeklySummaries } = useWeeklySummaries();
+  const { biweeklySummaries, fetchBiweeklySummaries } = useBiweeklySummaries();
+  const { monthlySummaries, fetchMonthlySummaries } = useMonthlySummaries();
   const [weekOffset, setWeekOffset] = useState(0);
   const [weekNumber, setWeekNumber] = useState<number>(0);
   const [biweekNumber, setBiweekNumber] = useState<number>(0);
@@ -76,6 +73,9 @@ const Dashboard: React.FC = () => {
     fetchData();
   }, [
     hoursWorked,
+    weeklySummaries,
+    biweeklySummaries,
+    monthlySummaries,
     fetchEmployees,
     fetchSchedules,
     fetchHours,
