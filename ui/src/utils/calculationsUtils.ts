@@ -34,7 +34,7 @@ export const updateHoursAndSummaries = async (
     id: number,
     updatedSummary: Partial<WeeklySummary | BiweeklySummary | MonthlySummary>
   ) => Promise<void>,
-  fetchHours: () => Promise<HoursWorked[]>,
+  fetchHours: () => Promise<HoursWorked[]>
 ) => {
   const newHours: HoursWorked = {
     employeeId: employee.id,
@@ -72,8 +72,7 @@ export const updateHoursAndSummaries = async (
       const schedule = schedules.find(
         (schedule: Schedule) => schedule.id === record.scheduleId
       );
-      const hours = schedule ? schedule.hours : 0;
-      return sum + hours;
+      return sum + (schedule ? schedule.hours : 0);
     }, 0);
 
   const totalBiweeklyHours = updatedHoursWorked
