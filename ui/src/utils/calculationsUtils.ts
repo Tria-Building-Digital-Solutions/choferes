@@ -35,9 +35,6 @@ export const updateHoursAndSummaries = async (
     updatedSummary: Partial<WeeklySummary | BiweeklySummary | MonthlySummary>
   ) => Promise<void>,
   fetchHours: () => Promise<HoursWorked[]>,
-  fetchWeeklySummaries: () => Promise<void>,
-  fetchBiweeklySummaries: () => Promise<void>,
-  fetchMonthlySummaries: () => Promise<void>
 ) => {
   const newHours: HoursWorked = {
     employeeId: employee.id,
@@ -146,10 +143,6 @@ export const updateHoursAndSummaries = async (
     handleSummaryUpdate,
     handleSummaryChange
   );
-
-  await fetchWeeklySummaries();
-  await fetchBiweeklySummaries();
-  await fetchMonthlySummaries();
 };
 
 async function createOrUpdateSummary(

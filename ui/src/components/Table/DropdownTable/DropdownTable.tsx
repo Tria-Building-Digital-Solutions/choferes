@@ -20,9 +20,9 @@ import {
 import { Employee } from "../../../models/Employee";
 import { Schedule } from "../../../models/Schedule";
 import { HoursWorked } from "../../../models/HoursWorked";
-import { useWeeklySummaries } from "../../../hooks/useWeeklySummary";
-import { useBiweeklySummaries } from "../../../hooks/useBiweeklySummary";
-import { useMonthlySummaries } from "../../../hooks/useMonthlySummary";
+import { WeeklySummary } from "../../../models/WeeklySummary";
+import { BiweeklySummary } from "../../../models/BiweeklySummary";
+import { MonthlySummary } from "../../../models/MonthlySummary";
 import {
   formatDate,
   formatHeaderDate,
@@ -56,6 +56,9 @@ interface DropdownTableProps {
     date: Date,
     selectedLabel: string
   ) => void;
+  weeklySummaries: WeeklySummary[]; 
+  biweeklySummaries: BiweeklySummary[]; 
+  monthlySummaries: MonthlySummary[]; 
 }
 
 const DropdownTable: React.FC<DropdownTableProps> = ({
@@ -69,10 +72,10 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
   year,
   setPeriod,
   handleChange,
+  weeklySummaries,
+  biweeklySummaries,
+  monthlySummaries,
 }) => {
-  const { weeklySummaries } = useWeeklySummaries();
-  const { biweeklySummaries } = useBiweeklySummaries();
-  const { monthlySummaries } = useMonthlySummaries();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [selectedPeriod, setSelectedPeriod] = useState<
@@ -104,15 +107,23 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
       const summary =
         selectedPeriod === "weekly"
           ? weeklySummaries.find(
-              (s) => s.employeeId === employee.id && s.weekNumber === weekNumber
+              (s) =>
+                s.employeeId === employee.id &&
+                s.weekNumber === weekNumber &&
+                s.year === year
             )
           : selectedPeriod === "biweekly"
           ? biweeklySummaries.find(
               (s) =>
-                s.employeeId === employee.id && s.biweekNumber === biweekNumber
+                s.employeeId === employee.id &&
+                s.biweekNumber === biweekNumber &&
+                s.year === year
             )
           : monthlySummaries.find(
-              (s) => s.employeeId === employee.id && s.month === month
+              (s) =>
+                s.employeeId === employee.id &&
+                s.month === month &&
+                s.year === year
             );
 
       return {
@@ -125,6 +136,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
     weekNumber,
     biweekNumber,
     month,
+    year,
     selectedPeriod,
     weeklySummaries,
     biweeklySummaries,

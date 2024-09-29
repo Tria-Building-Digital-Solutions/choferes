@@ -143,11 +143,12 @@ const Dashboard: React.FC = () => {
       handleUpdateHours,
       handleSummaryChange,
       handleSummaryUpdate,
-      fetchHours,
-      fetchWeeklySummaries,
-      fetchBiweeklySummaries,
-      fetchMonthlySummaries
+      fetchHours
     );
+
+    await fetchWeeklySummaries();
+    await fetchBiweeklySummaries();
+    await fetchMonthlySummaries();
   };
 
   const { dataForExport, headers, fileName } = handleExportTableData(
@@ -260,6 +261,9 @@ const Dashboard: React.FC = () => {
           year={year}
           setPeriod={setPeriod}
           handleChange={handleChange}
+          weeklySummaries={weeklySummaries}
+          biweeklySummaries={biweeklySummaries}
+          monthlySummaries={monthlySummaries}
         />
       ) : (
         <Typography variant="h6" color="textSecondary">
