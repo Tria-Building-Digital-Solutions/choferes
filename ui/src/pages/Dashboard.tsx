@@ -75,6 +75,7 @@ const Dashboard: React.FC = () => {
     };
     fetchData();
   }, [
+    hoursWorked,
     fetchEmployees,
     fetchSchedules,
     fetchHours,
