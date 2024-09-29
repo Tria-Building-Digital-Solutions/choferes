@@ -128,13 +128,13 @@ export const getWeekNumber = (date: Date): number => {
 };
 
 export const getBiweekNumber = (date: Date): number => {
-  const start = new Date(date.getFullYear(), 0, 1);
+  const startOfYear = new Date(date.getFullYear(), 0, 1);
   const daysDifference = Math.floor(
-    (date.getTime() - start.getTime()) / (24 * 60 * 60 * 1000)
+    (date.getTime() - startOfYear.getTime()) / (24 * 60 * 60 * 1000)
   );
-  const weekNumber = Math.floor(daysDifference / 7) + 1;
-  return Math.ceil(weekNumber / 2);
+  return Math.floor(daysDifference / 15) + 1;
 };
+
 
 export const getMonthNumber = (date: Date): number => {
   return date.getMonth() + 1;

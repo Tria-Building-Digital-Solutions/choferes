@@ -4,7 +4,7 @@ import { HoursWorked } from "../models/HoursWorked";
 import { MonthlySummary } from "../models/MonthlySummary";
 import { Schedule } from "../models/Schedule";
 import { WeeklySummary } from "../models/WeeklySummary";
-import { format, parseISO } from "date-fns"; 
+import { format, parseISO } from "date-fns";
 import { getBiweekNumber, getWeekNumber } from "./dateUtils";
 
 export const updateHoursAndSummaries = async (
@@ -45,7 +45,8 @@ export const updateHoursAndSummaries = async (
   const existingHoursWorkedRecord = hoursWorked.find((record) => {
     return (
       record.employeeId === employee.id &&
-      format(parseISO(record.date.toString()), "yyyy-MM-dd") === format(date, "yyyy-MM-dd") 
+      format(parseISO(record.date.toString()), "yyyy-MM-dd") ===
+        format(date, "yyyy-MM-dd")
     );
   });
 
@@ -58,6 +59,8 @@ export const updateHoursAndSummaries = async (
   }
 
   const updatedHoursWorked = await fetchHours();
+
+  console.log("Updated Hours Worked:", updatedHoursWorked);
 
   const totalWeeklyHours = updatedHoursWorked
     .filter((record) => {
@@ -107,9 +110,9 @@ export const updateHoursAndSummaries = async (
       return sum + (schedule ? schedule.hours : 0);
     }, 0);
 
-  console.log("totalWeeklyHours: ", totalWeeklyHours);  
-  console.log("totalBiweeklyHours: ", totalBiweeklyHours);  
-  console.log("totalMonthlyHours: ", totalMonthlyHours);  
+  console.log("totalWeeklyHours: ", totalWeeklyHours);
+  console.log("totalBiweeklyHours: ", totalBiweeklyHours);
+  console.log("totalMonthlyHours: ", totalMonthlyHours);
 
   await createOrUpdateSummary(
     "weekly",

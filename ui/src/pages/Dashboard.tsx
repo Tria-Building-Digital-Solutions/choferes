@@ -156,7 +156,7 @@ const Dashboard: React.FC = () => {
     getCurrentWeekDates(weekOffset),
     period
   );
-  
+
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -244,6 +244,14 @@ const Dashboard: React.FC = () => {
               <LocalizationProvider
                 dateAdapter={AdapterDateFns}
                 adapterLocale={es}
+                localeText={{
+                  okButtonLabel: "Aceptar",
+                  cancelButtonLabel: "Cancelar",
+                  todayButtonLabel: "Hoy",
+                  year: "Año #{year}",
+                  previousMonth: "Mes anterior",
+                  nextMonth: "Mes siguiente",
+                }}
               >
                 <DatePicker
                   label="Seleccione una fecha"
