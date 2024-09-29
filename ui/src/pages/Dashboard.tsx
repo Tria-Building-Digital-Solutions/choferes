@@ -47,8 +47,8 @@ import { es } from "date-fns/locale";
 import { differenceInCalendarWeeks } from "date-fns";
 
 const Dashboard: React.FC = () => {
-  const { employees, fetchEmployees } = useEmployees();
-  const { schedules, fetchSchedules } = useSchedules();
+  const { employees } = useEmployees();
+  const { schedules } = useSchedules();
   const { hoursWorked, fetchHours, handleAddHours, handleUpdateHours } =
     useHours();
   const { handleSummaryChange, handleSummaryUpdate } = useSummaries();
@@ -66,29 +66,6 @@ const Dashboard: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [filter, setFilter] = useState("");
   const [showResults, setShowResults] = useState(true);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      await fetchEmployees();
-      await fetchSchedules();
-      await fetchHours();
-      await fetchWeeklySummaries();
-      await fetchBiweeklySummaries();
-      await fetchMonthlySummaries();
-    };
-    fetchData();
-  }, [
-    hoursWorked,
-    weeklySummaries,
-    biweeklySummaries,
-    monthlySummaries,
-    fetchEmployees,
-    fetchSchedules,
-    fetchHours,
-    fetchWeeklySummaries,
-    fetchBiweeklySummaries,
-    fetchMonthlySummaries,
-  ]);
 
   useEffect(() => {
     const currentWeek = getCurrentWeekDates(weekOffset);
@@ -169,10 +146,17 @@ const Dashboard: React.FC = () => {
     filteredEmployees,
     hoursWorked,
     schedules,
+    weeklySummaries,
+    biweeklySummaries,
+    monthlySummaries,
+    weekNumber,
+    biweekNumber,
+    month,
+    year,
     getCurrentWeekDates(weekOffset),
     period
   );
-
+  
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
