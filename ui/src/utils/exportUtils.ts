@@ -1,16 +1,48 @@
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
-import { SvgIconProps } from "@mui/material";
-import { getColumnTranslation } from "./stringUtils";
+import { Employee } from "../models/Employee";
+import { HoursWorked } from "../models/HoursWorked";
+import { Schedule } from "../models/Schedule";
+import {
+  translateColumnHeaderToSpanish,
+  translateDayOptionsToSpanish,
+  translateDayToAbrevSpanish,
+  translatePeriodToSpanish,
+  translationsDayOptionsToSpanish,
+} from "./stringUtils";
+import { calculateTotalHours } from "./tableUtils";
+import { formatHeaderDateWithYear, formatDate } from "./dateUtils";
+import { EnglishDayOfWeek } from "./englishDayOfWeek";
 
-export const exportToExcel = (data: any[], fileName: string) => {
-  const headers = Object.keys(data[0]).map(getColumnTranslation);
+export const exportToExcel = (
+  data: any[],
+  fileName: string,
+  customHeaders?: string[]
+) => {
+  const headers =
+    customHeaders || Object.keys(data[0]).map(translateColumnHeaderToSpanish);
 
   const translatedData = data.map((row) => {
     const translatedRow: any = {};
     Object.keys(row).forEach((key, index) => {
-      translatedRow[headers[index]] = row[key];
+      let value = row[key];
+
+      if (typeof value === "string") {
+        const dateValue = new Date(value);
+        value = !isNaN(dateValue.getTime())
+          ? formatDate(dateValue, false)
+          : value;
+      }
+
+      if (
+        typeof value === "string" &&
+        Object.keys(translationsDayOptionsToSpanish).includes(value)
+      ) {
+        value = translateDayOptionsToSpanish(value);
+      }
+
+      translatedRow[headers[index]] = value;
     });
     return translatedRow;
   });
@@ -22,12 +54,36 @@ export const exportToExcel = (data: any[], fileName: string) => {
   XLSX.writeFile(workbook, `${fileName}.xlsx`);
 };
 
-export const exportToPDF = (data: any[], fileName: string) => {
+export const exportToPDF = (
+  data: any[],
+  fileName: string,
+  customHeaders?: string[]
+) => {
   const doc = new jsPDF();
 
-  const headers = [Object.keys(data[0]).map(getColumnTranslation)];
+  const headers = customHeaders
+    ? [customHeaders]
+    : [Object.keys(data[0]).map(translateColumnHeaderToSpanish)];
 
-  const tableData = data.map((row) => Object.values(row));
+  const tableData = data.map((row) => {
+    return Object.values(row).map((value) => {
+      if (typeof value === "string") {
+        const dateValue = new Date(value);
+        value = !isNaN(dateValue.getTime())
+          ? formatDate(dateValue, false)
+          : value;
+      }
+
+      if (
+        typeof value === "string" &&
+        Object.keys(translationsDayOptionsToSpanish).includes(value)
+      ) {
+        value = translateDayOptionsToSpanish(value);
+      }
+
+      return value;
+    });
+  });
 
   doc.autoTable({
     head: headers,
@@ -35,26 +91,6 @@ export const exportToPDF = (data: any[], fileName: string) => {
   });
 
   doc.save(`${fileName}.pdf`);
-};
-
-export const exportMenuItems = (
-  data: any[],
-  fileName: string,
-  excelIcon: React.ReactElement<SvgIconProps>,
-  pdfIcon: React.ReactElement<SvgIconProps>
-) => {
-  return [
-    {
-      text: "Descargar Excel",
-      onClick: () => exportToExcel(data, fileName),
-      icon: excelIcon,
-    },
-    {
-      text: "Descargar PDF",
-      onClick: () => exportToPDF(data, fileName),
-      icon: pdfIcon,
-    },
-  ];
 };
 
 export const exportFileFormattedDate = (date: Date) => {
@@ -66,4 +102,88 @@ export const exportFileFormattedDate = (date: Date) => {
   )}-${String(date.getMinutes()).padStart(2, "0")}-${String(
     date.getSeconds()
   ).padStart(2, "0")}`;
+};
+
+export const handleExportTableData = (
+  filteredEmployees: Employee[],
+  hoursWorked: HoursWorked[],
+  schedules: Schedule[],
+  currentWeek: { day: string; date: string }[],
+  period: "weekly" | "biweekly" | "monthly"
+) => {
+  const headers = [
+    "Nombre",
+    ...currentWeek.map(({ date }) => formatHeaderDateWithYear(date)),
+    `Total ${translatePeriodToSpanish(period)}`,
+  ];
+
+  const sortedEmployees = filteredEmployees.sort((a, b) => {
+    const fullNameA = `${a.firstName} ${a.lastName}`.toLowerCase();
+    const fullNameB = `${b.firstName} ${b.lastName}`.toLowerCase();
+    return fullNameA.localeCompare(fullNameB);
+  });
+
+  const dataForExport = sortedEmployees.map((employee) => {
+    const employeeData: any = {
+      Nombre: `${employee.firstName} ${employee.lastName}`,
+    };
+
+    currentWeek.forEach(({ day, date }) => {
+      const dateObject = new Date(date);
+      const selectedRecord = hoursWorked.find(
+        (record) =>
+          record.employeeId === employee.id &&
+          new Date(record.date).toISOString().split("T")[0] ===
+            dateObject.toISOString().split("T")[0]
+      );
+
+      const scheduleLabel =
+        selectedRecord?.scheduleId &&
+        schedules.find((schedule) => schedule.id === selectedRecord.scheduleId)
+          ?.label;
+
+      employeeData[translateDayToAbrevSpanish(day as EnglishDayOfWeek)] =
+        scheduleLabel || "Libre";
+    });
+
+    employeeData[`Total ${translatePeriodToSpanish(period)}`] =
+      calculateTotalHours(
+        currentWeek,
+        hoursWorked,
+        schedules,
+        employee.id,
+        period
+      );
+
+    return employeeData;
+  });
+
+  return {
+    dataForExport,
+    headers,
+    fileName: `roles-${exportFileFormattedDate(new Date())}`,
+  };
+};
+
+export const createExportOptions = (
+  excelIcon: JSX.Element,
+  pdfIcon: JSX.Element,
+  exportToExcel: (dataForExport: any, fileName: string, headers?: any) => any,
+  exportToPDF: (dataForExport: any, fileName: string, headers?: any) => any,
+  dataForExport: any,
+  fileName: string,
+  headers?: any,
+) => {
+  return [
+    {
+      label: "Descargar Excel",
+      icon: excelIcon,
+      action: () => exportToExcel(dataForExport, fileName, headers),
+    },
+    {
+      label: "Descargar PDF",
+      icon: pdfIcon,
+      action: () => exportToPDF(dataForExport, fileName, headers),
+    },
+  ];
 };

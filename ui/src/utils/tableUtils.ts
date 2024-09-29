@@ -1,11 +1,11 @@
-import { HoursWorked } from "../models/HoursWorked";
-import { Schedule } from "../models/Schedule";
-import { getBiweeklyDates, getMonthlyDates, isValidDate } from "./dateUtils";
-import { Employee } from "../models/Employee";
-import { Dashboard } from "../models/Dashboard";
-import { DayOfWeek } from "./dayOfWeek";
-import { translateDayToSpanish } from "./calculationUtils";
 import { format } from "date-fns";
+import { Employee } from "../models/Employee";
+import { Schedule } from "../models/Schedule";
+import { HoursWorked } from "../models/HoursWorked";
+import { Dashboard } from "../models/Dashboard";
+import { translateDayToAbrevSpanish } from "./stringUtils";
+import { getBiweeklyDates, getMonthlyDates, isValidDate } from "./dateUtils";
+import { EnglishDayOfWeek } from "./englishDayOfWeek";
 
 export const collectTableData = (
   paginatedEmployees: Employee[],
@@ -24,7 +24,7 @@ export const collectTableData = (
       );
       const hours = record ? String(record.scheduleId) : "Libre";
       return {
-        day: translateDayToSpanish(day as DayOfWeek),
+        day: translateDayToAbrevSpanish(day as EnglishDayOfWeek),
         hours,
       };
     });

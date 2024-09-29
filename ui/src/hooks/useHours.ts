@@ -1,39 +1,42 @@
-import { useState, useEffect } from 'react';
-import * as HoursService from '../services/hoursService';
-import { HoursWorked } from '../models/HoursWorked';
+import { useState, useEffect, useCallback } from "react";
+import * as HoursService from "../services/hoursService";
+import { HoursWorked } from "../models/HoursWorked";
 
 export const useHours = () => {
   const [hoursWorked, setHoursWorked] = useState<HoursWorked[]>([]);
   const [totalCount, setTotalCount] = useState(0);
 
-  const fetchHours = async () => {
+  const fetchHours = useCallback(async (): Promise<HoursWorked[]> => {
     const data = await HoursService.fetchHours();
     setHoursWorked(data);
     setTotalCount(data.length);
-  };
+    return data;
+  }, []);
 
   const handleAddHours = async (newHours: HoursWorked) => {
     await HoursService.addHours(newHours);
-    setHoursWorked(prev => [...prev, newHours]);
-    setTotalCount(prev => prev + 1);
+    setHoursWorked((prev) => [...prev, newHours]);
+    setTotalCount((prev) => prev + 1);
   };
 
   const handleUpdateHours = async (id: number, updatedHours: Partial<HoursWorked>) => {
     await HoursService.updateHours(id, updatedHours);
-    setHoursWorked(prev =>
-      prev.map(hours => (hours.id === id ? { ...hours, ...updatedHours } : hours))
+    setHoursWorked((prev) =>
+      prev.map((hours) =>
+        hours.id === id ? { ...hours, ...updatedHours } : hours
+      )
     );
   };
 
   const handleDeleteHours = async (id: number) => {
     await HoursService.deleteHours(id);
-    setHoursWorked(prev => prev.filter(hours => hours.id !== id));
-    setTotalCount(prev => prev - 1);
+    setHoursWorked((prev) => prev.filter((hours) => hours.id !== id));
+    setTotalCount((prev) => prev - 1);
   };
 
   useEffect(() => {
     fetchHours();
-  }, []);
+  }, [fetchHours]);
 
   return {
     hoursWorked,

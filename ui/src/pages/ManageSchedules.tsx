@@ -14,20 +14,25 @@ import {
   Select,
   MenuItem,
   Tooltip,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import EditableTable from "../components/Table/EditableTable/EditableTable";
-import { Schedule } from "../models/Schedule";
 import SearchBar from "../components/SearchBar/SearchBar";
-import PostAddRoundedIcon from "@mui/icons-material/PostAddRounded";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFileExcel, faFilePdf } from "@fortawesome/free-solid-svg-icons";
+import SplitButton from "../components/SplitButton/SplitButton";
+import { Schedule } from "../models/Schedule";
+import { useSchedules } from "../hooks/useSchedule";
 import {
+  createExportOptions,
   exportFileFormattedDate,
   exportToExcel,
   exportToPDF,
 } from "../utils/exportUtils";
-import { useSchedules } from "../hooks/useSchedule";
-import { getDayOptions } from "../utils/stringUtils";
+import { getDayOptionsSpanish } from "../utils/stringUtils";
+import PostAddRoundedIcon from "@mui/icons-material/PostAddRounded";
+import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFileExcel, faFilePdf } from "@fortawesome/free-solid-svg-icons";
 
 const ManageSchedules: React.FC = () => {
   const {
@@ -136,6 +141,9 @@ const ManageSchedules: React.FC = () => {
     }
   };
 
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+
   return (
     <Box>
       <Box
@@ -144,41 +152,23 @@ const ManageSchedules: React.FC = () => {
         alignItems="center"
         sx={{ mb: 2 }}
       >
-        <Typography variant="h2" sx={{ flexGrow: 1 }}>
+        <Typography variant={isSmallScreen ? 'h4' : 'h2'} sx={{ flexGrow: 1 }}>
           Gestionar Horarios
         </Typography>
-        <Box display="flex" alignItems="center">
-          <Tooltip title="Descargar Excel" arrow>
-            <Button
-              variant="contained"
-              color="primary"
-              sx={{ height: "56px", mr: 1 }}
-              onClick={() =>
-                exportToExcel(
-                  filteredSchedules,
-                  `horarios-${exportFileFormattedDate(new Date())}`
-                )
-              }
-            >
-              <FontAwesomeIcon icon={faFileExcel} size="lg" />
-            </Button>
-          </Tooltip>
-          <Tooltip title="Descargar PDF" arrow>
-            <Button
-              variant="contained"
-              color="secondary"
-              sx={{ height: "56px" }}
-              onClick={() =>
-                exportToPDF(
-                  filteredSchedules,
-                  `horarios-${exportFileFormattedDate(new Date())}`
-                )
-              }
-            >
-              <FontAwesomeIcon icon={faFilePdf} size="lg" />
-            </Button>
-          </Tooltip>
-        </Box>
+        {filteredSchedules.length > 0 && (
+          <SplitButton
+          options={createExportOptions(
+            <FontAwesomeIcon icon={faFileExcel} size="lg" />,
+            <FontAwesomeIcon icon={faFilePdf} size="lg" />,
+            exportToExcel,
+            exportToPDF,
+            filteredSchedules,
+            `empleados-${exportFileFormattedDate(new Date())}`
+          )}
+          defaultIndex={0}
+          buttonIcon={<DownloadRoundedIcon />}
+        />
+        )}
       </Box>
       <Grid
         container
@@ -213,7 +203,7 @@ const ManageSchedules: React.FC = () => {
                   setAddFields({ ...addFields, day: e.target.value })
                 }
               >
-                {getDayOptions().map((option) => (
+                {getDayOptionsSpanish().map((option) => (
                   <MenuItem key={option.value} value={option.value}>
                     {option.label}
                   </MenuItem>
@@ -231,15 +221,17 @@ const ManageSchedules: React.FC = () => {
               }
             />
             <Tooltip title="Agregar Horario" arrow>
-              <Button
-                variant="contained"
-                color="primary"
-                sx={{ height: "56px" }}
-                onClick={handleAdd}
-                disabled={!isValid}
-              >
-                <PostAddRoundedIcon />
-              </Button>
+              <span>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  sx={{ height: "56px" }}
+                  onClick={handleAdd}
+                  disabled={!isValid}
+                >
+                  <PostAddRoundedIcon />
+                </Button>
+              </span>
             </Tooltip>
           </Box>
         </Grid>

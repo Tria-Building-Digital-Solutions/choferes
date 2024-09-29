@@ -2,21 +2,25 @@ import { WeeklySummary } from "../models/WeeklySummary";
 import api from "./api";
 
 export const fetchWeeklySummaries = async () => {
-  const response = await api.get("/api/weekly-summary");
+  const response = await api.get("/weekly-summary");
   return response.data;
 };
 
 export const addWeeklySummary = async (newWeeklySummary: WeeklySummary) => {
-  await api.post("/api/weekly-summary", newWeeklySummary);
+  await api.post("/weekly-summary", newWeeklySummary);
 };
 
 export const updateWeeklySummary = async (
   id: number,
   updatedWeeklySummary: Partial<WeeklySummary>
 ) => {
-  await api.put(`/api/weekly-summary/${id}`, updatedWeeklySummary);
+  await api.put(`/weekly-summary/${id}`, updatedWeeklySummary);
 };
 
 export const deleteWeeklySummary = async (id: number) => {
-  await api.delete(`/api/weekly-summary/${id}`);
+  await api.delete(`/weekly-summary/${id}`);
+};
+
+export const calculateTotalWeeklyHours = (weeklySummaries: WeeklySummary[]) => {
+  return weeklySummaries.reduce((total, summary) => total + summary.totalHours, 0);
 };

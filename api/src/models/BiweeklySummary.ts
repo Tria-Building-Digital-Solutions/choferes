@@ -39,7 +39,7 @@ BiweeklySummary.init(
       allowNull: false,
     },
     totalHours: {
-      type: DataTypes.DECIMAL(5, 2),
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
   },

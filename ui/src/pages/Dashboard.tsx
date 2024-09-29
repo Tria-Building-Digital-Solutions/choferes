@@ -1,31 +1,63 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, Grid, Tooltip, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Grid,
+  Tooltip,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import DropdownTable from "../components/Table/DropdownTable/DropdownTable";
 import SearchBar from "../components/SearchBar/SearchBar";
-import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
-import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
-import CalendarTodayRoundedIcon from "@mui/icons-material/CalendarTodayRounded";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFileExcel, faFilePdf } from "@fortawesome/free-solid-svg-icons";
-import {
-  exportFileFormattedDate,
-  exportToExcel,
-  exportToPDF,
-} from "../utils/exportUtils";
+import SplitButton from "../components/SplitButton/SplitButton";
 import { Employee } from "../models/Employee";
 import { useEmployees } from "../hooks/useEmployee";
 import { useSchedules } from "../hooks/useSchedule";
 import { useHours } from "../hooks/useHours";
-import { AxiosError } from "axios";
-import { HoursWorked } from "../models/HoursWorked";
-import { getDayType } from "../utils/stringUtils";
+import { useWeeklySummaries } from "../hooks/useWeeklySummary";
+import { useMonthlySummaries } from "../hooks/useMonthlySummary";
+import { useBiweeklySummaries } from "../hooks/useBiweeklySummary";
+import {
+  createExportOptions,
+  exportToExcel,
+  exportToPDF,
+  handleExportTableData,
+} from "../utils/exportUtils";
+import { setDayOptionsEnglish } from "../utils/stringUtils";
+import {
+  getBiweekNumber,
+  getCurrentWeekDates,
+  getMonthNumber,
+  getWeekNumber,
+  isValidDateForSelect,
+} from "../utils/dateUtils";
+import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
+import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
+import CalendarTodayRoundedIcon from "@mui/icons-material/CalendarTodayRounded";
+import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFileExcel, faFilePdf } from "@fortawesome/free-solid-svg-icons";
+import { updateHoursAndSummaries } from "../utils/calculationsUtils";
+import { useSummaries } from "../hooks/useSummaries";
 
 const Dashboard: React.FC = () => {
   const { employees, fetchEmployees } = useEmployees();
   const { schedules, fetchSchedules } = useSchedules();
   const { hoursWorked, fetchHours, handleAddHours, handleUpdateHours } =
     useHours();
+  const { handleSummaryChange, handleSummaryUpdate } = useSummaries();
+  const { weeklySummaries, fetchWeeklySummaries } = useWeeklySummaries();
+  const { biweeklySummaries, fetchBiweeklySummaries } = useBiweeklySummaries();
+  const { monthlySummaries, fetchMonthlySummaries } = useMonthlySummaries();
   const [weekOffset, setWeekOffset] = useState(0);
+  const [weekNumber, setWeekNumber] = useState<number>(0);
+  const [biweekNumber, setBiweekNumber] = useState<number>(0);
+  const [month, setMonth] = useState<number>(0);
+  const [year, setYear] = useState<number>(0);
+  const [period, setPeriod] = useState<"weekly" | "biweekly" | "monthly">(
+    "weekly"
+  );
   const [filter, setFilter] = useState("");
   const [showResults, setShowResults] = useState(true);
 
@@ -34,10 +66,34 @@ const Dashboard: React.FC = () => {
       await fetchEmployees();
       await fetchSchedules();
       await fetchHours();
+      await fetchWeeklySummaries();
+      await fetchBiweeklySummaries();
+      await fetchMonthlySummaries();
     };
-
     fetchData();
-  }, [fetchEmployees, fetchSchedules, fetchHours]);
+  }, [
+    hoursWorked,
+    weeklySummaries,
+    biweeklySummaries,
+    monthlySummaries,
+    fetchEmployees,
+    fetchSchedules,
+    fetchHours,
+    fetchWeeklySummaries,
+    fetchBiweeklySummaries,
+    fetchMonthlySummaries,
+  ]);
+
+  useEffect(() => {
+    const currentWeek = getCurrentWeekDates(weekOffset);
+    if (currentWeek.length > 0) {
+      const firstDayOfWeek = new Date(currentWeek[0].date);
+      setWeekNumber(getWeekNumber(firstDayOfWeek));
+      setBiweekNumber(getBiweekNumber(firstDayOfWeek));
+      setMonth(getMonthNumber(firstDayOfWeek));
+      setYear(firstDayOfWeek.getFullYear());
+    }
+  }, [weekOffset]);
 
   const handleNextWeek = () => setWeekOffset(weekOffset + 1);
   const handlePreviousWeek = () => setWeekOffset(weekOffset - 1);
@@ -61,7 +117,8 @@ const Dashboard: React.FC = () => {
   ) => {
     const selectedSchedule = schedules.find(
       (schedule) =>
-        schedule.label === selectedLabel && schedule.day === getDayType(day)
+        schedule.label === selectedLabel &&
+        schedule.day === setDayOptionsEnglish(day)
     );
 
     if (!selectedSchedule) {
@@ -69,42 +126,41 @@ const Dashboard: React.FC = () => {
       return;
     }
 
-    const newHours: HoursWorked = {
-      employeeId: employee.id,
-      date: date,
-      scheduleId: selectedSchedule.id,
-    };
+    await updateHoursAndSummaries(
+      employee,
+      schedules,
+      hoursWorked,
+      weeklySummaries,
+      biweeklySummaries,
+      monthlySummaries,
+      date,
+      weekNumber,
+      biweekNumber,
+      month,
+      year,
+      selectedSchedule,
+      handleAddHours,
+      handleUpdateHours,
+      handleSummaryChange,
+      handleSummaryUpdate,
+      fetchHours
+    );
 
-    console.log(newHours);
-
-    try {
-      const existingRecord = hoursWorked.find(
-        (record) =>
-          record.employeeId === employee.id &&
-          record.date.getTime() === date.getTime()
-      );
-
-      if (existingRecord) {
-        await handleUpdateHours(existingRecord.id!, {
-          scheduleId: selectedSchedule.id,
-        });
-      } else {
-        await handleAddHours(newHours);
-      }
-
-      await fetchHours();
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      if (axiosError.response) {
-        console.log(
-          "Error en la respuesta del servidor:",
-          axiosError.response.data
-        );
-      } else {
-        console.log("Error desconocido:", error);
-      }
-    }
+    await fetchWeeklySummaries();
+    await fetchBiweeklySummaries();
+    await fetchMonthlySummaries();
   };
+
+  const { dataForExport, headers, fileName } = handleExportTableData(
+    filteredEmployees,
+    hoursWorked,
+    schedules,
+    getCurrentWeekDates(weekOffset),
+    period
+  );
+
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   return (
     <Box>
@@ -114,41 +170,24 @@ const Dashboard: React.FC = () => {
         alignItems="center"
         sx={{ mb: 2 }}
       >
-        <Typography variant="h2" sx={{ flexGrow: 1 }}>
+        <Typography variant={isSmallScreen ? "h4" : "h2"} sx={{ flexGrow: 1 }}>
           Administrar Roles
         </Typography>
-        <Box display="flex" alignItems="center">
-          <Tooltip title="Descargar Excel" arrow>
-            <Button
-              variant="contained"
-              color="primary"
-              sx={{ height: "56px", mr: 1 }}
-              onClick={() =>
-                exportToExcel(
-                  filteredEmployees,
-                  `roles-${exportFileFormattedDate(new Date())}`
-                )
-              }
-            >
-              <FontAwesomeIcon icon={faFileExcel} size="lg" />
-            </Button>
-          </Tooltip>
-          <Tooltip title="Descargar PDF" arrow>
-            <Button
-              variant="contained"
-              color="secondary"
-              sx={{ height: "56px" }}
-              onClick={() =>
-                exportToPDF(
-                  filteredEmployees,
-                  `roles-${exportFileFormattedDate(new Date())}`
-                )
-              }
-            >
-              <FontAwesomeIcon icon={faFilePdf} size="lg" />
-            </Button>
-          </Tooltip>
-        </Box>
+        {showResults && (
+          <SplitButton
+            options={createExportOptions(
+              <FontAwesomeIcon icon={faFileExcel} size="lg" />,
+              <FontAwesomeIcon icon={faFilePdf} size="lg" />,
+              exportToExcel,
+              exportToPDF,
+              dataForExport,
+              fileName,
+              headers
+            )}
+            defaultIndex={0}
+            buttonIcon={<DownloadRoundedIcon />}
+          />
+        )}
       </Box>
 
       <Grid
@@ -181,7 +220,11 @@ const Dashboard: React.FC = () => {
                   <Button
                     variant="contained"
                     sx={{ mr: 2, height: "56px" }}
-                    disabled={weekOffset === 0}
+                    disabled={
+                      !isValidDateForSelect(
+                        new Date(getCurrentWeekDates(weekOffset + 1)[0].isoDate)
+                      )
+                    }
                     onClick={handleNextWeek}
                   >
                     <ArrowForwardIosRoundedIcon />
@@ -212,7 +255,15 @@ const Dashboard: React.FC = () => {
           schedules={schedules}
           hoursWorked={hoursWorked}
           weekOffset={weekOffset}
+          weekNumber={weekNumber}
+          biweekNumber={biweekNumber}
+          month={month}
+          year={year}
+          setPeriod={setPeriod}
           handleChange={handleChange}
+          weeklySummaries={weeklySummaries}
+          biweeklySummaries={biweeklySummaries}
+          monthlySummaries={monthlySummaries}
         />
       ) : (
         <Typography variant="h6" color="textSecondary">

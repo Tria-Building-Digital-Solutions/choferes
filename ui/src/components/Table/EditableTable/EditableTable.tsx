@@ -18,11 +18,15 @@ import {
   IconButton,
   Divider,
 } from "@mui/material";
-import { TABLE } from "../../../constants/constants";
+import {
+  translateColumnHeaderToSpanish,
+  getDayOptionsSpanish,
+  translateDayOptionsToSpanish,
+} from "../../../utils/stringUtils";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
-import { getColumnTranslation, getDayOptions, getDayTranslation } from "../../../utils/stringUtils";
+import { TABLE } from "../../../constants/constants";
 
 type EditableTableProps<T> = {
   data: T[];
@@ -121,7 +125,7 @@ const EditableTable = <T,>({
                     direction={orderBy === column ? order : "asc"}
                     onClick={() => handleSortRequest(column)}
                   >
-                    {getColumnTranslation(column)}
+                    {translateColumnHeaderToSpanish(column)}
                   </TableSortLabel>
                 </TableCell>
               ))}
@@ -146,7 +150,7 @@ const EditableTable = <T,>({
                                 setEditField(String(column), e.target.value)
                               }
                             >
-                              {getDayOptions().map((option) => (
+                              {getDayOptionsSpanish().map((option) => (
                                 <MenuItem
                                   key={option.value}
                                   value={option.value}
@@ -172,8 +176,9 @@ const EditableTable = <T,>({
                           />
                         )
                       ) : column === "day" ? (
-                        getDayTranslation(row[column as keyof T] as string) ||
-                        null
+                        translateDayOptionsToSpanish(
+                          row[column as keyof T] as string
+                        ) || null
                       ) : (
                         (row[column] as React.ReactNode)
                       )}

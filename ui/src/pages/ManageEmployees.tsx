@@ -10,18 +10,33 @@ import {
   DialogContent,
   DialogTitle,
   Tooltip,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import EditableTable from "../components/Table/EditableTable/EditableTable";
-import { Employee } from "../models/Employee";
 import SearchBar from "../components/SearchBar/SearchBar";
+import SplitButton from "../components/SplitButton/SplitButton";
+import { Employee } from "../models/Employee";
+import { useEmployees } from "../hooks/useEmployee";
+import {
+  createExportOptions,
+  exportFileFormattedDate,
+  exportToExcel,
+  exportToPDF,
+} from "../utils/exportUtils";
 import PersonAddAlt1RoundedIcon from "@mui/icons-material/PersonAddAlt1Rounded";
+import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileExcel, faFilePdf } from "@fortawesome/free-solid-svg-icons";
-import { exportFileFormattedDate, exportToExcel, exportToPDF } from "../utils/exportUtils";
-import { useEmployees } from "../hooks/useEmployee";
 
 const ManageEmployees: React.FC = () => {
-  const { employees, fetchEmployees, handleAddEmployee, handleUpdateEmployee, handleDeleteEmployee } = useEmployees();
+  const {
+    employees,
+    fetchEmployees,
+    handleAddEmployee,
+    handleUpdateEmployee,
+    handleDeleteEmployee,
+  } = useEmployees();
   const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [editRowId, setEditRowId] = useState<number | null>(null);
@@ -110,6 +125,9 @@ const ManageEmployees: React.FC = () => {
     }
   };
 
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+
   return (
     <Box>
       <Box
@@ -118,31 +136,23 @@ const ManageEmployees: React.FC = () => {
         alignItems="center"
         sx={{ mb: 2 }}
       >
-        <Typography variant="h2" sx={{ flexGrow: 1 }}>
+        <Typography variant={isSmallScreen ? "h4" : "h2"} sx={{ flexGrow: 1 }}>
           Gestionar Empleados
         </Typography>
-        <Box display="flex" alignItems="center">
-          <Tooltip title="Descargar Excel" arrow>
-            <Button
-              variant="contained"
-              color="primary"
-              sx={{ height: "56px", mr: 1 }}
-              onClick={() => exportToExcel(filteredEmployees, `empleados-${exportFileFormattedDate(new Date())}`)}
-            >
-              <FontAwesomeIcon icon={faFileExcel} size="lg" />
-            </Button>
-          </Tooltip>
-          <Tooltip title="Descargar PDF" arrow>
-            <Button
-              variant="contained"
-              color="secondary"
-              sx={{ height: "56px" }}
-              onClick={() => exportToPDF(filteredEmployees, `empleados-${exportFileFormattedDate(new Date())}`)}
-            >
-              <FontAwesomeIcon icon={faFilePdf} size="lg" />
-            </Button>
-          </Tooltip>
-        </Box>
+        {filteredEmployees.length > 0 && (
+          <SplitButton
+            options={createExportOptions(
+              <FontAwesomeIcon icon={faFileExcel} size="lg" />,
+              <FontAwesomeIcon icon={faFilePdf} size="lg" />,
+              exportToExcel,
+              exportToPDF,
+              filteredEmployees,
+              `empleados-${exportFileFormattedDate(new Date())}`
+            )}
+            defaultIndex={0}
+            buttonIcon={<DownloadRoundedIcon />}
+          />
+        )}
       </Box>
       <Grid
         container
@@ -178,15 +188,17 @@ const ManageEmployees: React.FC = () => {
               }
             />
             <Tooltip title="Agregar Empleado" arrow>
-              <Button
-                variant="contained"
-                color="primary"
-                sx={{ height: "56px" }}
-                onClick={handleAdd}
-                disabled={!isValid}
-              >
-                <PersonAddAlt1RoundedIcon />
-              </Button>
+              <span>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  sx={{ height: "56px" }}
+                  onClick={handleAdd}
+                  disabled={!isValid}
+                >
+                  <PersonAddAlt1RoundedIcon />
+                </Button>
+              </span>
             </Tooltip>
           </Box>
         </Grid>
