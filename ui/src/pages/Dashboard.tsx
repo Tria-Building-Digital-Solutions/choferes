@@ -23,7 +23,13 @@ import {
   handleExportTableData,
 } from "../utils/exportUtils";
 import { setDayOptionsEnglish } from "../utils/stringUtils";
-import { getCurrentWeekDates, isValidDateForSelect } from "../utils/dateUtils";
+import {
+  getBiweekNumber,
+  getCurrentWeekDates,
+  getMonthNumber,
+  getWeekNumber,
+  isValidDateForSelect,
+} from "../utils/dateUtils";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
 import CalendarTodayRoundedIcon from "@mui/icons-material/CalendarTodayRounded";
@@ -48,11 +54,15 @@ const Dashboard: React.FC = () => {
     handleSummaryUpdate,
   } = useSummaries();
   const [weekOffset, setWeekOffset] = useState(0);
-  const [filter, setFilter] = useState("");
-  const [showResults, setShowResults] = useState(true);
+  const [weekNumber, setWeekNumber] = useState<number>(0);
+  const [biweekNumber, setBiweekNumber] = useState<number>(0);
+  const [month, setMonth] = useState<number>(0);
+  const [year, setYear] = useState<number>(0);
   const [period, setPeriod] = useState<"weekly" | "biweekly" | "monthly">(
     "weekly"
   );
+  const [filter, setFilter] = useState("");
+  const [showResults, setShowResults] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -72,6 +82,17 @@ const Dashboard: React.FC = () => {
     fetchBiweeklySummaries,
     fetchMonthlySummaries,
   ]);
+
+  useEffect(() => {
+    const currentWeek = getCurrentWeekDates(weekOffset);
+    if (currentWeek.length > 0) {
+      const firstDayOfWeek = new Date(currentWeek[0].date);
+      setWeekNumber(getWeekNumber(firstDayOfWeek));
+      setBiweekNumber(getBiweekNumber(firstDayOfWeek));
+      setMonth(getMonthNumber(firstDayOfWeek));
+      setYear(firstDayOfWeek.getFullYear());
+    }
+  }, [weekOffset]);
 
   const handleNextWeek = () => setWeekOffset(weekOffset + 1);
   const handlePreviousWeek = () => setWeekOffset(weekOffset - 1);
@@ -106,21 +127,25 @@ const Dashboard: React.FC = () => {
 
     await updateHoursAndSummaries(
       employee,
-      date,
-      selectedSchedule,
+      schedules,
       hoursWorked,
       weeklySummaries,
       biweeklySummaries,
       monthlySummaries,
-      schedules,
-      fetchHours,
-      fetchWeeklySummaries,
-      fetchBiweeklySummaries,
-      fetchMonthlySummaries,
+      date,
+      weekNumber,
+      biweekNumber,
+      month,
+      year,
+      selectedSchedule,
       handleAddHours,
       handleUpdateHours,
       handleSummaryChange,
-      handleSummaryUpdate
+      handleSummaryUpdate,
+      fetchHours,
+      fetchWeeklySummaries,
+      fetchBiweeklySummaries,
+      fetchMonthlySummaries
     );
   };
 
@@ -228,6 +253,10 @@ const Dashboard: React.FC = () => {
           schedules={schedules}
           hoursWorked={hoursWorked}
           weekOffset={weekOffset}
+          weekNumber={weekNumber}
+          biweekNumber={biweekNumber}
+          month={month}
+          year={year}
           setPeriod={setPeriod}
           handleChange={handleChange}
         />

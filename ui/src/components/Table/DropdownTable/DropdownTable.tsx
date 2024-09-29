@@ -25,7 +25,6 @@ import {
   formatDate,
   formatHeaderDate,
   getCurrentWeekDates,
-  getMonthNumber,
   isValidDateForSelect,
 } from "../../../utils/dateUtils";
 import { getBackgroundColor } from "../../../utils/tableUtils";
@@ -33,16 +32,19 @@ import {
   getOptionsForDay,
   translateDayToAbrevSpanish,
 } from "../../../utils/stringUtils";
-import { getBiweekNumber, getWeekNumber } from "../../../utils/dateUtils";
 import { EnglishDayOfWeek } from "../../../utils/englishDayOfWeek";
 import { STATE, TABLE } from "../../../constants/constants";
 import { format } from "date-fns";
 
 interface DropdownTableProps {
   filteredEmployees: Employee[];
-  weekOffset: number;
   schedules: Schedule[];
   hoursWorked: HoursWorked[];
+  weekOffset: number;
+  weekNumber: number;
+  biweekNumber: number;
+  month: number;
+  year: number;
   setPeriod: React.Dispatch<
     React.SetStateAction<"weekly" | "biweekly" | "monthly">
   >;
@@ -56,9 +58,13 @@ interface DropdownTableProps {
 
 const DropdownTable: React.FC<DropdownTableProps> = ({
   filteredEmployees,
-  weekOffset,
   schedules,
   hoursWorked,
+  weekOffset,
+  weekNumber,
+  biweekNumber,
+  month,
+  year,
   setPeriod,
   handleChange,
 }) => {
@@ -92,8 +98,6 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
 
   const getTotalForPeriod = useMemo(() => {
     return filteredEmployees.map((employee) => {
-      const weekNumber = getWeekNumber(new Date(currentWeek[0]?.date));
-
       const summary =
         selectedPeriod === "weekly"
           ? weeklySummaries.find(
@@ -102,14 +106,10 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
           : selectedPeriod === "biweekly"
           ? biweeklySummaries.find(
               (s) =>
-                s.employeeId === employee.id &&
-                s.biweekNumber ===
-                  getBiweekNumber(new Date(currentWeek[0]?.date))
+                s.employeeId === employee.id && s.biweekNumber === biweekNumber
             )
           : monthlySummaries.find(
-              (s) =>
-                s.employeeId === employee.id &&
-                s.month === getMonthNumber(new Date(currentWeek[0]?.date))
+              (s) => s.employeeId === employee.id && s.month === month
             );
 
       return {
@@ -119,11 +119,13 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
     });
   }, [
     filteredEmployees,
+    weekNumber,
+    biweekNumber,
+    month,
     selectedPeriod,
     weeklySummaries,
     biweeklySummaries,
     monthlySummaries,
-    currentWeek,
   ]);
 
   const startIndex = page * rowsPerPage;
@@ -146,7 +148,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
             <TableRow>
               <TableCell align="center" colSpan={currentWeek.length + 2}>
                 <Typography variant="body2">
-                  Semana {getWeekNumber(new Date(currentWeek[0]?.date))}
+                  Semana {weekNumber}
                 </Typography>
               </TableCell>
             </TableRow>
@@ -253,7 +255,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
 
                     return a.label.localeCompare(b.label);
                   });
-                  
+
                   return (
                     <TableCell
                       key={day}

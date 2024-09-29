@@ -18,10 +18,7 @@ export const useHours = () => {
     setTotalCount((prev) => prev + 1);
   };
 
-  const handleUpdateHours = async (
-    id: number,
-    updatedHours: Partial<HoursWorked>
-  ) => {
+  const handleUpdateHours = async (id: number, updatedHours: Partial<HoursWorked>) => {
     await HoursService.updateHours(id, updatedHours);
     setHoursWorked((prev) =>
       prev.map((hours) =>

@@ -5,21 +5,22 @@ import { HoursWorked } from "../models/HoursWorked";
 import { MonthlySummary } from "../models/MonthlySummary";
 import { Schedule } from "../models/Schedule";
 import { WeeklySummary } from "../models/WeeklySummary";
-import { getWeekNumber, getBiweekNumber } from "./dateUtils";
+import { format } from "date-fns";
+// import { getBiweekNumber, getWeekNumber } from "./dateUtils";
 
 export const updateHoursAndSummaries = async (
   employee: Employee,
-  date: Date,
-  selectedSchedule: Schedule,
+  schedules: Schedule[],
   hoursWorked: HoursWorked[],
   weeklySummaries: WeeklySummary[],
   biweeklySummaries: BiweeklySummary[],
   monthlySummaries: MonthlySummary[],
-  schedules: Schedule[],
-  fetchHours: () => Promise<void>,
-  fetchWeeklySummaries: () => Promise<void>,
-  fetchBiweeklySummaries: () => Promise<void>,
-  fetchMonthlySummaries: () => Promise<void>,
+  date: Date,
+  weekNumber: number,
+  biweekNumber: number,
+  month: number,
+  year: number,
+  selectedSchedule: Schedule,
   handleAddHours: (newHours: HoursWorked) => Promise<void>,
   handleUpdateHours: (
     id: number,
@@ -33,7 +34,11 @@ export const updateHoursAndSummaries = async (
     type: "weekly" | "biweekly" | "monthly",
     id: number,
     updatedSummary: Partial<WeeklySummary | BiweeklySummary | MonthlySummary>
-  ) => Promise<void>
+  ) => Promise<void>,
+  fetchHours: () => Promise<void>,
+  fetchWeeklySummaries: () => Promise<void>,
+  fetchBiweeklySummaries: () => Promise<void>,
+  fetchMonthlySummaries: () => Promise<void>
 ) => {
   try {
     const newHours: HoursWorked = {
@@ -43,12 +48,14 @@ export const updateHoursAndSummaries = async (
     };
 
     const existingHoursWorkedRecord = hoursWorked.find((record) => {
-      const recordDate = new Date(record.date);
       return (
         record.employeeId === employee.id &&
-        recordDate.getTime() === date.getTime()
+        format(record.date, "yyyy-MM-dd") === format(date, "yyyy-MM-dd")
       );
     });
+
+    console.log("hoursWorked: ", hoursWorked);
+    console.log("existingHoursWorkedRecord: ", existingHoursWorkedRecord);
 
     if (existingHoursWorkedRecord) {
       await handleUpdateHours(existingHoursWorkedRecord.id!, {
@@ -58,93 +65,95 @@ export const updateHoursAndSummaries = async (
       await handleAddHours(newHours);
     }
 
-    const weekNumber = getWeekNumber(date);
-    const biweekNumber = getBiweekNumber(date);
-    const month = date.getMonth() + 1;
-    const year = date.getFullYear();
+    // const totalWeeklyHours = hoursWorked
+    //   .filter((record) => {
+    //     const recordWeekNumber = getWeekNumber(new Date(record.date));
+    //     return (
+    //       record.employeeId === employee.id &&
+    //       recordWeekNumber === weekNumber &&
+    //       new Date(record.date).getFullYear() === year
+    //     );
+    //   })
+    //   .reduce((sum, record) => {
+    //     const schedule = schedules.find(
+    //       (schedule: Schedule) => schedule.id === record.scheduleId
+    //     );
+    //     const hours = schedule ? schedule.hours : 0;
+    //     return sum + hours;
+    //   }, 0);
 
-    const newWeeklySummary: WeeklySummary = {
-      employeeId: employee.id,
-      weekNumber,
-      month,
-      year,
-      totalHours: selectedSchedule.hours,
-    };
+    // const totalBiweeklyHours = hoursWorked
+    //   .filter((record) => {
+    //     const recordBiweekNumber = getBiweekNumber(new Date(record.date));
+    //     return (
+    //       record.employeeId === employee.id &&
+    //       recordBiweekNumber === biweekNumber &&
+    //       new Date(record.date).getFullYear() === year
+    //     );
+    //   })
+    //   .reduce((sum, record) => {
+    //     const schedule = schedules.find(
+    //       (schedule: Schedule) => schedule.id === record.scheduleId
+    //     );
+    //     return sum + (schedule ? schedule.hours : 0);
+    //   }, 0);
 
-    const newBiweeklySummary: BiweeklySummary = {
-      employeeId: employee.id,
-      biweekNumber,
-      month,
-      year,
-      totalHours: selectedSchedule.hours,
-    };
+    // const totalMonthlyHours = hoursWorked
+    //   .filter((record) => {
+    //     const recordMonth = new Date(record.date).getMonth() + 1;
+    //     return (
+    //       record.employeeId === employee.id &&
+    //       recordMonth === month &&
+    //       new Date(record.date).getFullYear() === year
+    //     );
+    //   })
+    //   .reduce((sum, record) => {
+    //     const schedule = schedules.find(
+    //       (schedule: Schedule) => schedule.id === record.scheduleId
+    //     );
+    //     return sum + (schedule ? schedule.hours : 0);
+    //   }, 0);
 
-    const newMonthlySummary: MonthlySummary = {
-      employeeId: employee.id,
-      month,
-      year,
-      totalHours: selectedSchedule.hours,
-    };
+    // await createOrUpdateSummary(
+    //   "weekly",
+    //   employee,
+    //   weeklySummaries,
+    //   weekNumber,
+    //   month,
+    //   year,
+    //   totalWeeklyHours,
+    //   handleSummaryUpdate,
+    //   handleSummaryChange
+    // );
 
-    const existingWeeklySummaryRecord = weeklySummaries.find(
-      (record) =>
-        record.employeeId === employee.id &&
-        record.weekNumber === weekNumber &&
-        record.year === year
-    );
+    // await createOrUpdateSummary(
+    //   "biweekly",
+    //   employee,
+    //   biweeklySummaries,
+    //   biweekNumber,
+    //   month,
+    //   year,
+    //   totalBiweeklyHours,
+    //   handleSummaryUpdate,
+    //   handleSummaryChange
+    // );
 
-    const existingBiweeklySummaryRecord = biweeklySummaries.find(
-      (record) =>
-        record.employeeId === employee.id &&
-        record.biweekNumber === biweekNumber &&
-        record.year === year
-    );
+    // await createOrUpdateSummary(
+    //   "monthly",
+    //   employee,
+    //   monthlySummaries,
+    //   month,
+    //   month,
+    //   year,
+    //   totalMonthlyHours,
+    //   handleSummaryUpdate,
+    //   handleSummaryChange
+    // );
 
-    const existingMonthlySummaryRecord = monthlySummaries.find(
-      (record) =>
-        record.employeeId === employee.id &&
-        record.month === month &&
-        record.year === year
-    );
-
-    await updateSummary(
-      existingWeeklySummaryRecord,
-      newWeeklySummary,
-      "weekly",
-      schedules,
-      hoursWorked,
-      employee,
-      date,
-      handleSummaryUpdate,
-      handleSummaryChange
-    );
-    await updateSummary(
-      existingBiweeklySummaryRecord,
-      newBiweeklySummary,
-      "biweekly",
-      schedules,
-      hoursWorked,
-      employee,
-      date,
-      handleSummaryUpdate,
-      handleSummaryChange
-    );
-    await updateSummary(
-      existingMonthlySummaryRecord,
-      newMonthlySummary,
-      "monthly",
-      schedules,
-      hoursWorked,
-      employee,
-      date,
-      handleSummaryUpdate,
-      handleSummaryChange
-    );
-
-    await fetchHours();
-    await fetchWeeklySummaries();
-    await fetchBiweeklySummaries();
-    await fetchMonthlySummaries();
+    // await fetchHours();
+    // await fetchWeeklySummaries();
+    // await fetchBiweeklySummaries();
+    // await fetchMonthlySummaries();
   } catch (error) {
     const axiosError = error as AxiosError;
     if (axiosError.response) {
@@ -158,48 +167,69 @@ export const updateHoursAndSummaries = async (
   }
 };
 
-async function updateSummary(
-  existingSummary: WeeklySummary | BiweeklySummary | MonthlySummary | undefined,
-  newSummary: WeeklySummary | BiweeklySummary | MonthlySummary,
-  type: "weekly" | "biweekly" | "monthly",
-  schedules: Schedule[],
-  hoursWorked: HoursWorked[],
-  employee: Employee,
-  date: Date,
-  handleSummaryUpdate: (
-    type: "weekly" | "biweekly" | "monthly",
-    id: number,
-    updatedSummary: Partial<WeeklySummary | BiweeklySummary | MonthlySummary>
-  ) => Promise<void>,
-  handleSummaryChange: (
-    type: "weekly" | "biweekly" | "monthly",
-    newSummary: WeeklySummary | BiweeklySummary | MonthlySummary
-  ) => Promise<void>
-) {
-  const previousHoursWorked = hoursWorked.find((record) => {
-    const recordDate = new Date(record.date);
-    return (
-      record.employeeId === employee.id &&
-      recordDate.getTime() === date.getTime()
-    );
-  });
+// async function createOrUpdateSummary(
+//   type: "weekly" | "biweekly" | "monthly",
+//   employee: Employee,
+//   summaries: WeeklySummary[] | BiweeklySummary[] | MonthlySummary[],
+//   periodNumber: number,
+//   month: number,
+//   year: number,
+//   totalHours: number,
+//   handleSummaryUpdate: (
+//     type: "weekly" | "biweekly" | "monthly",
+//     id: number,
+//     updatedSummary: Partial<WeeklySummary | BiweeklySummary | MonthlySummary>
+//   ) => Promise<void>,
+//   handleSummaryChange: (
+//     type: "weekly" | "biweekly" | "monthly",
+//     newSummary: WeeklySummary | BiweeklySummary | MonthlySummary
+//   ) => Promise<void>
+// ) {
+//   const existingSummary = summaries.find(
+//     (record) =>
+//       record.employeeId === employee.id &&
+//       (type === "weekly"
+//         ? (record as WeeklySummary).weekNumber === periodNumber
+//         : type === "biweekly"
+//         ? (record as BiweeklySummary).biweekNumber === periodNumber
+//         : (record as MonthlySummary).month === periodNumber) &&
+//       record.year === year
+//   );
 
-  if (existingSummary) {
-    if (previousHoursWorked) {
-      const previousSchedule = schedules.find(
-        (schedule) => schedule.id === previousHoursWorked.scheduleId
-      );
-      if (previousSchedule) {
-        await handleSummaryUpdate(type, existingSummary.id!, {
-          totalHours:
-            existingSummary.totalHours -
-            previousSchedule.hours +
-            newSummary.totalHours,
-        });
-      }
-    }
-  } else {
-    await handleSummaryChange(type, newSummary);
-  }
-}
+//   if (existingSummary) {
+//     await handleSummaryUpdate(type, existingSummary.id!, {
+//       totalHours,
+//     });
+//   } else {
+//     let newSummary: WeeklySummary | BiweeklySummary | MonthlySummary | null = null;
 
+//     if (type === "weekly") {
+//       newSummary = {
+//         employeeId: employee.id,
+//         weekNumber: periodNumber,
+//         month,
+//         year,
+//         totalHours,
+//       } as WeeklySummary;
+//     } else if (type === "biweekly") {
+//       newSummary = {
+//         employeeId: employee.id,
+//         biweekNumber: periodNumber,
+//         month,
+//         year,
+//         totalHours,
+//       } as BiweeklySummary;
+//     } else if (type === "monthly") {
+//       newSummary = {
+//         employeeId: employee.id,
+//         month: periodNumber,
+//         year,
+//         totalHours,
+//       } as MonthlySummary;
+//     }
+
+//     if (newSummary) {
+//       await handleSummaryChange(type, newSummary);
+//     }
+//   }
+// }
