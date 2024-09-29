@@ -1,4 +1,3 @@
-import { AxiosError } from "axios";
 import { BiweeklySummary } from "../models/BiweeklySummary";
 import { Employee } from "../models/Employee";
 import { HoursWorked } from "../models/HoursWorked";
@@ -35,134 +34,122 @@ export const updateHoursAndSummaries = async (
     id: number,
     updatedSummary: Partial<WeeklySummary | BiweeklySummary | MonthlySummary>
   ) => Promise<void>,
-  fetchHours: () => Promise<void>,
+  fetchHours: () => Promise<HoursWorked[]>,
   fetchWeeklySummaries: () => Promise<void>,
   fetchBiweeklySummaries: () => Promise<void>,
   fetchMonthlySummaries: () => Promise<void>
 ) => {
-  try {
-    const newHours: HoursWorked = {
-      employeeId: employee.id,
-      date,
-      scheduleId: selectedSchedule.id,
-    };
+  const newHours: HoursWorked = {
+    employeeId: employee.id,
+    date,
+    scheduleId: selectedSchedule.id,
+  };
 
-    const existingHoursWorkedRecord = hoursWorked.find((record) => {
+  const existingHoursWorkedRecord = hoursWorked.find((record) => {
+    return (
+      record.employeeId === employee.id &&
+      format(record.date, "yyyy-MM-dd") === format(date, "yyyy-MM-dd")
+    );
+  });
+
+  if (existingHoursWorkedRecord) {
+    await handleUpdateHours(existingHoursWorkedRecord.id!, {
+      scheduleId: selectedSchedule.id,
+    });
+  } else {
+    await handleAddHours(newHours);
+  }
+
+  const updatedHoursWorked = await fetchHours();
+
+  const totalWeeklyHours = updatedHoursWorked
+    .filter((record) => {
+      const recordWeekNumber = getWeekNumber(new Date(record.date));
       return (
         record.employeeId === employee.id &&
-        format(record.date, "yyyy-MM-dd") === format(date, "yyyy-MM-dd")
+        recordWeekNumber === weekNumber &&
+        new Date(record.date).getFullYear() === year
       );
-    });
-
-    if (existingHoursWorkedRecord) {
-      await handleUpdateHours(existingHoursWorkedRecord.id!, {
-        scheduleId: selectedSchedule.id,
-      });
-    } else {
-      await handleAddHours(newHours);
-    }
-
-    await fetchHours();
-
-    const totalWeeklyHours = hoursWorked
-      .filter((record) => {
-        const recordWeekNumber = getWeekNumber(new Date(record.date));
-        return (
-          record.employeeId === employee.id &&
-          recordWeekNumber === weekNumber &&
-          new Date(record.date).getFullYear() === year
-        );
-      })
-      .reduce((sum, record) => {
-        const schedule = schedules.find(
-          (schedule: Schedule) => schedule.id === record.scheduleId
-        );
-        const hours = schedule ? schedule.hours : 0;
-        return sum + hours;
-      }, 0);
-
-    const totalBiweeklyHours = hoursWorked
-      .filter((record) => {
-        const recordBiweekNumber = getBiweekNumber(new Date(record.date));
-        return (
-          record.employeeId === employee.id &&
-          recordBiweekNumber === biweekNumber &&
-          new Date(record.date).getFullYear() === year
-        );
-      })
-      .reduce((sum, record) => {
-        const schedule = schedules.find(
-          (schedule: Schedule) => schedule.id === record.scheduleId
-        );
-        return sum + (schedule ? schedule.hours : 0);
-      }, 0);
-
-    const totalMonthlyHours = hoursWorked
-      .filter((record) => {
-        const recordMonth = new Date(record.date).getMonth() + 1;
-        return (
-          record.employeeId === employee.id &&
-          recordMonth === month &&
-          new Date(record.date).getFullYear() === year
-        );
-      })
-      .reduce((sum, record) => {
-        const schedule = schedules.find(
-          (schedule: Schedule) => schedule.id === record.scheduleId
-        );
-        return sum + (schedule ? schedule.hours : 0);
-      }, 0);
-
-    await createOrUpdateSummary(
-      "weekly",
-      employee,
-      weeklySummaries,
-      weekNumber,
-      month,
-      year,
-      totalWeeklyHours,
-      handleSummaryUpdate,
-      handleSummaryChange
-    );
-
-    await createOrUpdateSummary(
-      "biweekly",
-      employee,
-      biweeklySummaries,
-      biweekNumber,
-      month,
-      year,
-      totalBiweeklyHours,
-      handleSummaryUpdate,
-      handleSummaryChange
-    );
-
-    await createOrUpdateSummary(
-      "monthly",
-      employee,
-      monthlySummaries,
-      month,
-      month,
-      year,
-      totalMonthlyHours,
-      handleSummaryUpdate,
-      handleSummaryChange
-    );
-
-    await fetchWeeklySummaries();
-    await fetchBiweeklySummaries();
-    await fetchMonthlySummaries();
-  } catch (error) {
-    const axiosError = error as AxiosError;
-    if (axiosError.response) {
-      console.log(
-        "Error en la respuesta del servidor:",
-        axiosError.response.data
+    })
+    .reduce((sum, record) => {
+      const schedule = schedules.find(
+        (schedule: Schedule) => schedule.id === record.scheduleId
       );
-    } else {
-      console.log("Error desconocido:", error);
-    }
-  }
+      const hours = schedule ? schedule.hours : 0;
+      return sum + hours;
+    }, 0);
+
+  const totalBiweeklyHours = updatedHoursWorked
+    .filter((record) => {
+      const recordBiweekNumber = getBiweekNumber(new Date(record.date));
+      return (
+        record.employeeId === employee.id &&
+        recordBiweekNumber === biweekNumber &&
+        new Date(record.date).getFullYear() === year
+      );
+    })
+    .reduce((sum, record) => {
+      const schedule = schedules.find(
+        (schedule: Schedule) => schedule.id === record.scheduleId
+      );
+      return sum + (schedule ? schedule.hours : 0);
+    }, 0);
+
+  const totalMonthlyHours = updatedHoursWorked
+    .filter((record) => {
+      const recordMonth = new Date(record.date).getMonth() + 1;
+      return (
+        record.employeeId === employee.id &&
+        recordMonth === month &&
+        new Date(record.date).getFullYear() === year
+      );
+    })
+    .reduce((sum, record) => {
+      const schedule = schedules.find(
+        (schedule: Schedule) => schedule.id === record.scheduleId
+      );
+      return sum + (schedule ? schedule.hours : 0);
+    }, 0);
+
+  await createOrUpdateSummary(
+    "weekly",
+    employee,
+    weeklySummaries,
+    weekNumber,
+    month,
+    year,
+    totalWeeklyHours,
+    handleSummaryUpdate,
+    handleSummaryChange
+  );
+
+  await createOrUpdateSummary(
+    "biweekly",
+    employee,
+    biweeklySummaries,
+    biweekNumber,
+    month,
+    year,
+    totalBiweeklyHours,
+    handleSummaryUpdate,
+    handleSummaryChange
+  );
+
+  await createOrUpdateSummary(
+    "monthly",
+    employee,
+    monthlySummaries,
+    month,
+    month,
+    year,
+    totalMonthlyHours,
+    handleSummaryUpdate,
+    handleSummaryChange
+  );
+
+  await fetchWeeklySummaries();
+  await fetchBiweeklySummaries();
+  await fetchMonthlySummaries();
 };
 
 async function createOrUpdateSummary(

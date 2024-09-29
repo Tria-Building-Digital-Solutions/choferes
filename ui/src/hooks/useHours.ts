@@ -6,10 +6,11 @@ export const useHours = () => {
   const [hoursWorked, setHoursWorked] = useState<HoursWorked[]>([]);
   const [totalCount, setTotalCount] = useState(0);
 
-  const fetchHours = useCallback(async () => {
+  const fetchHours = useCallback(async (): Promise<HoursWorked[]> => {
     const data = await HoursService.fetchHours();
     setHoursWorked(data);
     setTotalCount(data.length);
+    return data;
   }, []);
 
   const handleAddHours = async (newHours: HoursWorked) => {
