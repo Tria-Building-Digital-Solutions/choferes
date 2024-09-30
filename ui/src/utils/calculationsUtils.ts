@@ -5,7 +5,7 @@ import { MonthlySummary } from "../models/MonthlySummary";
 import { Schedule } from "../models/Schedule";
 import { WeeklySummary } from "../models/WeeklySummary";
 import { format, parseISO } from "date-fns";
-import { getBiweekNumber, getWeekNumber } from "./dateUtils";
+import { getBiweekNumber, getCurrentWeekDates, getWeekNumber } from "./dateUtils";
 
 export const updateHoursAndSummaries = async (
   employee: Employee,
@@ -15,6 +15,7 @@ export const updateHoursAndSummaries = async (
   biweeklySummaries: BiweeklySummary[],
   monthlySummaries: MonthlySummary[],
   date: Date,
+  weekOffset: number,
   weekNumber: number,
   biweekNumber: number,
   month: number,
@@ -63,7 +64,6 @@ export const updateHoursAndSummaries = async (
   const totalWeeklyHours = updatedHoursWorked
     .filter((record) => {
       const recordWeekNumber = getWeekNumber(new Date(record.date));
-
       return (
         record.employeeId === employee.id &&
         recordWeekNumber === weekNumber &&
@@ -79,7 +79,9 @@ export const updateHoursAndSummaries = async (
 
   const totalBiweeklyHours = updatedHoursWorked
     .filter((record) => {
-      const recordBiweekNumber = getBiweekNumber(new Date(record.date));
+      const currentWeek = getCurrentWeekDates(weekOffset);
+      const firstDayOfWeek = new Date(currentWeek[0].date);
+      const recordBiweekNumber = getBiweekNumber(firstDayOfWeek);
       return (
         record.employeeId === employee.id &&
         recordBiweekNumber === biweekNumber &&

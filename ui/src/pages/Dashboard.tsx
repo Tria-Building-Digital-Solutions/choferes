@@ -125,6 +125,7 @@ const Dashboard: React.FC = () => {
       biweeklySummaries,
       monthlySummaries,
       date,
+      weekOffset,
       weekNumber,
       biweekNumber,
       month,
