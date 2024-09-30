@@ -6,12 +6,14 @@ interface SearchBarProps {
   value: string;
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   placeholder?: string;
+  fullWidth?: boolean; 
   onSearch?: () => void;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
   placeholder = "Buscar...",
   value,
+  fullWidth,
   onChange,
 }) => {
   return (
@@ -28,6 +30,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
         placeholder={placeholder}
         inputProps={{ "aria-label": placeholder }}
         value={value}
+        fullWidth={fullWidth}
         onChange={onChange}
       />
     </div>

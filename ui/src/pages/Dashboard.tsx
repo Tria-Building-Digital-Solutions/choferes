@@ -187,23 +187,28 @@ const Dashboard: React.FC = () => {
           />
         )}
       </Box>
-
       <Grid
         container
         spacing={2}
         justifyContent="space-between"
         alignItems="center"
       >
-        <Grid item>
+        <Grid item xs={12} sm={6} md={4}>
           <SearchBar
             placeholder="Buscar Empleado"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
+            fullWidth
           />
         </Grid>
         {showResults && (
-          <Grid item>
-            <Box display="flex" alignItems="center">
+          <Grid item xs={12} sm={6} md={8}>
+            <Box
+              display="flex"
+              alignItems="center"
+              flexWrap="wrap"
+              justifyContent="flex-end"
+            >
               <Tooltip title="Semana Anterior" arrow>
                 <Button
                   variant="contained"
@@ -256,7 +261,7 @@ const Dashboard: React.FC = () => {
                 <DatePicker
                   label="Seleccionar fecha"
                   value={selectedDate}
-                  sx={{ width: "180px" }}
+                  sx={{ width: { xs: "100%", sm: "180px" } }}
                   onChange={handleDateChange}
                 />
               </LocalizationProvider>
