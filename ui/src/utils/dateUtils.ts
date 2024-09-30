@@ -85,11 +85,15 @@ export const isValidDateForSelect = (date: Date): boolean => {
 };
 
 export const getWeekNumber = (date: Date): number => {
-  const startDate = new Date(date.getFullYear(), 0, 1);
+  const tempDate = new Date(date.getTime());
+  const dayOfWeek = (tempDate.getDay() + 6) % 7; 
+  tempDate.setDate(tempDate.getDate() - dayOfWeek);
+  const startDate = new Date(tempDate.getFullYear(), 0, 1);
+  const startDayOfWeek = (startDate.getDay() + 6) % 7;
   const days = Math.floor(
-    (date.valueOf() - startDate.valueOf()) / (24 * 60 * 60 * 1000)
+    (tempDate.valueOf() - startDate.valueOf()) / (24 * 60 * 60 * 1000)
   );
-  return Math.ceil((days + startDate.getDay() + 1) / 7);
+  return Math.ceil((days + startDayOfWeek) / 7);
 };
 
 export const getBiweekNumber = (date: Date): number => {
