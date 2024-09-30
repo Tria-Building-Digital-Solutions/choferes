@@ -254,8 +254,9 @@ const Dashboard: React.FC = () => {
                 }}
               >
                 <DatePicker
-                  label="Seleccione una fecha"
+                  label="Seleccionar fecha"
                   value={selectedDate}
+                  sx={{ width: "180px" }}
                   onChange={handleDateChange}
                 />
               </LocalizationProvider>

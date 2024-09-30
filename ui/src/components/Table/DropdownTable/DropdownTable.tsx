@@ -37,6 +37,8 @@ import {
 import { EnglishDayOfWeek } from "../../../utils/englishDayOfWeek";
 import { STATE, TABLE } from "../../../constants/constants";
 import { format } from "date-fns";
+import InfoRoundedIcon from "@mui/icons-material/InfoRounded";
+import ModalComponent from "../../Modal/ModalComponent";
 
 interface DropdownTableProps {
   filteredEmployees: Employee[];
@@ -56,9 +58,9 @@ interface DropdownTableProps {
     date: Date,
     selectedLabel: string
   ) => void;
-  weeklySummaries: WeeklySummary[]; 
-  biweeklySummaries: BiweeklySummary[]; 
-  monthlySummaries: MonthlySummary[]; 
+  weeklySummaries: WeeklySummary[];
+  biweeklySummaries: BiweeklySummary[];
+  monthlySummaries: MonthlySummary[];
 }
 
 const DropdownTable: React.FC<DropdownTableProps> = ({
@@ -161,7 +163,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
         <Table stickyHeader aria-label="sticky table">
           <TableHead>
             <TableRow>
-              <TableCell align="center" colSpan={currentWeek.length + 2}>
+              <TableCell align="center" colSpan={10}>
                 <Typography variant="body2">Semana {weekNumber}</Typography>
               </TableCell>
             </TableRow>
@@ -191,6 +193,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
               <TableCell
                 align="center"
                 sx={{ position: "sticky", right: 0, zIndex: 2 }}
+                colSpan={2}
               >
                 <FormControl>
                   <InputLabel>Total</InputLabel>
@@ -226,7 +229,9 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                     backgroundColor: getBackgroundColor(rowIndex),
                   }}
                 >
-                  {employee.firstName} {employee.lastName}
+                  <Typography variant="body2">
+                    {employee.firstName} {employee.lastName}
+                  </Typography>
                 </TableCell>
                 {currentWeek.map(({ day, date }) => {
                   const existingRecord = hoursWorked.find(
@@ -313,6 +318,24 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                 })}
 
                 <TableCell
+                  align="right"
+                  sx={{
+                    position: "sticky",
+                    right: 0,
+                    zIndex: 2,
+                    backgroundColor: getBackgroundColor(rowIndex),
+                  }}
+                >
+                  <strong>
+                    {
+                      getTotalForPeriod.find(
+                        (emp) => emp.employeeId === employee.id
+                      )?.totalHours
+                    }
+                  </strong>
+                  &nbsp;horas
+                </TableCell>
+                <TableCell
                   align="center"
                   sx={{
                     position: "sticky",
@@ -321,11 +344,12 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                     backgroundColor: getBackgroundColor(rowIndex),
                   }}
                 >
-                  {
-                    getTotalForPeriod.find(
-                      (emp) => emp.employeeId === employee.id
-                    )?.totalHours
-                  }
+                  <ModalComponent
+                    buttonType="icon"
+                    buttonIcon={<InfoRoundedIcon />}
+                    modalTitle={`${employee.firstName} ${employee.lastName}`}
+                    modalDescription="Contenido del modal"
+                  />
                 </TableCell>
               </TableRow>
             ))}
