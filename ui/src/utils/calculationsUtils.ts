@@ -60,11 +60,10 @@ export const updateHoursAndSummaries = async (
 
   const updatedHoursWorked = await fetchHours();
 
-  console.log("Updated Hours Worked:", updatedHoursWorked);
-
   const totalWeeklyHours = updatedHoursWorked
     .filter((record) => {
       const recordWeekNumber = getWeekNumber(new Date(record.date));
+
       return (
         record.employeeId === employee.id &&
         recordWeekNumber === weekNumber &&
@@ -109,10 +108,6 @@ export const updateHoursAndSummaries = async (
       );
       return sum + (schedule ? schedule.hours : 0);
     }, 0);
-
-  console.log("totalWeeklyHours: ", totalWeeklyHours);
-  console.log("totalBiweeklyHours: ", totalBiweeklyHours);
-  console.log("totalMonthlyHours: ", totalMonthlyHours);
 
   await createOrUpdateSummary(
     "weekly",

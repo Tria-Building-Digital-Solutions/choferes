@@ -1,11 +1,4 @@
 import { EnglishAbrevMonthOfYear } from "./englishAbrevMonthOfYear";
-import {
-  addDays,
-  eachDayOfInterval,
-  endOfMonth,
-  format,
-  startOfMonth,
-} from "date-fns";
 import { translateMonthToAbrevSpanish } from "./stringUtils";
 
 export const formatDate = (date: Date, withTimePart: boolean) => {
@@ -67,34 +60,6 @@ export const getCurrentWeekDates = (weekOffset: number) => {
       isoDate: date.toISOString(),
     };
   });
-};
-
-export const getDatesForPeriod = (startDate: Date, daysCount: number) => {
-  return eachDayOfInterval({
-    start: startDate,
-    end: addDays(startDate, daysCount - 1),
-  }).map((date) => ({
-    day: format(date, "EEEE"),
-    date: format(date, "dd-MM-yyyy"),
-  }));
-};
-
-export const getBiweeklyDates = (startDate: Date) => {
-  const firstWeek = getDatesForPeriod(startDate, 7);
-  const secondWeekStart = addDays(startDate, 7);
-  const secondWeek = getDatesForPeriod(secondWeekStart, 7);
-  return [...firstWeek, ...secondWeek];
-};
-
-export const getMonthlyDates = (startDate: Date) => {
-  const firstDayOfMonth = startOfMonth(startDate);
-  const lastDayOfMonth = endOfMonth(startDate);
-  return eachDayOfInterval({ start: firstDayOfMonth, end: lastDayOfMonth }).map(
-    (date) => ({
-      day: format(date, "EEEE"),
-      date: format(date, "dd-MM-yyyy"),
-    })
-  );
 };
 
 const getEndOfNextWeek = (today: Date): Date => {

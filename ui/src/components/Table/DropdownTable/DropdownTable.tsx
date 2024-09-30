@@ -321,8 +321,8 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                   align="right"
                   sx={{
                     position: "sticky",
-                    right: 0,
-                    zIndex: 2,
+                    right: 72,
+                    zIndex: 3,
                     backgroundColor: getBackgroundColor(rowIndex),
                   }}
                 >
@@ -340,7 +340,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                   sx={{
                     position: "sticky",
                     right: 0,
-                    zIndex: 2,
+                    zIndex: 3,
                     backgroundColor: getBackgroundColor(rowIndex),
                   }}
                 >
