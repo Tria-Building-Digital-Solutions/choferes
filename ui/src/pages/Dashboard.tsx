@@ -32,6 +32,7 @@ import { setDayOptionsEnglish } from "../utils/stringUtils";
 import {
   getBiweekNumber,
   getCurrentWeekDates,
+  getFirstDayOfWeek,
   getMonthNumber,
   getWeekNumber,
   isValidDateForSelect,
@@ -78,9 +79,20 @@ const Dashboard: React.FC = () => {
     }
   }, [weekOffset]);
 
-  const handleNextWeek = () => setWeekOffset(weekOffset + 1);
-  const handlePreviousWeek = () => setWeekOffset(weekOffset - 1);
-  const handleCurrentWeek = () => setWeekOffset(0);
+  const handleNextWeek = () => {
+    setWeekOffset(weekOffset + 1);
+    setSelectedDate(getFirstDayOfWeek(weekOffset + 1));
+  };
+
+  const handlePreviousWeek = () => {
+    setWeekOffset(weekOffset - 1);
+    setSelectedDate(getFirstDayOfWeek(weekOffset - 1));
+  };
+
+  const handleCurrentWeek = () => {
+    setWeekOffset(0);
+    setSelectedDate(new Date());
+  };
 
   const filteredEmployees = employees.filter((employee) =>
     `${employee.firstName} ${employee.lastName}`
@@ -96,7 +108,10 @@ const Dashboard: React.FC = () => {
     setSelectedDate(newDate);
     if (newDate) {
       const today = new Date();
-      setWeekOffset(differenceInCalendarWeeks(newDate, today) + 1);
+      const weekOptions: { weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 } = {
+        weekStartsOn: 1,
+      };
+      setWeekOffset(differenceInCalendarWeeks(newDate, today, weekOptions));
     }
   };
 

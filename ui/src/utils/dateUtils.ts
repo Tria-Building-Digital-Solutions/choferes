@@ -1,3 +1,4 @@
+import { addDays, startOfWeek } from "date-fns";
 import { EnglishAbrevMonthOfYear } from "./englishAbrevMonthOfYear";
 import { translateMonthToAbrevSpanish } from "./stringUtils";
 
@@ -62,6 +63,13 @@ export const getCurrentWeekDates = (weekOffset: number) => {
   });
 };
 
+export const getFirstDayOfWeek = (weekOffset: number) => {
+  const today = new Date();
+  const startOfCurrentWeek = startOfWeek(today, { weekStartsOn: 1 });
+  const targetMonday = addDays(startOfCurrentWeek, weekOffset * 7);
+  return targetMonday;
+};
+
 const getEndOfNextWeek = (today: Date): Date => {
   let dayOfWeek = today.getDay();
 
@@ -69,7 +77,7 @@ const getEndOfNextWeek = (today: Date): Date => {
     dayOfWeek = 7;
   }
 
-  const daysUntilEndOfNextWeek = 14 - dayOfWeek; 
+  const daysUntilEndOfNextWeek = 14 - dayOfWeek;
   const endOfNextWeek = new Date(today);
   endOfNextWeek.setDate(today.getDate() + daysUntilEndOfNextWeek);
   endOfNextWeek.setHours(23, 59, 59, 999);
@@ -79,14 +87,14 @@ const getEndOfNextWeek = (today: Date): Date => {
 
 export const isValidDateForSelect = (date: Date): boolean => {
   const today = new Date();
-  today.setHours(0, 0, 0, 0); 
-  const endOfNextWeek = getEndOfNextWeek(today); 
+  today.setHours(0, 0, 0, 0);
+  const endOfNextWeek = getEndOfNextWeek(today);
   return date <= endOfNextWeek;
 };
 
 export const getWeekNumber = (date: Date): number => {
   const tempDate = new Date(date.getTime());
-  const dayOfWeek = (tempDate.getDay() + 6) % 7; 
+  const dayOfWeek = (tempDate.getDay() + 6) % 7;
   tempDate.setDate(tempDate.getDate() - dayOfWeek);
   const startDate = new Date(tempDate.getFullYear(), 0, 1);
   const startDayOfWeek = (startDate.getDay() + 6) % 7;
@@ -103,7 +111,6 @@ export const getBiweekNumber = (date: Date): number => {
   );
   return Math.floor(daysDifference / 15) + 1;
 };
-
 
 export const getMonthNumber = (date: Date): number => {
   return date.getMonth() + 1;
