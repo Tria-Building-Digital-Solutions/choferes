@@ -25,6 +25,7 @@ WeeklySummary.init(
         model: Employee,
         key: 'id',
       },
+      onDelete: 'CASCADE',
     },
     weekNumber: {
       type: DataTypes.INTEGER,

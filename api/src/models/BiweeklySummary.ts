@@ -25,6 +25,7 @@ BiweeklySummary.init(
         model: Employee,
         key: 'id',
       },
+      onDelete: 'CASCADE',
     },
     biweekNumber: {
       type: DataTypes.INTEGER,

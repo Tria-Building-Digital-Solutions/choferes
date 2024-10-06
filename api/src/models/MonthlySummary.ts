@@ -24,6 +24,7 @@ MonthlySummary.init(
         model: Employee,
         key: 'id',
       },
+      onDelete: 'CASCADE',
     },
     month: {
       type: DataTypes.INTEGER,
