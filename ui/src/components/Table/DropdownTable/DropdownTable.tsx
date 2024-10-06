@@ -16,6 +16,8 @@ import {
   Divider,
   Typography,
   Box,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import { Employee } from "../../../models/Employee";
 import { Schedule } from "../../../models/Schedule";
@@ -148,6 +150,9 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
   const startIndex = page * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
   const paginatedEmployees = sortedEmployees.slice(startIndex, endIndex);
+
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   if (!filteredEmployees || filteredEmployees.length === 0) {
     return (
@@ -358,10 +363,17 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
       </TableContainer>
       <Divider />
       <Box display="flex" justifyContent="space-between" alignItems="center">
-        <Typography variant="body2" sx={{ ml: 2 }}>
-          Semana del {formatDate(new Date(currentWeek[0]?.date), false)} al{" "}
-          {formatDate(new Date(currentWeek[6]?.date), false)}
-        </Typography>
+        {isSmallScreen ? (
+          <Typography variant="body2" sx={{ ml: 2 }}>
+            Semana del {format(new Date(currentWeek[0]?.date), "dd/MM/yyyy")} al{" "}
+            {format(new Date(currentWeek[6]?.date), "dd/MM/yyyy")}
+          </Typography>
+        ) : (
+          <Typography variant="body2" sx={{ ml: 2 }}>
+            Semana del {formatDate(new Date(currentWeek[0]?.date), false)} al{" "}
+            {formatDate(new Date(currentWeek[6]?.date), false)}
+          </Typography>
+        )}
         <TablePagination
           className="pagination"
           rowsPerPageOptions={[5, 10, 25]}

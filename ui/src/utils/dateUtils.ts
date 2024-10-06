@@ -105,11 +105,25 @@ export const getWeekNumber = (date: Date): number => {
 };
 
 export const getBiweekNumber = (date: Date): number => {
-  const startOfYear = new Date(date.getFullYear(), 0, 1);
-  const daysDifference = Math.floor(
-    (date.getTime() - startOfYear.getTime()) / (24 * 60 * 60 * 1000)
-  );
-  return Math.floor(daysDifference / 15) + 1;
+  const month = date.getMonth();
+  const dayOfMonth = date.getDate(); 
+  const biweekNumber = (month * 2) + (dayOfMonth <= 15 ? 1 : 2);
+  return biweekNumber;
+};
+
+export const getStartOfBiweek = (date: Date): Date => {
+  const startOfCurrentWeek = startOfWeek(date, { weekStartsOn: 1 });
+  const dayOfMonth = date.getDate();
+  const biweekNumber = Math.ceil(dayOfMonth / 15);
+  if (biweekNumber === 1) {
+    return startOfCurrentWeek;
+  }
+  return addDays(startOfCurrentWeek, 7);
+};
+
+export const getEndOfBiweek = (date: Date): Date => {
+  const startOfBiweek = getStartOfBiweek(date);
+  return addDays(startOfBiweek, 13);
 };
 
 export const getMonthNumber = (date: Date): number => {
