@@ -4,6 +4,7 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
 import { SxProps } from "@mui/system";
 
 interface ModalComponentProps {
@@ -22,9 +23,9 @@ const defaultModalStyle = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: '60%',
+  width: "60%",
   bgcolor: "background.paper",
-  border: "2px solid #000",
+  borderRadius: "8px",
   boxShadow: 24,
   p: 4,
 };
@@ -61,9 +62,20 @@ const ModalComponent: React.FC<ModalComponentProps> = ({
         aria-describedby="generic-modal-description"
       >
         <Box sx={{ ...defaultModalStyle, ...modalStyle }}>
-          <Typography id="generic-modal-title" variant="h6" component="h2">
-            {modalTitle}
-          </Typography>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Typography id="generic-modal-title" variant="h6" component="h2">
+              {modalTitle}
+            </Typography>
+            <IconButton onClick={handleClose} aria-label="close">
+              <CloseIcon />
+            </IconButton>
+          </Box>
           {modalDescription && (
             <Typography id="generic-modal-description" sx={{ mt: 2 }}>
               {modalDescription}
