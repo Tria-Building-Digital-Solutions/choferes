@@ -20,7 +20,9 @@ import {
   useMediaQuery,
   Badge,
   Tooltip,
+  Tab,
 } from "@mui/material";
+import { TabContext, TabList, TabPanel } from "@mui/lab";
 import ModalComponent from "../../Modal/ModalComponent";
 import { Employee } from "../../../models/Employee";
 import { Schedule } from "../../../models/Schedule";
@@ -91,6 +93,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
     "weekly" | "biweekly" | "monthly"
   >("weekly");
   const [orderDirection, setOrderDirection] = useState<"asc" | "desc">("asc");
+  const [tabValue, setTabValue] = React.useState("1");
 
   const currentWeek = useMemo(
     () => getCurrentWeekDates(weekOffset),
@@ -154,6 +157,58 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
     monthlySummaries,
   ]);
 
+  const getTotalWeekly = useMemo(() => {
+    return filteredEmployees.map((employee) => {
+      const summary = weeklySummaries.find(
+        (s) =>
+          s.employeeId === employee.id &&
+          s.weekNumber === weekNumber &&
+          s.year === year
+      );
+
+      const totalHours = summary ? summary.totalHours : 0;
+
+      return {
+        employeeId: employee.id,
+        totalHours,
+      };
+    });
+  }, [filteredEmployees, weekNumber, year, weeklySummaries]);
+
+  const getTotalBiweekly = useMemo(() => {
+    return filteredEmployees.map((employee) => {
+      const summary = biweeklySummaries.find(
+        (s) =>
+          s.employeeId === employee.id &&
+          s.biweekNumber === biweekNumber &&
+          s.year === year
+      );
+
+      const totalHours = summary ? summary.totalHours : 0;
+
+      return {
+        employeeId: employee.id,
+        totalHours,
+      };
+    });
+  }, [filteredEmployees, biweekNumber, year, biweeklySummaries]);
+
+  const getTotalMonthly = useMemo(() => {
+    return filteredEmployees.map((employee) => {
+      const summary = monthlySummaries.find(
+        (s) =>
+          s.employeeId === employee.id && s.month === month && s.year === year
+      );
+
+      const totalHours = summary ? summary.totalHours : 0;
+
+      return {
+        employeeId: employee.id,
+        totalHours,
+      };
+    });
+  }, [filteredEmployees, month, year, monthlySummaries]);
+
   const getTotalOvertime = useMemo(() => {
     return filteredEmployees.map((employee) => {
       const summary = biweeklySummaries.find(
@@ -173,6 +228,10 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
       };
     });
   }, [filteredEmployees, biweekNumber, year, biweeklySummaries]);
+
+  const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
+    setTabValue(newValue);
+  };
 
   const startIndex = page * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
@@ -281,7 +340,102 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                       buttonType="icon"
                       buttonIcon={<InfoRoundedIcon />}
                       modalTitle={`${employee.firstName} ${employee.lastName}`}
-                      modalDescription="Contenido del modal"
+                      modalDescription="Resumen del total de horas trabajadas"
+                      children={
+                        <TabContext value={tabValue}>
+                          <Box sx={{ bgcolor: "background.paper" }}>
+                            <TabList
+                              onChange={handleTabChange}
+                              sx={{ padding: 0, margin: 0 }}
+                            >
+                              <Tab label="Semanal" value="1" />
+                              <Tab label="Quincenal" value="2" />
+                              <Tab label="Mensual" value="3" />
+                              <Tab label="Horas Extra" value="4" />
+                            </TabList>
+                          </Box>
+                          <TabPanel
+                            value="1"
+                            sx={{ paddingLeft: 0, paddingRight: 0 }}
+                          >
+                            <Typography variant="body2">
+                              {`${employee.firstName} ha trabajado un total de `}
+                              <strong>
+                                {getTotalWeekly.find(
+                                  (emp) => emp.employeeId === employee.id
+                                )?.totalHours || 0}
+                              </strong>
+                              {` horas en la semana número `}
+                              <strong>{weekNumber}</strong>
+                              {`, que comprende del ${formatDate(
+                                new Date(currentWeek[0]?.date),
+                                false
+                              )} al ${formatDate(
+                                new Date(currentWeek[6]?.date),
+                                false
+                              )} `}
+                            </Typography>
+                          </TabPanel>
+                          <TabPanel
+                            value="2"
+                            sx={{ paddingLeft: 0, paddingRight: 0 }}
+                          >
+                            <Typography variant="body2">
+                              {`${employee.firstName} ha trabajado un total de `}
+                              <strong>
+                                {getTotalBiweekly.find(
+                                  (emp) => emp.employeeId === employee.id
+                                )?.totalHours || 0}
+                              </strong>
+                              {` horas en la quincena número `}{" "}
+                              <strong>{biweekNumber}</strong>
+                              {`, que comprende del ${formatDate(
+                                getBiweeklyDates(year, biweekNumber).startDate,
+                                false
+                              )} al ${formatDate(
+                                getBiweeklyDates(year, biweekNumber).startDate,
+                                false
+                              )}`}
+                            </Typography>
+                          </TabPanel>
+                          <TabPanel
+                            value="3"
+                            sx={{ paddingLeft: 0, paddingRight: 0 }}
+                          >
+                            <Typography variant="body2">
+                              {`${employee.firstName} ha trabajado un total de `}
+                              <strong>
+                                {getTotalMonthly.find(
+                                  (emp) => emp.employeeId === employee.id
+                                )?.totalHours || 0}
+                              </strong>
+                              {` horas en el mes de ${getMonthName(
+                                month
+                              )} del ${year}`}
+                            </Typography>
+                          </TabPanel>
+                          <TabPanel
+                            value="4"
+                            sx={{ paddingLeft: 0, paddingRight: 0 }}
+                          >
+                            <Typography variant="body2">
+                              {`${employee.firstName} ha trabajado un total de `}
+                              <strong>
+                                {getTotalOvertime.find(
+                                  (emp) => emp.employeeId === employee.id
+                                )?.overtime || 0}
+                              </strong>
+                              {` horas extra en la quincena del ${formatDate(
+                                getBiweeklyDates(year, biweekNumber).startDate,
+                                false
+                              )} al ${formatDate(
+                                getBiweeklyDates(year, biweekNumber).startDate,
+                                false
+                              )}`}
+                            </Typography>
+                          </TabPanel>
+                        </TabContext>
+                      }
                     />
                   </Box>
                 </TableCell>

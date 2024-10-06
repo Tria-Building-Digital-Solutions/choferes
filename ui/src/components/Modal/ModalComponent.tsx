@@ -11,9 +11,10 @@ interface ModalComponentProps {
   buttonLabel?: string;
   buttonIcon?: React.ReactNode;
   modalTitle: string;
-  modalDescription: string;
+  modalDescription?: string;
   buttonStyle?: SxProps;
   modalStyle?: SxProps;
+  children?: React.ReactNode;
 }
 
 const defaultModalStyle = {
@@ -21,7 +22,7 @@ const defaultModalStyle = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: 400,
+  width: '60%',
   bgcolor: "background.paper",
   border: "2px solid #000",
   boxShadow: 24,
@@ -36,6 +37,7 @@ const ModalComponent: React.FC<ModalComponentProps> = ({
   modalDescription,
   buttonStyle,
   modalStyle,
+  children,
 }) => {
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
@@ -62,9 +64,12 @@ const ModalComponent: React.FC<ModalComponentProps> = ({
           <Typography id="generic-modal-title" variant="h6" component="h2">
             {modalTitle}
           </Typography>
-          <Typography id="generic-modal-description" sx={{ mt: 2 }}>
-            {modalDescription}
-          </Typography>
+          {modalDescription && (
+            <Typography id="generic-modal-description" sx={{ mt: 2 }}>
+              {modalDescription}
+            </Typography>
+          )}
+          <Box sx={{ mt: 2 }}>{children}</Box>
         </Box>
       </Modal>
     </div>
