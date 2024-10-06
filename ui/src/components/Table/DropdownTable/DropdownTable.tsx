@@ -32,9 +32,12 @@ import { BiweeklySummary } from "../../../models/BiweeklySummary";
 import { MonthlySummary } from "../../../models/MonthlySummary";
 import {
   formatDate,
+  formatDateWithoutYear,
   formatHeaderDate,
   getBiweeklyDates,
   getCurrentWeekDates,
+  getInvolvedPeriods,
+  hasMultipleBiweeks,
   isValidDateForSelect,
 } from "../../../utils/dateUtils";
 import { getBackgroundColor } from "../../../utils/tableUtils";
@@ -240,6 +243,8 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
+  const multiplePeriods = getInvolvedPeriods(currentWeek);
+
   if (!filteredEmployees || filteredEmployees.length === 0) {
     return (
       <Typography variant="h6" color="textSecondary">
@@ -258,11 +263,27 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                 {selectedPeriod === "weekly" ? (
                   <Typography variant="body2">{`Semana ${weekNumber}`}</Typography>
                 ) : selectedPeriod === "biweekly" ? (
-                  <Typography variant="body2">{`Quincena ${biweekNumber}`}</Typography>
+                  <div>
+                    {hasMultipleBiweeks(currentWeek) ? (
+                      <Typography variant="body2">{`Quincenas ${multiplePeriods.biweekNumbers[0]} / ${multiplePeriods.biweekNumbers[1]}`}</Typography>
+                    ) : (
+                      <Typography variant="body2">{`Quincena ${biweekNumber}`}</Typography>
+                    )}
+                  </div>
                 ) : (
-                  <Typography variant="body2">{`${getMonthName(
-                    month
-                  )}`}</Typography>
+                  <div>
+                    {hasMultipleBiweeks(currentWeek) ? (
+                      <Typography variant="body2">{`${getMonthName(
+                        multiplePeriods.months[0]
+                      )} / ${getMonthName(
+                        multiplePeriods.months[1]
+                      )}`}</Typography>
+                    ) : (
+                      <Typography variant="body2">{`${getMonthName(
+                        month
+                      )}`}</Typography>
+                    )}
+                  </div>
                 )}
               </TableCell>
             </TableRow>
@@ -533,14 +554,15 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                     justifyContent: "space-between",
                     alignItems: "center",
                     height: "64px",
+                    paddingX: 2,
                   }}
                 >
                   <Box
                     sx={{
                       display: "flex",
                       alignItems: "center",
-                      ml: 2,
                       flexGrow: 1,
+                      justifyContent: "center",
                     }}
                   >
                     <strong>
@@ -550,7 +572,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                     </strong>
                     &nbsp;horas
                   </Box>
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
+                  <Box sx={{ display: "flex", alignItems: "center", ml: 1 }}>
                     <Tooltip title="Horas Extra" arrow>
                       <Badge
                         badgeContent={
@@ -597,38 +619,88 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
         ) : selectedPeriod === "biweekly" ? (
           <div>
             {isSmallScreen ? (
-              <Typography variant="body2" sx={{ ml: 2 }}>
-                Quincena del{" "}
-                {format(
-                  getBiweeklyDates(year, biweekNumber).startDate,
-                  "dd/MM/yyyy"
-                )}{" "}
-                al{" "}
-                {format(
-                  getBiweeklyDates(year, biweekNumber).endDate,
-                  "dd/MM/yyyy"
+              <div>
+                {hasMultipleBiweeks(currentWeek) ? (
+                  <Typography
+                    variant="body2"
+                    sx={{ ml: 2 }}
+                  >{`Quincenas del ${format(
+                    getBiweeklyDates(year, multiplePeriods.biweekNumbers[0])
+                      .startDate,
+                    "dd/MM/yyyy"
+                  )} al ${format(
+                    getBiweeklyDates(year, multiplePeriods.biweekNumbers[0])
+                      .endDate,
+                    "dd/MM/yyyy"
+                  )} / ${format(
+                    getBiweeklyDates(year, multiplePeriods.biweekNumbers[1])
+                      .startDate,
+                    "dd/MM/yyyy"
+                  )} al ${format(
+                    getBiweeklyDates(year, multiplePeriods.biweekNumbers[1])
+                      .endDate,
+                    "dd/MM/yyyy"
+                  )}`}</Typography>
+                ) : (
+                  <Typography
+                    variant="body2"
+                    sx={{ ml: 2 }}
+                  >{`Quincena del ${format(
+                    getBiweeklyDates(year, biweekNumber).startDate,
+                    "dd/MM/yyyy"
+                  )} al ${format(
+                    getBiweeklyDates(year, biweekNumber).endDate,
+                    "dd/MM/yyyy"
+                  )}`}</Typography>
                 )}
-              </Typography>
+              </div>
             ) : (
-              <Typography variant="body2" sx={{ ml: 2 }}>
-                Quincena del{" "}
-                {formatDate(
-                  getBiweeklyDates(year, biweekNumber).startDate,
-                  false
-                )}{" "}
-                al{" "}
-                {formatDate(
-                  getBiweeklyDates(year, biweekNumber).startDate,
-                  false
+              <div>
+                {hasMultipleBiweeks(currentWeek) ? (
+                  <Typography
+                    variant="body2"
+                    sx={{ ml: 2 }}
+                  >{`Quincenas del ${formatDateWithoutYear(
+                    getBiweeklyDates(year, multiplePeriods.biweekNumbers[0])
+                      .startDate
+                  )} al ${formatDateWithoutYear(
+                    getBiweeklyDates(year, multiplePeriods.biweekNumbers[0])
+                      .endDate
+                  )} / ${formatDateWithoutYear(
+                    getBiweeklyDates(year, multiplePeriods.biweekNumbers[1])
+                      .startDate
+                  )} al ${formatDateWithoutYear(
+                    getBiweeklyDates(year, multiplePeriods.biweekNumbers[1])
+                      .endDate
+                  )} del ${year}`}</Typography>
+                ) : (
+                  <Typography
+                    variant="body2"
+                    sx={{ ml: 2 }}
+                  >{`Quincena del ${formatDate(
+                    getBiweeklyDates(year, biweekNumber).startDate,
+                    false
+                  )} al ${formatDate(
+                    getBiweeklyDates(year, biweekNumber).endDate,
+                    false
+                  )}`}</Typography>
                 )}
-              </Typography>
+              </div>
             )}
           </div>
         ) : (
           <div>
-            <Typography variant="body2" sx={{ ml: 2 }}>
-              {`${getMonthName(month)} del ${year}`}
-            </Typography>
+            {hasMultipleBiweeks(currentWeek) ? (
+              <Typography variant="body2" sx={{ ml: 2 }}>{`${getMonthName(
+                multiplePeriods.months[0]
+              )} / ${getMonthName(
+                multiplePeriods.months[1]
+              )} del ${year}`}</Typography>
+            ) : (
+              <Typography variant="body2" sx={{ ml: 2 }}>{`${getMonthName(
+                month
+              )}`}</Typography>
+            )}
           </div>
         )}
 

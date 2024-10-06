@@ -2,6 +2,12 @@ import { addDays, startOfWeek } from "date-fns";
 import { EnglishAbrevMonthOfYear } from "./englishAbrevMonthOfYear";
 import { translateMonthToAbrevSpanish } from "./stringUtils";
 
+type DayEntry = {
+  day: string;
+  date: string;
+  isoDate: string;
+};
+
 export const formatDate = (date: Date, withTimePart: boolean) => {
   const options: Intl.DateTimeFormatOptions = {
     day: "2-digit",
@@ -22,6 +28,15 @@ export const formatDate = (date: Date, withTimePart: boolean) => {
   }
 
   return datePart;
+};
+
+export const formatDateWithoutYear = (date: Date) => {
+  const options: Intl.DateTimeFormatOptions = {
+    day: "2-digit",
+    month: "long",
+  };
+
+  return date.toLocaleString("es-ES", options);
 };
 
 export const isValidDate = (date: any): boolean => {
@@ -144,4 +159,51 @@ export const getBiweeklyDates = (year: number, biweekNumber: number) => {
 
 export const getMonthNumber = (date: Date): number => {
   return date.getMonth() + 1;
+};
+
+export const hasMultipleBiweeks = (currentWeek: DayEntry[]): boolean => {
+  const biweekNumbers = new Set<number>();
+
+  currentWeek.forEach((day) => {
+    const date = new Date(day.isoDate);
+    biweekNumbers.add(getBiweekNumber(date));
+  });
+
+  return biweekNumbers.size > 1;
+};
+
+export const hasMultipleMonths = (currentWeek: DayEntry[]): boolean => {
+  const months = new Set<number>();
+
+  currentWeek.forEach((day) => {
+    const date = new Date(day.isoDate);
+    months.add(getMonthNumber(date));
+  });
+
+  return months.size > 1;
+};
+
+export const getInvolvedPeriods = (
+  currentWeek: DayEntry[]
+): {
+  months: number[];
+  weekNumbers: number[];
+  biweekNumbers: number[];
+} => {
+  const months = new Set<number>();
+  const weekNumbers = new Set<number>();
+  const biweekNumbers = new Set<number>();
+
+  currentWeek.forEach((day) => {
+    const date = new Date(day.isoDate);
+    months.add(getMonthNumber(date));
+    weekNumbers.add(getWeekNumber(date));
+    biweekNumbers.add(getBiweekNumber(date));
+  });
+
+  return {
+    months: Array.from(months),
+    weekNumbers: Array.from(weekNumbers),
+    biweekNumbers: Array.from(biweekNumbers),
+  };
 };
