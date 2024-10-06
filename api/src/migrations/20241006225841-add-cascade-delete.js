@@ -1,6 +1,9 @@
 'use strict';
 
 /** @type {import('sequelize-cli').Migration} */
+'use strict';
+
+/** @type {import('sequelize-cli').Migration} */
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     // HoursWorked
@@ -103,4 +106,5 @@ module.exports = {
     });
   },
 };
+
 

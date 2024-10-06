@@ -1,9 +1,5 @@
 import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/database";
-import { HoursWorked } from "./HoursWorked";
-import { WeeklySummary } from "./WeeklySummary";
-import { BiweeklySummary } from "./BiweeklySummary";
-import { MonthlySummary } from "./MonthlySummary";
 
 export class Employee extends Model {
   public id!: number;
@@ -33,8 +29,3 @@ Employee.init(
     tableName: "employees",
   }
 );
-
-Employee.hasMany(HoursWorked, { foreignKey: 'employeeId', onDelete: 'CASCADE' });
-Employee.hasMany(WeeklySummary, { foreignKey: 'employeeId', onDelete: 'CASCADE' });
-Employee.hasMany(BiweeklySummary, { foreignKey: 'employeeId', onDelete: 'CASCADE' });
-Employee.hasMany(MonthlySummary, { foreignKey: 'employeeId', onDelete: 'CASCADE' });
