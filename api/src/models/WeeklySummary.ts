@@ -50,4 +50,4 @@ WeeklySummary.init(
   }
 );
 
-WeeklySummary.belongsTo(Employee, { foreignKey: "employeeId" });
+WeeklySummary.belongsTo(Employee, { foreignKey: "employeeId", onDelete: 'CASCADE' });

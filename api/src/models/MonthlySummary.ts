@@ -45,4 +45,4 @@ MonthlySummary.init(
   }
 );
 
-MonthlySummary.belongsTo(Employee, { foreignKey: "employeeId" });
+MonthlySummary.belongsTo(Employee, { foreignKey: "employeeId", onDelete: 'CASCADE' });
