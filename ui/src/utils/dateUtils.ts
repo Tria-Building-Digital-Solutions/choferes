@@ -106,8 +106,8 @@ export const getWeekNumber = (date: Date): number => {
 
 export const getBiweekNumber = (date: Date): number => {
   const month = date.getMonth();
-  const dayOfMonth = date.getDate(); 
-  const biweekNumber = (month * 2) + (dayOfMonth <= 15 ? 1 : 2);
+  const dayOfMonth = date.getDate();
+  const biweekNumber = month * 2 + (dayOfMonth <= 15 ? 1 : 2);
   return biweekNumber;
 };
 
@@ -124,6 +124,22 @@ export const getStartOfBiweek = (date: Date): Date => {
 export const getEndOfBiweek = (date: Date): Date => {
   const startOfBiweek = getStartOfBiweek(date);
   return addDays(startOfBiweek, 13);
+};
+
+export const getBiweeklyDates = (year: number, biweekNumber: number) => {
+  if (biweekNumber < 1 || biweekNumber > 24) {
+    throw new Error("Número de quincena inválido. Debe estar entre 1 y 24.");
+  }
+  const month = Math.floor((biweekNumber - 1) / 2);
+  const isFirstBiweek = biweekNumber % 2 === 1;
+  const startDay = isFirstBiweek ? 1 : 16;
+  const startDate = new Date(year, month, startDay);
+  const endDay = isFirstBiweek ? 15 : new Date(year, month + 1, 0).getDate();
+  const endDate = new Date(year, month, endDay);
+  return {
+    startDate,
+    endDate,
+  };
 };
 
 export const getMonthNumber = (date: Date): number => {

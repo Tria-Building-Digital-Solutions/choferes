@@ -18,7 +18,10 @@ import {
   Box,
   useTheme,
   useMediaQuery,
+  Badge,
+  Tooltip,
 } from "@mui/material";
+import ModalComponent from "../../Modal/ModalComponent";
 import { Employee } from "../../../models/Employee";
 import { Schedule } from "../../../models/Schedule";
 import { HoursWorked } from "../../../models/HoursWorked";
@@ -28,11 +31,13 @@ import { MonthlySummary } from "../../../models/MonthlySummary";
 import {
   formatDate,
   formatHeaderDate,
+  getBiweeklyDates,
   getCurrentWeekDates,
   isValidDateForSelect,
 } from "../../../utils/dateUtils";
 import { getBackgroundColor } from "../../../utils/tableUtils";
 import {
+  getMonthName,
   getOptionsForDay,
   translateDayToAbrevSpanish,
 } from "../../../utils/stringUtils";
@@ -40,7 +45,7 @@ import { EnglishDayOfWeek } from "../../../utils/englishDayOfWeek";
 import { STATE, TABLE } from "../../../constants/constants";
 import { format } from "date-fns";
 import InfoRoundedIcon from "@mui/icons-material/InfoRounded";
-import ModalComponent from "../../Modal/ModalComponent";
+import AccessTimeRoundedIcon from "@mui/icons-material/AccessTimeRounded";
 
 interface DropdownTableProps {
   filteredEmployees: Employee[];
@@ -130,9 +135,11 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                 s.year === year
             );
 
+      const totalHours = summary ? summary.totalHours : 0;
+
       return {
         employeeId: employee.id,
-        totalHours: summary ? summary.totalHours : 0,
+        totalHours,
       };
     });
   }, [
@@ -146,6 +153,26 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
     biweeklySummaries,
     monthlySummaries,
   ]);
+
+  const getTotalOvertime = useMemo(() => {
+    return filteredEmployees.map((employee) => {
+      const summary = biweeklySummaries.find(
+        (s) =>
+          s.employeeId === employee.id &&
+          s.biweekNumber === biweekNumber &&
+          s.year === year
+      );
+
+      const totalHours = summary ? summary.totalHours : 0;
+      const overtime = totalHours > 96 ? totalHours - 96 : 0;
+
+      return {
+        employeeId: employee.id,
+        totalHours,
+        overtime,
+      };
+    });
+  }, [filteredEmployees, biweekNumber, year, biweeklySummaries]);
 
   const startIndex = page * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
@@ -168,8 +195,16 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
         <Table stickyHeader aria-label="sticky table">
           <TableHead>
             <TableRow>
-              <TableCell align="center" colSpan={10}>
-                <Typography variant="body2">Semana {weekNumber}</Typography>
+              <TableCell align="center" colSpan={9}>
+                {selectedPeriod === "weekly" ? (
+                  <Typography variant="body2">{`Semana ${weekNumber}`}</Typography>
+                ) : selectedPeriod === "biweekly" ? (
+                  <Typography variant="body2">{`Quincena ${biweekNumber}`}</Typography>
+                ) : (
+                  <Typography variant="body2">{`${getMonthName(
+                    month
+                  )}`}</Typography>
+                )}
               </TableCell>
             </TableRow>
             <TableRow>
@@ -234,9 +269,21 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                     backgroundColor: getBackgroundColor(rowIndex),
                   }}
                 >
-                  <Typography variant="body2">
-                    {employee.firstName} {employee.lastName}
-                  </Typography>
+                  <Box
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="space-between"
+                  >
+                    <Typography variant="body2">
+                      {employee.firstName} {employee.lastName}
+                    </Typography>
+                    <ModalComponent
+                      buttonType="icon"
+                      buttonIcon={<InfoRoundedIcon />}
+                      modalTitle={`${employee.firstName} ${employee.lastName}`}
+                      modalDescription="Contenido del modal"
+                    />
+                  </Box>
                 </TableCell>
                 {currentWeek.map(({ day, date }) => {
                   const existingRecord = hoursWorked.find(
@@ -321,40 +368,55 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                     </TableCell>
                   );
                 })}
-
                 <TableCell
-                  align="right"
-                  sx={{
-                    position: "sticky",
-                    right: 72,
-                    zIndex: 3,
-                    backgroundColor: getBackgroundColor(rowIndex),
-                  }}
-                >
-                  <strong>
-                    {
-                      getTotalForPeriod.find(
-                        (emp) => emp.employeeId === employee.id
-                      )?.totalHours
-                    }
-                  </strong>
-                  &nbsp;horas
-                </TableCell>
-                <TableCell
-                  align="center"
+                  align="left"
                   sx={{
                     position: "sticky",
                     right: 0,
-                    zIndex: 3,
+                    zIndex: 2,
                     backgroundColor: getBackgroundColor(rowIndex),
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    height: "64px",
                   }}
                 >
-                  <ModalComponent
-                    buttonType="icon"
-                    buttonIcon={<InfoRoundedIcon />}
-                    modalTitle={`${employee.firstName} ${employee.lastName}`}
-                    modalDescription="Contenido del modal"
-                  />
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      ml: 2,
+                      flexGrow: 1,
+                    }}
+                  >
+                    <strong>
+                      {getTotalForPeriod.find(
+                        (emp) => emp.employeeId === employee.id
+                      )?.totalHours || 0}
+                    </strong>
+                    &nbsp;horas
+                  </Box>
+                  <Box sx={{ display: "flex", alignItems: "center" }}>
+                    <Tooltip title="Horas Extra" arrow>
+                      <Badge
+                        badgeContent={
+                          getTotalOvertime.find(
+                            (emp) => emp.employeeId === employee.id
+                          )?.overtime || 0
+                        }
+                        color={
+                          (getTotalOvertime.find(
+                            (emp) => emp.employeeId === employee.id
+                          )?.overtime || 0) > 0
+                            ? "warning"
+                            : "success"
+                        }
+                        showZero
+                      >
+                        <AccessTimeRoundedIcon />
+                      </Badge>
+                    </Tooltip>
+                  </Box>
                 </TableCell>
               </TableRow>
             ))}
@@ -363,17 +425,59 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
       </TableContainer>
       <Divider />
       <Box display="flex" justifyContent="space-between" alignItems="center">
-        {isSmallScreen ? (
-          <Typography variant="body2" sx={{ ml: 2 }}>
-            Semana del {format(new Date(currentWeek[0]?.date), "dd/MM/yyyy")} al{" "}
-            {format(new Date(currentWeek[6]?.date), "dd/MM/yyyy")}
-          </Typography>
+        {selectedPeriod === "weekly" ? (
+          <div>
+            {isSmallScreen ? (
+              <Typography variant="body2" sx={{ ml: 2 }}>
+                Semana del{" "}
+                {format(new Date(currentWeek[0]?.date), "dd/MM/yyyy")} al{" "}
+                {format(new Date(currentWeek[6]?.date), "dd/MM/yyyy")}
+              </Typography>
+            ) : (
+              <Typography variant="body2" sx={{ ml: 2 }}>
+                Semana del {formatDate(new Date(currentWeek[0]?.date), false)}{" "}
+                al {formatDate(new Date(currentWeek[6]?.date), false)}
+              </Typography>
+            )}
+          </div>
+        ) : selectedPeriod === "biweekly" ? (
+          <div>
+            {isSmallScreen ? (
+              <Typography variant="body2" sx={{ ml: 2 }}>
+                Quincena del{" "}
+                {format(
+                  getBiweeklyDates(year, biweekNumber).startDate,
+                  "dd/MM/yyyy"
+                )}{" "}
+                al{" "}
+                {format(
+                  getBiweeklyDates(year, biweekNumber).endDate,
+                  "dd/MM/yyyy"
+                )}
+              </Typography>
+            ) : (
+              <Typography variant="body2" sx={{ ml: 2 }}>
+                Quincena del{" "}
+                {formatDate(
+                  getBiweeklyDates(year, biweekNumber).startDate,
+                  false
+                )}{" "}
+                al{" "}
+                {formatDate(
+                  getBiweeklyDates(year, biweekNumber).startDate,
+                  false
+                )}
+              </Typography>
+            )}
+          </div>
         ) : (
-          <Typography variant="body2" sx={{ ml: 2 }}>
-            Semana del {formatDate(new Date(currentWeek[0]?.date), false)} al{" "}
-            {formatDate(new Date(currentWeek[6]?.date), false)}
-          </Typography>
+          <div>
+            <Typography variant="body2" sx={{ ml: 2 }}>
+              {`${getMonthName(month)} del ${year}`}
+            </Typography>
+          </div>
         )}
+
         <TablePagination
           className="pagination"
           rowsPerPageOptions={[5, 10, 25]}
