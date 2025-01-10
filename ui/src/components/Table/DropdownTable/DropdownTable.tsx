@@ -104,7 +104,6 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
     [weekOffset]
   );
 
-  console.log("year: " + year);
   const sortedEmployees = useMemo(() => {
     return [...filteredEmployees].sort((a, b) => {
       const nameA = `${a.firstName} ${a.lastName}`;
@@ -118,49 +117,6 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
   useEffect(() => {
     setPeriod(selectedPeriod);
   }, [selectedPeriod, setPeriod]);
-
-  const getTotalForPeriod = useMemo(() => {
-    return filteredEmployees.map((employee) => {
-      const summary =
-        selectedPeriod === "weekly"
-          ? weeklySummaries.find(
-              (s) =>
-                s.employeeId === employee.id &&
-                s.weekNumber === weekNumber &&
-                s.year === year
-            )
-          : selectedPeriod === "biweekly"
-          ? biweeklySummaries.find(
-              (s) =>
-                s.employeeId === employee.id &&
-                s.biweekNumber === biweekNumber &&
-                s.year === year
-            )
-          : monthlySummaries.find(
-              (s) =>
-                s.employeeId === employee.id &&
-                s.month === month &&
-                s.year === year
-            );
-
-      const totalHours = summary ? summary.totalHours : 0;
-
-      return {
-        employeeId: employee.id,
-        totalHours,
-      };
-    });
-  }, [
-    filteredEmployees,
-    weekNumber,
-    biweekNumber,
-    month,
-    year,
-    selectedPeriod,
-    weeklySummaries,
-    biweeklySummaries,
-    monthlySummaries,
-  ]);
 
   const getTotalWeekly = useMemo(() => {
     return filteredEmployees.map((employee) => {
@@ -568,20 +524,17 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                     }}
                   >
                     <strong>
-                      {/* {hasMultipleMonths(currentWeek) ? (
-                      <Typography variant="body2">{`${getMonthName(
-                        multiplePeriods.months[0]
-                      )} / ${getMonthName(
-                        multiplePeriods.months[1]
-                      )}`}</Typography>
-                    ) : (
-                      <Typography variant="body2">{`${getMonthName(
-                        month
-                      )}`}</Typography>
-                    )} */}
-                      {/* {getTotalForPeriod.find(
-                        (emp) => emp.employeeId === employee.id
-                      )?.totalHours || 0} */}
+                      {selectedPeriod === "weekly"
+                        ? getTotalWeekly.find(
+                            (emp) => emp.employeeId === employee.id
+                          )?.totalHours || 0
+                        : selectedPeriod === "biweekly"
+                        ? getTotalBiweekly.find(
+                            (emp) => emp.employeeId === employee.id
+                          )?.totalHours || 0
+                        : getTotalMonthly.find(
+                            (emp) => emp.employeeId === employee.id
+                          )?.totalHours || 0}
                     </strong>
                     &nbsp;horas
                   </Box>
