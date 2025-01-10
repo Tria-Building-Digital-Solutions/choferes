@@ -7,6 +7,7 @@ export const DAYS = {
 export const APPBAR_MENU = {
   TITLE: "Choferes",
   ROLES: "Roles",
+  VEHICLES: "Vehículos",
   MANAGE: "Gestión",
   EMPLOYEES: "Empleados",
   SCHEDULES: "Horarios",
@@ -14,6 +15,7 @@ export const APPBAR_MENU = {
 
 export const ROUTES = {
   HOME: "/",
+  MANAGE_VEHICLES: "/vehicles",
   MANAGE_EMPLOYEES: "/employees",
   MANAGE_SCHEDULES: "/schedules",
 };
