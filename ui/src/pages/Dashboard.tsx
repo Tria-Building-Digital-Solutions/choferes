@@ -75,7 +75,7 @@ const Dashboard: React.FC = () => {
       setWeekNumber(getWeekNumber(firstDayOfWeek));
       setBiweekNumber(getBiweekNumber(firstDayOfWeek));
       setMonth(getMonthNumber(firstDayOfWeek));
-      setYear(firstDayOfWeek.getFullYear());
+      setYear(new Date().getFullYear());
     }
   }, [weekOffset]);
 

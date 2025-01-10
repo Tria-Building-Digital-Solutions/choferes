@@ -38,6 +38,7 @@ import {
   getCurrentWeekDates,
   getInvolvedPeriods,
   hasMultipleBiweeks,
+  hasMultipleMonths,
   isValidDateForSelect,
 } from "../../../utils/dateUtils";
 import { getBackgroundColor } from "../../../utils/tableUtils";
@@ -103,6 +104,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
     [weekOffset]
   );
 
+  console.log("year: " + year);
   const sortedEmployees = useMemo(() => {
     return [...filteredEmployees].sort((a, b) => {
       const nameA = `${a.firstName} ${a.lastName}`;
@@ -272,7 +274,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                   </div>
                 ) : (
                   <div>
-                    {hasMultipleBiweeks(currentWeek) ? (
+                    {hasMultipleMonths(currentWeek) ? (
                       <Typography variant="body2">{`${getMonthName(
                         multiplePeriods.months[0]
                       )} / ${getMonthName(
@@ -566,9 +568,20 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                     }}
                   >
                     <strong>
-                      {getTotalForPeriod.find(
+                      {/* {hasMultipleMonths(currentWeek) ? (
+                      <Typography variant="body2">{`${getMonthName(
+                        multiplePeriods.months[0]
+                      )} / ${getMonthName(
+                        multiplePeriods.months[1]
+                      )}`}</Typography>
+                    ) : (
+                      <Typography variant="body2">{`${getMonthName(
+                        month
+                      )}`}</Typography>
+                    )} */}
+                      {/* {getTotalForPeriod.find(
                         (emp) => emp.employeeId === employee.id
-                      )?.totalHours || 0}
+                      )?.totalHours || 0} */}
                     </strong>
                     &nbsp;horas
                   </Box>
@@ -601,60 +614,14 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
       </TableContainer>
       <Divider />
       <Box display="flex" justifyContent="space-between" alignItems="center">
-        {selectedPeriod === "weekly" ? (
+        {!isSmallScreen && (
           <div>
-            {isSmallScreen ? (
-              <Typography variant="body2" sx={{ ml: 2 }}>
-                Semana del{" "}
-                {format(new Date(currentWeek[0]?.date), "dd/MM/yyyy")} al{" "}
-                {format(new Date(currentWeek[6]?.date), "dd/MM/yyyy")}
-              </Typography>
-            ) : (
+            {selectedPeriod === "weekly" ? (
               <Typography variant="body2" sx={{ ml: 2 }}>
                 Semana del {formatDate(new Date(currentWeek[0]?.date), false)}{" "}
                 al {formatDate(new Date(currentWeek[6]?.date), false)}
               </Typography>
-            )}
-          </div>
-        ) : selectedPeriod === "biweekly" ? (
-          <div>
-            {isSmallScreen ? (
-              <div>
-                {hasMultipleBiweeks(currentWeek) ? (
-                  <Typography
-                    variant="body2"
-                    sx={{ ml: 2 }}
-                  >{`Quincenas del ${format(
-                    getBiweeklyDates(year, multiplePeriods.biweekNumbers[0])
-                      .startDate,
-                    "dd/MM/yyyy"
-                  )} al ${format(
-                    getBiweeklyDates(year, multiplePeriods.biweekNumbers[0])
-                      .endDate,
-                    "dd/MM/yyyy"
-                  )} / ${format(
-                    getBiweeklyDates(year, multiplePeriods.biweekNumbers[1])
-                      .startDate,
-                    "dd/MM/yyyy"
-                  )} al ${format(
-                    getBiweeklyDates(year, multiplePeriods.biweekNumbers[1])
-                      .endDate,
-                    "dd/MM/yyyy"
-                  )}`}</Typography>
-                ) : (
-                  <Typography
-                    variant="body2"
-                    sx={{ ml: 2 }}
-                  >{`Quincena del ${format(
-                    getBiweeklyDates(year, biweekNumber).startDate,
-                    "dd/MM/yyyy"
-                  )} al ${format(
-                    getBiweeklyDates(year, biweekNumber).endDate,
-                    "dd/MM/yyyy"
-                  )}`}</Typography>
-                )}
-              </div>
-            ) : (
+            ) : selectedPeriod === "biweekly" ? (
               <div>
                 {hasMultipleBiweeks(currentWeek) ? (
                   <Typography
@@ -677,33 +644,30 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                   <Typography
                     variant="body2"
                     sx={{ ml: 2 }}
-                  >{`Quincena del ${formatDate(
-                    getBiweeklyDates(year, biweekNumber).startDate,
-                    false
-                  )} al ${formatDate(
-                    getBiweeklyDates(year, biweekNumber).endDate,
-                    false
+                  >{`Quincena del ${formatDateWithoutYear(
+                    getBiweeklyDates(year, biweekNumber).startDate
+                  )} al ${formatDateWithoutYear(
+                    getBiweeklyDates(year, biweekNumber).endDate
+                  )}`}</Typography>
+                )}
+              </div>
+            ) : (
+              <div>
+                {hasMultipleMonths(currentWeek) ? (
+                  <Typography variant="body2" sx={{ ml: 2 }}>{`${getMonthName(
+                    multiplePeriods.months[0]
+                  )} / ${getMonthName(
+                    multiplePeriods.months[1]
+                  )} del ${year}`}</Typography>
+                ) : (
+                  <Typography variant="body2" sx={{ ml: 2 }}>{`${getMonthName(
+                    month
                   )}`}</Typography>
                 )}
               </div>
             )}
           </div>
-        ) : (
-          <div>
-            {hasMultipleBiweeks(currentWeek) ? (
-              <Typography variant="body2" sx={{ ml: 2 }}>{`${getMonthName(
-                multiplePeriods.months[0]
-              )} / ${getMonthName(
-                multiplePeriods.months[1]
-              )} del ${year}`}</Typography>
-            ) : (
-              <Typography variant="body2" sx={{ ml: 2 }}>{`${getMonthName(
-                month
-              )}`}</Typography>
-            )}
-          </div>
         )}
-
         <TablePagination
           className="pagination"
           rowsPerPageOptions={[5, 10, 25]}
