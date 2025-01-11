@@ -571,7 +571,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
           <div>
             {selectedPeriod === "weekly" ? (
               <Typography variant="body2" sx={{ ml: 2 }}>
-                Semana del {formatDate(new Date(currentWeek[0]?.date), false)}{" "}
+                Semana del {formatDateWithoutYear(new Date(currentWeek[0]?.date))}{" "}
                 al {formatDate(new Date(currentWeek[6]?.date), false)}
               </Typography>
             ) : selectedPeriod === "biweekly" ? (
