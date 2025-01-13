@@ -20,8 +20,7 @@ import {
 } from "@mui/material";
 import {
   translateColumnHeaderToSpanish,
-  getDayOptionsSpanish,
-  translateDayOptionsToSpanish,
+  mapDayValues,
 } from "../../../utils/stringUtils";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -43,6 +42,9 @@ type EditableTableProps<T> = {
   rowsPerPage: number;
   setPage: (page: number) => void;
   setRowsPerPage: (rowsPerPage: number) => void;
+  renderColumnValue?: (column: keyof T, value: any) => React.ReactNode;
+  getOptionsForColumn?: (column: keyof T) => { value: string; label: string }[];
+  validateField?: (field: string, value: string) => boolean;
 };
 
 const EditableTable = <T,>({
@@ -60,31 +62,20 @@ const EditableTable = <T,>({
   rowsPerPage,
   setPage,
   setRowsPerPage,
+  renderColumnValue = (_, value) => value,
+  getOptionsForColumn = () => [],
+  validateField = () => true,
 }: EditableTableProps<T>) => {
   const [isFormValid, setIsFormValid] = useState(false);
   const [order, setOrder] = useState<"asc" | "desc">("asc");
   const [orderBy, setOrderBy] = useState<keyof T>(columns[0]);
-
-  const validateField = (field: string, value: string): boolean => {
-    if (
-      field === "firstName" ||
-      field === "lastName" ||
-      field === "label" ||
-      field === "day"
-    ) {
-      return /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/.test(value);
-    } else if (field === "hours") {
-      return /^[0-9]+$/.test(value);
-    }
-    return true;
-  };
 
   const checkFormValidity = useCallback(() => {
     const isValid = Object.keys(editFields).every((field) =>
       validateField(field, editFields[field])
     );
     setIsFormValid(isValid);
-  }, [editFields]);
+  }, [editFields, validateField]);
 
   useEffect(() => {
     checkFormValidity();
@@ -132,66 +123,56 @@ const EditableTable = <T,>({
               <TableCell style={{ width: "100px" }} />
             </TableRow>
           </TableHead>
-          <TableBody>
+           <TableBody>
             {sortedData
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((row) => (
                 <TableRow key={getRowId(row)}>
                   {columns.map((column) => (
-                    <TableCell key={String(column)} className="tableCell">
-                      {editRowId === getRowId(row) ? (
-                        column === "day" ? (
-                          <FormControl variant="outlined" fullWidth>
-                            <InputLabel>Día</InputLabel>
-                            <Select
-                              label="Día"
-                              value={editFields[String(column)] || ""}
-                              onChange={(e) =>
-                                setEditField(String(column), e.target.value)
-                              }
-                            >
-                              {getDayOptionsSpanish().map((option) => (
-                                <MenuItem
-                                  key={option.value}
-                                  value={option.value}
-                                >
-                                  {option.label}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
-                        ) : (
-                          <TextField
-                            fullWidth
+                    <TableCell key={String(column)}>
+                    {editRowId === getRowId(row) ? (
+                      getOptionsForColumn(column).length > 0 ? (
+                        <FormControl variant="outlined" fullWidth>
+                          <InputLabel>{String(column)}</InputLabel>
+                          <Select
+                            label={String(column)}
                             value={editFields[String(column)] || ""}
                             onChange={(e) =>
                               setEditField(String(column), e.target.value)
                             }
-                            error={
-                              !validateField(
-                                String(column),
-                                editFields[String(column)]
-                              )
-                            }
-                          />
-                        )
-                      ) : column === "day" ? (
-                        translateDayOptionsToSpanish(
-                          row[column as keyof T] as string
-                        ) || null
+                          >
+                            {getOptionsForColumn(column).map((option) => (
+                              <MenuItem key={option.value} value={option.value}>
+                                {option.label}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
                       ) : (
-                        (row[column] as React.ReactNode)
-                      )}
-                    </TableCell>
+                        <TextField
+                          fullWidth
+                          value={editFields[String(column)] || ""}
+                          onChange={(e) =>
+                            setEditField(String(column), e.target.value)
+                          }
+                          error={
+                            !validateField(String(column), editFields[String(column)])
+                          }
+                        />
+                      )
+                    ) : (
+                      column === "day"
+                        ? mapDayValues(row[column] as string)
+                        : renderColumnValue(column, row[column])
+                    )}
+                  </TableCell>
                   ))}
-                  <TableCell className="actionCell">
+                  <TableCell>
                     {editRowId === getRowId(row) ? (
                       <Tooltip title="Guardar" arrow>
                         <IconButton
                           color="primary"
-                          sx={{ mr: 2 }}
                           onClick={() => handleSaveClick(getRowId(row))}
-                          className="saveIconButton"
                           disabled={!isFormValid}
                         >
                           <SaveIcon />
@@ -201,9 +182,7 @@ const EditableTable = <T,>({
                       <Tooltip title="Editar" arrow>
                         <IconButton
                           color="primary"
-                          sx={{ mr: 2 }}
                           onClick={() => handleEditClick(row)}
-                          className="saveIconButton"
                         >
                           <EditIcon />
                         </IconButton>
@@ -213,7 +192,6 @@ const EditableTable = <T,>({
                       <IconButton
                         color="secondary"
                         onClick={() => handleOpenDialog(getRowId(row))}
-                        className="saveIconButton"
                       >
                         <DeleteIcon />
                       </IconButton>

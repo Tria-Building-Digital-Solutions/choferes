@@ -125,6 +125,16 @@ export const getDayOptionsSpanish = () => [
   { value: "sunday", label: "Domingo" },
 ];
 
+export const mapDayValues = (value: string): string => {
+  const dayMap: Record<string, string> = {
+    weekday: "Lunes a Jueves",
+    friday: "Viernes",
+    saturday: "Sábado",
+    sunday: "Domingo",
+  };
+  return dayMap[value] || value;
+};
+
 export const setDayOptionsEnglish = (day: string): string => {
   const lowerCaseDay = day.toLowerCase();
 
