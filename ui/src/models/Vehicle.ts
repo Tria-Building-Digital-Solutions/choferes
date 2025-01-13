@@ -1,8 +1,7 @@
 export interface Vehicle {
     licensePlate: string;
-    model: string;
+    brand: string;
     color: string;
     parkingLot: string;
     notes: string;
-    date: Date;
   }

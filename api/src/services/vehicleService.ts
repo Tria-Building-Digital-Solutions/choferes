@@ -2,11 +2,10 @@ import { Vehicle } from "../models/Vehicle";
 
 export const createVehicle = async (data: {
   licensePlate: string;
-  model: string;
+  brand: string;
   color: string;
   parkingLot: string;
   notes: string;
-  date: Date;
 }) => {
   return Vehicle.create(data);
 };
@@ -21,7 +20,7 @@ export const getVehicleByLicensePlate = async (licensePlate: string) => {
 
 export const updateVehicle = async (
   licensePlate: string,
-  data: { licensePlate?: string; model?: string; color?: string; parkingLot?: string; notes?: string; date?: Date }
+  data: { licensePlate?: string; brand?: string; color?: string; parkingLot?: string; notes?: string; }
 ) => {
   await Vehicle.update(data, { where: { licensePlate } });
   return Vehicle.findByPk(licensePlate);

@@ -3,7 +3,7 @@ import sequelize from "../config/database";
 
 export class Vehicle extends Model {
   public licensePlate!: string;
-  public model!: string;
+  public brand!: string;
   public color!: string;
   public parkingLot!: string;
   public notes!: string;
@@ -15,7 +15,7 @@ Vehicle.init(
       type: DataTypes.STRING,
       primaryKey: true,
     },
-    model: {
+    brand: {
       type: DataTypes.STRING,
       allowNull: false,
     },
@@ -30,10 +30,6 @@ Vehicle.init(
     notes: {
       type: DataTypes.STRING,
       allowNull: true,
-    },
-    date: {
-      type: DataTypes.DATE,
-      allowNull: false,
     },
   },
   {
