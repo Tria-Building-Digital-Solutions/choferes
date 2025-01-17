@@ -1,12 +1,183 @@
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Box,
   Typography,
   useTheme,
   useMediaQuery,
+  Grid,
+  TextField,
+  Tooltip,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  SelectChangeEvent,
 } from "@mui/material";
+import { useVehicles } from "../hooks/useVehicle";
+import { Vehicle } from "../models/Vehicle";
+import SplitButton from "../components/SplitButton/SplitButton";
+import {
+  createExportOptions,
+  exportFileFormattedDate,
+  exportToExcel,
+  exportToPDF,
+} from "../utils/exportUtils";
+import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFileExcel, faFilePdf } from "@fortawesome/free-solid-svg-icons";
+import SearchBar from "../components/SearchBar/SearchBar";
+import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
+import EditableTable from "../components/Table/EditableTable/EditableTable";
+import { colorOptions } from "../utils/colorUtils";
+import InputMask from "react-input-mask";
 
 const ManageVehicles: React.FC = () => {
+  const {
+    vehicles,
+    handleAddVehicle,
+    handleUpdateVehicle,
+    handleDeleteVehicle,
+  } = useVehicles();
+  const [filteredVehicles, setFilteredVehicles] = useState<Vehicle[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [editRowId, setEditRowId] = useState<string | null>(null);
+  const [addFields, setAddFields] = useState({
+    licensePlate: "",
+    brand: "",
+    color: "",
+    parkingLot: "",
+    notes: "",
+    createdAt: new Date(),
+  });
+  const [editFields, setEditFields] = useState({
+    licensePlate: "",
+    brand: "",
+    color: "",
+    parkingLot: "",
+    notes: "",
+    createdAt: new Date(),
+  });
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [vehicleToDelete, setVehicleToDelete] = useState<string | null>(null);
+  const [filter, setFilter] = useState("");
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [isValid, setIsValid] = useState(false);
+  const [selectedColor, setSelectedColor] = useState("");
+  const [customColor, setCustomColor] = useState("");
+
+  useEffect(() => {
+    const filtered = vehicles.filter((vehicle) =>
+      `${vehicle.licensePlate} ${vehicle.brand} ${vehicle.color}`
+        .toLowerCase()
+        .includes(filter.toLowerCase())
+    );
+
+    setFilteredVehicles(filtered);
+    setTotalCount(filtered.length);
+  }, [vehicles, filter]);
+
+  // const validateFields = useCallback(() => {
+  //   const textRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+  //   const plateRegex = /^[A-Z]{3}\d{3,4}$/;
+  //   const isLicensePlateValid =
+  //     plateRegex.test(addFields.licensePlate) && addFields.licensePlate !== "";
+  //   const isModelValid =
+  //     textRegex.test(addFields.brand) && addFields.brand !== "";
+  //   const isColorValid =
+  //     textRegex.test(addFields.color) && addFields.color !== "";
+  //   setIsValid(isLicensePlateValid && isModelValid && isColorValid);
+  // }, [addFields]);
+
+  // useEffect(() => {
+  //   validateFields();
+  // }, [validateFields]);
+
+  const handleAdd = () => {
+    const newVehicle: Vehicle = {
+      licensePlate: addFields.licensePlate,
+      brand: addFields.brand,
+      color: addFields.color,
+      parkingLot: addFields.parkingLot,
+      notes: addFields.notes,
+      createdAt: addFields.createdAt,
+    };
+    handleAddVehicle(newVehicle);
+    setAddFields({
+      licensePlate: "",
+      brand: "",
+      color: "",
+      parkingLot: "",
+      notes: "",
+      createdAt: new Date(),
+    });
+  };
+
+  const handleEditClick = (vehicle: Vehicle) => {
+    setEditRowId(vehicle.licensePlate);
+    setEditFields({
+      licensePlate: vehicle.licensePlate,
+      brand: vehicle.brand,
+      color: vehicle.color,
+      parkingLot: vehicle.parkingLot,
+      notes: vehicle.notes,
+      createdAt: vehicle.createdAt,
+    });
+  };
+
+  const handleSaveClick = (licensePlate: string) => {
+    const updatedVehicle = {
+      ...editFields,
+    };
+    handleUpdateVehicle(licensePlate, updatedVehicle);
+    setEditRowId(null);
+    setEditFields({
+      licensePlate: "",
+      brand: "",
+      color: "",
+      parkingLot: "",
+      notes: "",
+      createdAt: new Date(),
+    });
+  };
+
+  const handleOpenDialog = (licensePlate: string) => {
+    setDialogOpen(true);
+    setVehicleToDelete(licensePlate);
+  };
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+    setVehicleToDelete(null);
+  };
+
+  const handleDelete = () => {
+    if (vehicleToDelete !== null) {
+      handleDeleteVehicle(vehicleToDelete);
+      handleCloseDialog();
+    }
+  };
+
+  const handleColorChange = (event: SelectChangeEvent<string>) => {
+    const value = event.target.value;
+    setSelectedColor(value);
+    if (value !== "Otro") {
+      setCustomColor("");
+    }
+    setAddFields({ ...addFields, color: event.target.value });
+  };
+
+  const handleCustomColorChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setCustomColor(event.target.value);
+    setAddFields({ ...addFields, color: event.target.value });
+  };
 
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -22,7 +193,185 @@ const ManageVehicles: React.FC = () => {
         <Typography variant={isSmallScreen ? "h4" : "h2"} sx={{ flexGrow: 1 }}>
           Gestionar Vehículos
         </Typography>
+        {filteredVehicles.length > 0 && (
+          <SplitButton
+            options={createExportOptions(
+              <FontAwesomeIcon icon={faFileExcel} size="lg" />,
+              <FontAwesomeIcon icon={faFilePdf} size="lg" />,
+              exportToExcel,
+              exportToPDF,
+              filteredVehicles,
+              `reporte-de-vehiculos-${exportFileFormattedDate(new Date())}`
+            )}
+            defaultIndex={0}
+            buttonIcon={<DownloadRoundedIcon />}
+          />
+        )}
       </Box>
+      <Grid
+        container
+        spacing={2}
+        justifyContent="space-between"
+        alignItems="center"
+      >
+        <Grid item>
+          <SearchBar
+            placeholder="Buscar Vehículo"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+          />
+        </Grid>
+        <Grid item>
+          <Box display="flex" alignItems="center">
+            <InputMask
+              mask="***-****"
+              value={addFields.licensePlate}
+              onChange={(e) => {
+                const formattedValue = e.target.value.toUpperCase();
+                setAddFields({ ...addFields, licensePlate: formattedValue });
+              }}
+              maskChar=" "
+              alwaysShowMask={false}
+            >
+              {(inputProps) => (
+                <TextField
+                  {...inputProps}
+                  label="Placa"
+                  variant="outlined"
+                  sx={{ mr: 2 }}
+                  InputProps={{
+                    style: { textTransform: "uppercase" },
+                  }}
+                />
+              )}
+            </InputMask>
+
+            <TextField
+              label="Modelo"
+              variant="outlined"
+              sx={{ mr: 2 }}
+              value={addFields.brand}
+              onChange={(e) =>
+                setAddFields({ ...addFields, brand: e.target.value })
+              }
+            />
+            {selectedColor === "Otro" ? (
+              <TextField
+                label="Color"
+                variant="outlined"
+                sx={{ mr: 2 }}
+                value={customColor}
+                onChange={handleCustomColorChange}
+              />
+            ) : (
+              <FormControl variant="outlined" sx={{ mr: 2, width: 200 }}>
+                <InputLabel>Color</InputLabel>
+                <Select
+                  label="Color"
+                  value={selectedColor}
+                  onChange={handleColorChange}
+                >
+                  {colorOptions.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
+            <InputMask
+              mask="9-99999"
+              value={addFields.parkingLot.replace(/^ATP/, "")}
+              onChange={(e) => {
+                const formattedValue = `ATP${e.target.value}`;
+                setAddFields({ ...addFields, parkingLot: formattedValue });
+              }}
+              maskChar={null}
+              alwaysShowMask={false}
+            >
+              {(inputProps) => (
+                <TextField
+                  {...inputProps}
+                  label="Espacio"
+                  variant="outlined"
+                  sx={{ mr: 2 }}
+                  InputProps={{
+                    startAdornment: addFields.parkingLot ? (
+                      <span style={{ marginRight: "8px" }}>ATP</span>
+                    ) : null,
+                    style: { textTransform: "uppercase" },
+                  }}
+                />
+              )}
+            </InputMask>
+            <TextField
+              label="Observaciones"
+              variant="outlined"
+              sx={{ mr: 2 }}
+              fullWidth
+              value={addFields.notes}
+              onChange={(e) =>
+                setAddFields({ ...addFields, notes: e.target.value })
+              }
+            />
+            <Tooltip title="Agregar Vehículo" arrow>
+              <span>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  sx={{ height: "56px" }}
+                  onClick={handleAdd}
+                  //disabled={!isValid}
+                >
+                  <DirectionsCarIcon />
+                </Button>
+              </span>
+            </Tooltip>
+          </Box>
+        </Grid>
+      </Grid>
+      <br />
+      {filteredVehicles.length > 0 ? (
+        // <EditableTable<Vehicle>
+        //   data={filteredVehicles}
+        //   columns={["licensePlate", "model", "color", "parkingLot", "notes"]}
+        //   editRowId={editRowId}
+        //   editFields={editFields}
+        //   setEditField={(field, value) =>
+        //     setEditFields({ ...editFields, [field]: value })
+        //   }
+        //   handleEditClick={handleEditClick}
+        //   handleSaveClick={handleSaveClick}
+        //   handleOpenDialog={handleOpenDialog}
+        //   getRowId={(row) => row.licensePlate}
+        //   totalCount={totalCount}
+        //   page={page}
+        //   rowsPerPage={rowsPerPage}
+        //   setPage={setPage}
+        //   setRowsPerPage={setRowsPerPage}
+        // />
+        <p>Table</p>
+      ) : (
+        <Typography variant="h6" color="textSecondary">
+          No se encontraron vehículos.
+        </Typography>
+      )}
+      <Dialog open={dialogOpen} onClose={handleCloseDialog}>
+        <DialogTitle>Confirmar Eliminación</DialogTitle>
+        <DialogContent>
+          <Typography>
+            ¿Estás seguro de que deseas eliminar este vehículo?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button color="primary" onClick={handleCloseDialog}>
+            Cancelar
+          </Button>
+          <Button color="secondary" onClick={handleDelete}>
+            Eliminar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

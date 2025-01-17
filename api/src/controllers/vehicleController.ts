@@ -60,3 +60,29 @@ export const deleteVehicle = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Error deleting Vehicle', error });
   }
 };
+
+export const getUniqueDates = async (req: Request, res: Response) => {
+  try {
+    const uniqueDates = await vehicleService.getUniqueDates();
+    res.status(200).json(uniqueDates);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching unique dates", error });
+  }
+};
+
+export const getVehiclesByDate = async (req: Request, res: Response) => {
+  try {
+    const date = req.params.date;
+    const page = parseInt(req.query.page as string) || 1;
+    const pageSize = parseInt(req.query.pageSize as string) || 10;
+
+    if (!date) {
+      return res.status(400).json({ message: "Date is required" });
+    }
+
+    const vehicles = await vehicleService.getVehiclesByDate(date, page, pageSize);
+    res.status(200).json(vehicles);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching vehicles by date", error });
+  }
+};

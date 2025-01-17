@@ -7,6 +7,7 @@ export class Vehicle extends Model {
   public color!: string;
   public parkingLot!: string;
   public notes!: string;
+  public createdAt!: Date;
 }
 
 Vehicle.init(
@@ -31,10 +32,16 @@ Vehicle.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
   },
   {
     sequelize,
     modelName: "Vehicle",
     tableName: "vehicles",
+    timestamps: true,
   }
 );

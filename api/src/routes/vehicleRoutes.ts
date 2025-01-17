@@ -8,5 +8,7 @@ router.get('/', vehicleController.getAllVehicles);
 router.get('/:licensePlate', vehicleController.getVehicleByLicensePlate);
 router.put('/:licensePlate', vehicleController.updateVehicle);
 router.delete('/:licensePlate', vehicleController.deleteVehicle);
+router.get("/dates/unique", vehicleController.getUniqueDates);
+router.get("/dates/:date", vehicleController.getVehiclesByDate);
 
 export default router;
