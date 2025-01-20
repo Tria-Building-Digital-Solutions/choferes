@@ -84,6 +84,11 @@ export const translateColumnHeaderToSpanish = (
     hours: "Horas",
     createdAt: "Agregado",
     updatedAt: "Actualizado",
+    licensePlate: "Placa",
+    brand: "Marca",
+    color: "Color",
+    parkingLot: "Espacio",
+    notes: "Observaciones"
   };
 
   if (typeof column === "string" && column in translations) {

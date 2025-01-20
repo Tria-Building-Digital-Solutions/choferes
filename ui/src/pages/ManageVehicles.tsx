@@ -33,8 +33,8 @@ import { faFileExcel, faFilePdf } from "@fortawesome/free-solid-svg-icons";
 import SearchBar from "../components/SearchBar/SearchBar";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 import EditableTable from "../components/Table/EditableTable/EditableTable";
-import { colorOptions } from "../utils/colorUtils";
 import InputMask from "react-input-mask";
+import { BRANDS, COLORS } from "../constants/constants";
 
 const ManageVehicles: React.FC = () => {
   const {
@@ -68,12 +68,15 @@ const ManageVehicles: React.FC = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [isValid, setIsValid] = useState(false);
+  const [selectedBrand, setSelectedBrand] = useState("");
+  const [customBrand, setCustomBrand] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
   const [customColor, setCustomColor] = useState("");
 
   useEffect(() => {
-    const filtered = vehicles.filter((vehicle) =>
-      `${vehicle.licensePlate} ${vehicle.brand} ${vehicle.color}`
+    const allVehicles = Object.values(vehicles).flat();
+    const filtered = allVehicles.filter((vehicle) =>
+      `${vehicle.licensePlate} ${vehicle.brand} ${vehicle.color} ${vehicle.parkingLot} ${vehicle.notes}`
         .toLowerCase()
         .includes(filter.toLowerCase())
     );
@@ -82,21 +85,21 @@ const ManageVehicles: React.FC = () => {
     setTotalCount(filtered.length);
   }, [vehicles, filter]);
 
-  // const validateFields = useCallback(() => {
-  //   const textRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
-  //   const plateRegex = /^[A-Z]{3}\d{3,4}$/;
-  //   const isLicensePlateValid =
-  //     plateRegex.test(addFields.licensePlate) && addFields.licensePlate !== "";
-  //   const isModelValid =
-  //     textRegex.test(addFields.brand) && addFields.brand !== "";
-  //   const isColorValid =
-  //     textRegex.test(addFields.color) && addFields.color !== "";
-  //   setIsValid(isLicensePlateValid && isModelValid && isColorValid);
-  // }, [addFields]);
+  const validateFields = useCallback(() => {
+    const textRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+    const plateRegex = /^[A-Z]{3}\d{3,4}$/;
+    const isLicensePlateValid =
+      plateRegex.test(addFields.licensePlate) && addFields.licensePlate !== "";
+    const isModelValid =
+      textRegex.test(addFields.brand) && addFields.brand !== "";
+    const isColorValid =
+      textRegex.test(addFields.color) && addFields.color !== "";
+    setIsValid(isLicensePlateValid && isModelValid && isColorValid);
+  }, [addFields]);
 
-  // useEffect(() => {
-  //   validateFields();
-  // }, [validateFields]);
+  useEffect(() => {
+    validateFields();
+  }, [validateFields]);
 
   const handleAdd = () => {
     const newVehicle: Vehicle = {
@@ -130,25 +133,29 @@ const ManageVehicles: React.FC = () => {
     });
   };
 
-  const handleSaveClick = (licensePlate: string) => {
-    const updatedVehicle = {
-      ...editFields,
-    };
-    handleUpdateVehicle(licensePlate, updatedVehicle);
-    setEditRowId(null);
-    setEditFields({
-      licensePlate: "",
-      brand: "",
-      color: "",
-      parkingLot: "",
-      notes: "",
-      createdAt: new Date(),
-    });
+  const handleSaveClick = (args: { id?: number; licensePlate?: string }) => {
+    if (args.licensePlate) {
+      const updatedVehicle = {
+        ...editFields,
+      };
+      handleUpdateVehicle(args.licensePlate, updatedVehicle);
+      setEditRowId(null);
+      setEditFields({
+        licensePlate: "",
+        brand: "",
+        color: "",
+        parkingLot: "",
+        notes: "",
+        createdAt: new Date(),
+      });
+    }
   };
 
-  const handleOpenDialog = (licensePlate: string) => {
-    setDialogOpen(true);
-    setVehicleToDelete(licensePlate);
+  const handleOpenDialog = (args: { id?: number; licensePlate?: string }) => {
+    if (args.licensePlate) {
+      setDialogOpen(true);
+      setVehicleToDelete(args.licensePlate);
+    }
   };
 
   const handleCloseDialog = () => {
@@ -161,6 +168,22 @@ const ManageVehicles: React.FC = () => {
       handleDeleteVehicle(vehicleToDelete);
       handleCloseDialog();
     }
+  };
+
+  const handleBrandChange = (event: SelectChangeEvent<string>) => {
+    const value = event.target.value;
+    setSelectedBrand(value);
+    if (value !== "Otro") {
+      setCustomBrand("");
+    }
+    setAddFields({ ...addFields, brand: event.target.value });
+  };
+
+  const handleCustomBrandChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setCustomBrand(event.target.value);
+    setAddFields({ ...addFields, brand: event.target.value });
   };
 
   const handleColorChange = (event: SelectChangeEvent<string>) => {
@@ -245,16 +268,31 @@ const ManageVehicles: React.FC = () => {
                 />
               )}
             </InputMask>
-
-            <TextField
-              label="Modelo"
-              variant="outlined"
-              sx={{ mr: 2 }}
-              value={addFields.brand}
-              onChange={(e) =>
-                setAddFields({ ...addFields, brand: e.target.value })
-              }
-            />
+            {selectedColor === "Otro" ? (
+              <TextField
+                label="Modelo"
+                variant="outlined"
+                sx={{ mr: 2 }}
+                value={customBrand}
+                onChange={handleCustomBrandChange}
+              />
+            ) : (
+              <FormControl variant="outlined" sx={{ mr: 2, width: 200 }}>
+                <InputLabel>Modelo</InputLabel>
+                <Select
+                  label="Modelo"
+                  sx={{ height: 56 }}
+                  value={selectedBrand}
+                  onChange={handleBrandChange}
+                >
+                  {BRANDS.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
             {selectedColor === "Otro" ? (
               <TextField
                 label="Color"
@@ -268,10 +306,11 @@ const ManageVehicles: React.FC = () => {
                 <InputLabel>Color</InputLabel>
                 <Select
                   label="Color"
+                  sx={{ height: 56 }}
                   value={selectedColor}
                   onChange={handleColorChange}
                 >
-                  {colorOptions.map((option) => (
+                  {COLORS.map((option) => (
                     <MenuItem key={option.value} value={option.value}>
                       {option.label}
                     </MenuItem>
@@ -321,7 +360,7 @@ const ManageVehicles: React.FC = () => {
                   color="primary"
                   sx={{ height: "56px" }}
                   onClick={handleAdd}
-                  //disabled={!isValid}
+                  disabled={!isValid}
                 >
                   <DirectionsCarIcon />
                 </Button>
@@ -332,28 +371,28 @@ const ManageVehicles: React.FC = () => {
       </Grid>
       <br />
       {filteredVehicles.length > 0 ? (
-        // <EditableTable<Vehicle>
-        //   data={filteredVehicles}
-        //   columns={["licensePlate", "model", "color", "parkingLot", "notes"]}
-        //   editRowId={editRowId}
-        //   editFields={editFields}
-        //   setEditField={(field, value) =>
-        //     setEditFields({ ...editFields, [field]: value })
-        //   }
-        //   handleEditClick={handleEditClick}
-        //   handleSaveClick={handleSaveClick}
-        //   handleOpenDialog={handleOpenDialog}
-        //   getRowId={(row) => row.licensePlate}
-        //   totalCount={totalCount}
-        //   page={page}
-        //   rowsPerPage={rowsPerPage}
-        //   setPage={setPage}
-        //   setRowsPerPage={setRowsPerPage}
-        // />
-        <p>Table</p>
+        <EditableTable<Vehicle>
+          data={filteredVehicles}
+          columns={["licensePlate", "brand", "color", "parkingLot", "notes"]}
+          groupByField="createdAt" 
+          editRowId={editRowId}
+          editFields={editFields}
+          setEditField={(field, value) =>
+            setEditFields({ ...editFields, [field]: value })
+          }
+          handleEditClick={handleEditClick}
+          handleSaveClick={handleSaveClick}
+          handleOpenDialog={handleOpenDialog}
+          getRowId={(row) => row.licensePlate}
+          totalCount={totalCount}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          setPage={setPage}
+          setRowsPerPage={setRowsPerPage}
+        />
       ) : (
         <Typography variant="h6" color="textSecondary">
-          No se encontraron vehículos.
+          No se ecnontraron vehículos para mostrar.
         </Typography>
       )}
       <Dialog open={dialogOpen} onClose={handleCloseDialog}>

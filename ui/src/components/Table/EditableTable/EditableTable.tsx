@@ -27,16 +27,17 @@ import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import { TABLE } from "../../../constants/constants";
 
-type EditableTableProps<T> = {
+type EditableTableProps<T extends { licensePlate?: string; id?: number }> = {
   data: T[];
   columns: (keyof T)[];
-  editRowId: number | null;
-  editFields: Record<string, string>;
+  groupByField?: keyof T;
+  editRowId: number | string | null;
+  editFields: Record<string, string | number | Date>;
   setEditField: (field: string, value: string) => void;
   handleEditClick: (row: T) => void;
-  handleSaveClick: (id: number) => void;
-  handleOpenDialog: (id: number) => void;
-  getRowId: (row: T) => number;
+  handleSaveClick: (args: { id?: number; licensePlate?: string }) => void;
+  handleOpenDialog: (args: { id?: number; licensePlate?: string }) => void;
+  getRowId: (row: T) => number | string;
   totalCount: number;
   page: number;
   rowsPerPage: number;
@@ -44,12 +45,13 @@ type EditableTableProps<T> = {
   setRowsPerPage: (rowsPerPage: number) => void;
   renderColumnValue?: (column: keyof T, value: any) => React.ReactNode;
   getOptionsForColumn?: (column: keyof T) => { value: string; label: string }[];
-  validateField?: (field: string, value: string) => boolean;
+  validateField?: (field: string, value: string | number | Date) => boolean;
 };
 
-const EditableTable = <T,>({
+const EditableTable = <T extends { licensePlate?: string; id?: number }>({
   data,
   columns,
+  groupByField,
   editRowId,
   editFields,
   setEditField,
@@ -94,15 +96,37 @@ const EditableTable = <T,>({
     setOrderBy(column);
   };
 
-  const sortedData = [...data].sort((a, b) => {
-    if (a[orderBy] < b[orderBy]) {
-      return order === "asc" ? -1 : 1;
-    }
-    if (a[orderBy] > b[orderBy]) {
-      return order === "asc" ? 1 : -1;
-    }
-    return 0;
-  });
+  const groupedData = groupByField
+    ? data.reduce((acc, item) => {
+        const key = item[groupByField] as string;
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(item);
+        return acc;
+      }, {} as Record<string, T[]>)
+    : { default: data };
+
+  const groupKeys = groupByField
+    ? Object.keys(groupedData).sort((a, b) =>
+        order === "asc" ? a.localeCompare(b) : b.localeCompare(a)
+      )
+    : ["default"];
+
+  const groupsOnPage = groupKeys.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
+
+  const sortedData = groupByField
+    ? groupsOnPage.flatMap((key) => groupedData[key])
+    : [...data].sort((a, b) => {
+        if (a[orderBy] < b[orderBy]) {
+          return order === "asc" ? -1 : 1;
+        }
+        if (a[orderBy] > b[orderBy]) {
+          return order === "asc" ? 1 : -1;
+        }
+        return 0;
+      });
 
   return (
     <Paper sx={{ width: "100%" }}>
@@ -123,56 +147,76 @@ const EditableTable = <T,>({
               <TableCell style={{ width: "100px" }} />
             </TableRow>
           </TableHead>
-           <TableBody>
+          <TableBody>
             {sortedData
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((row) => (
                 <TableRow key={getRowId(row)}>
                   {columns.map((column) => (
                     <TableCell key={String(column)}>
-                    {editRowId === getRowId(row) ? (
-                      getOptionsForColumn(column).length > 0 ? (
-                        <FormControl variant="outlined" fullWidth>
-                          <InputLabel>{String(column)}</InputLabel>
-                          <Select
-                            label={String(column)}
+                      {editRowId === getRowId(row) ? (
+                        getOptionsForColumn(column).length > 0 ? (
+                          <FormControl variant="outlined" fullWidth>
+                            <InputLabel>{String(column)}</InputLabel>
+                            <Select
+                              label={String(column)}
+                              value={editFields[String(column)] || ""}
+                              onChange={(e) =>
+                                setEditField(
+                                  String(column),
+                                  String(e.target.value)
+                                )
+                              }
+                            >
+                              {getOptionsForColumn(column).map((option) => (
+                                <MenuItem
+                                  key={option.value}
+                                  value={option.value}
+                                >
+                                  {option.label}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        ) : (
+                          <TextField
+                            fullWidth
                             value={editFields[String(column)] || ""}
                             onChange={(e) =>
                               setEditField(String(column), e.target.value)
                             }
-                          >
-                            {getOptionsForColumn(column).map((option) => (
-                              <MenuItem key={option.value} value={option.value}>
-                                {option.label}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
+                            error={
+                              !validateField(
+                                String(column),
+                                editFields[String(column)]
+                              )
+                            }
+                          />
+                        )
+                      ) : column === "day" ? (
+                        mapDayValues(row[column] as string)
                       ) : (
-                        <TextField
-                          fullWidth
-                          value={editFields[String(column)] || ""}
-                          onChange={(e) =>
-                            setEditField(String(column), e.target.value)
-                          }
-                          error={
-                            !validateField(String(column), editFields[String(column)])
-                          }
-                        />
-                      )
-                    ) : (
-                      column === "day"
-                        ? mapDayValues(row[column] as string)
-                        : renderColumnValue(column, row[column])
-                    )}
-                  </TableCell>
+                        renderColumnValue(column, row[column])
+                      )}
+                    </TableCell>
                   ))}
                   <TableCell>
                     {editRowId === getRowId(row) ? (
                       <Tooltip title="Guardar" arrow>
                         <IconButton
                           color="primary"
-                          onClick={() => handleSaveClick(getRowId(row))}
+                          onClick={() => {
+                            if (row.licensePlate) {
+                              handleSaveClick({
+                                licensePlate: row.licensePlate,
+                              });
+                            } else {
+                              const id = getRowId(row);
+                              if (typeof id === "number") {
+                                handleSaveClick({ id });
+                              }
+                            }
+                          }}
                           disabled={!isFormValid}
                         >
                           <SaveIcon />
@@ -191,7 +235,18 @@ const EditableTable = <T,>({
                     <Tooltip title="Eliminar" arrow>
                       <IconButton
                         color="secondary"
-                        onClick={() => handleOpenDialog(getRowId(row))}
+                        onClick={() => {
+                          if (row.licensePlate) {
+                            handleOpenDialog({
+                              licensePlate: row.licensePlate,
+                            });
+                          } else {
+                            const id = getRowId(row);
+                            if (typeof id === "number") {
+                              handleOpenDialog({ id });
+                            }
+                          }
+                        }}
                       >
                         <DeleteIcon />
                       </IconButton>
