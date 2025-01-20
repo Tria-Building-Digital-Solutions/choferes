@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Box,
   Typography,
@@ -72,6 +72,7 @@ const ManageVehicles: React.FC = () => {
   const [customBrand, setCustomBrand] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
   const [customColor, setCustomColor] = useState("");
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     const allVehicles = Object.values(vehicles).flat();
@@ -86,15 +87,20 @@ const ManageVehicles: React.FC = () => {
   }, [vehicles, filter]);
 
   const validateFields = useCallback(() => {
+    const plateRegex = /^[A-ZÑ0-9]{3}-[A-ZÑ0-9]{3,4}$/;
     const textRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
-    const plateRegex = /^[A-Z]{3}\d{3,4}$/;
+    const parkingLotRegex = /^ATP[1-9]-\d{3,4}$/;
     const isLicensePlateValid =
-      plateRegex.test(addFields.licensePlate) && addFields.licensePlate !== "";
+      plateRegex.test(addFields.licensePlate.trim()) &&
+      addFields.licensePlate !== "";
     const isModelValid =
       textRegex.test(addFields.brand) && addFields.brand !== "";
     const isColorValid =
       textRegex.test(addFields.color) && addFields.color !== "";
-    setIsValid(isLicensePlateValid && isModelValid && isColorValid);
+    const isParkingLotValid =
+      parkingLotRegex.test(addFields.parkingLot.trim()) &&
+      addFields.parkingLot !== "";
+    setIsValid(isLicensePlateValid && isModelValid && isColorValid && isParkingLotValid);
   }, [addFields]);
 
   useEffect(() => {
@@ -264,6 +270,7 @@ const ManageVehicles: React.FC = () => {
                   sx={{ mr: 2 }}
                   InputProps={{
                     style: { textTransform: "uppercase" },
+                    inputRef: inputRef,
                   }}
                 />
               )}
@@ -339,6 +346,7 @@ const ManageVehicles: React.FC = () => {
                       <span style={{ marginRight: "8px" }}>ATP</span>
                     ) : null,
                     style: { textTransform: "uppercase" },
+                    inputRef: inputRef,
                   }}
                 />
               )}
@@ -374,7 +382,7 @@ const ManageVehicles: React.FC = () => {
         <EditableTable<Vehicle>
           data={filteredVehicles}
           columns={["licensePlate", "brand", "color", "parkingLot", "notes"]}
-          groupByField="createdAt" 
+          groupByField="createdAt"
           editRowId={editRowId}
           editFields={editFields}
           setEditField={(field, value) =>
