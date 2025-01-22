@@ -20,6 +20,7 @@ Vehicle.init(
     licensePlate: {
       type: DataTypes.STRING,
       allowNull: false,
+      unique: true,
     },
     brand: {
       type: DataTypes.STRING,
@@ -43,11 +44,5 @@ Vehicle.init(
     modelName: "Vehicle",
     tableName: "vehicles",
     timestamps: true,
-    indexes: [
-      {
-        unique: true,
-        fields: ["licensePlate"],
-      },
-    ],
   }
 );

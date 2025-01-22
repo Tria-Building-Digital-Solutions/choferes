@@ -4,6 +4,5 @@ export interface Vehicle {
   brand: string;       
   color: string;    
   parkingLot: string; 
-  notes: string | null;  
-  createdAt: string; 
+  notes: string;  
 }

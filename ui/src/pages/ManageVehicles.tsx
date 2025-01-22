@@ -45,14 +45,13 @@ const ManageVehicles: React.FC = () => {
   } = useVehicles();
   const [filteredVehicles, setFilteredVehicles] = useState<Vehicle[]>([]);
   const [totalCount, setTotalCount] = useState(0);
-  const [editRowId, setEditRowId] = useState<string | null>(null);
+  const [editRowId, setEditRowId] = useState<number | null>(null);
   const [addFields, setAddFields] = useState({
     licensePlate: "",
     brand: "",
     color: "",
     parkingLot: "",
     notes: "",
-    createdAt: new Date(),
   });
   const [editFields, setEditFields] = useState({
     licensePlate: "",
@@ -60,10 +59,9 @@ const ManageVehicles: React.FC = () => {
     color: "",
     parkingLot: "",
     notes: "",
-    createdAt: new Date(),
   });
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [vehicleToDelete, setVehicleToDelete] = useState<string | null>(null);
+  const [vehicleToDelete, setVehicleToDelete] = useState<number | null>(null);
   const [filter, setFilter] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -111,12 +109,12 @@ const ManageVehicles: React.FC = () => {
 
   const handleAdd = () => {
     const newVehicle: Vehicle = {
+      id: Math.max(...vehicles.map((vehicle) => vehicle.id)) + 1,
       licensePlate: addFields.licensePlate,
       brand: addFields.brand,
       color: addFields.color,
       parkingLot: addFields.parkingLot,
       notes: addFields.notes,
-      createdAt: addFields.createdAt,
     };
     handleAddVehicle(newVehicle);
     setAddFields({
@@ -125,28 +123,26 @@ const ManageVehicles: React.FC = () => {
       color: "",
       parkingLot: "",
       notes: "",
-      createdAt: new Date(),
     });
   };
 
   const handleEditClick = (vehicle: Vehicle) => {
-    setEditRowId(vehicle.licensePlate);
+    setEditRowId(vehicle.id);
     setEditFields({
       licensePlate: vehicle.licensePlate,
       brand: vehicle.brand,
       color: vehicle.color,
       parkingLot: vehicle.parkingLot,
       notes: vehicle.notes,
-      createdAt: vehicle.createdAt,
     });
   };
 
   const handleSaveClick = (args: { id?: number; licensePlate?: string }) => {
-    if (args.licensePlate) {
+    if (args.id) {
       const updatedVehicle = {
         ...editFields,
       };
-      handleUpdateVehicle(args.licensePlate, updatedVehicle);
+      handleUpdateVehicle(args.id, updatedVehicle);
       setEditRowId(null);
       setEditFields({
         licensePlate: "",
@@ -154,15 +150,14 @@ const ManageVehicles: React.FC = () => {
         color: "",
         parkingLot: "",
         notes: "",
-        createdAt: new Date(),
       });
     }
   };
 
   const handleOpenDialog = (args: { id?: number; licensePlate?: string }) => {
-    if (args.licensePlate) {
+    if (args.id) {
       setDialogOpen(true);
-      setVehicleToDelete(args.licensePlate);
+      setVehicleToDelete(args.id);
     }
   };
 
@@ -384,7 +379,7 @@ const ManageVehicles: React.FC = () => {
         <EditableTable<Vehicle>
           data={filteredVehicles}
           columns={["licensePlate", "brand", "color", "parkingLot", "notes"]}
-          groupByField="createdAt"
+          //groupByField="createdAt"
           editRowId={editRowId}
           editFields={editFields}
           setEditField={(field, value) =>
