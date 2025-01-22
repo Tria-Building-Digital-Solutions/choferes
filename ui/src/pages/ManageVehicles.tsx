@@ -100,7 +100,9 @@ const ManageVehicles: React.FC = () => {
     const isParkingLotValid =
       parkingLotRegex.test(addFields.parkingLot.trim()) &&
       addFields.parkingLot !== "";
-    setIsValid(isLicensePlateValid && isModelValid && isColorValid && isParkingLotValid);
+    setIsValid(
+      isLicensePlateValid && isModelValid && isColorValid && isParkingLotValid
+    );
   }, [addFields]);
 
   useEffect(() => {
@@ -400,7 +402,7 @@ const ManageVehicles: React.FC = () => {
         />
       ) : (
         <Typography variant="h6" color="textSecondary">
-          No se ecnontraron vehículos para mostrar.
+          No se encontraron vehículos para mostrar.
         </Typography>
       )}
       <Dialog open={dialogOpen} onClose={handleCloseDialog}>

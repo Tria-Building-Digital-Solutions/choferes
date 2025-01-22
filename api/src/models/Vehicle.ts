@@ -2,19 +2,24 @@ import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/database";
 
 export class Vehicle extends Model {
+  public id!: number;
   public licensePlate!: string;
   public brand!: string;
   public color!: string;
   public parkingLot!: string;
   public notes!: string;
-  public createdAt!: Date;
 }
 
 Vehicle.init(
   {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
     licensePlate: {
       type: DataTypes.STRING,
-      primaryKey: true,
+      allowNull: false,
     },
     brand: {
       type: DataTypes.STRING,
@@ -32,16 +37,17 @@ Vehicle.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
-    createdAt: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-    },
   },
   {
     sequelize,
     modelName: "Vehicle",
     tableName: "vehicles",
     timestamps: true,
+    indexes: [
+      {
+        unique: true,
+        fields: ["licensePlate"],
+      },
+    ],
   }
 );

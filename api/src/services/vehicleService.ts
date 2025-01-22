@@ -6,65 +6,49 @@ export const createVehicle = async (data: {
   brand: string;
   color: string;
   parkingLot: string;
-  notes: string;
+  notes?: string;
 }) => {
   return Vehicle.create(data);
 };
 
 export const getAllVehicles = async () => {
-  return Vehicle.findAll({
-    order: [["createdAt", "DESC"]],
-  });
+  return Vehicle.findAll();
 };
 
-export const getVehicleByLicensePlate = async (licensePlate: string) => {
-  return Vehicle.findByPk(licensePlate);
+export const getVehicleById = async (id: number) => {
+  return Vehicle.findByPk(id);
 };
 
-export const updateVehicle = async (
-  licensePlate: string,
-  data: {
-    licensePlate?: string;
-    brand?: string;
-    color?: string;
-    parkingLot?: string;
-    notes?: string;
-  }
-) => {
-  await Vehicle.update(data, { where: { licensePlate } });
-  return Vehicle.findByPk(licensePlate);
-};
-
-export const deleteVehicle = async (licensePlate: string) => {
-  return Vehicle.destroy({ where: { licensePlate } });
-};
-
-export const getVehiclesByDate = async (
-  date: string,
-  page = 1,
-  pageSize = 10
-) => {
-  const offset = (page - 1) * pageSize;
-
-  return Vehicle.findAll({
-    where: Sequelize.where(
-      Sequelize.fn("DATE", Sequelize.col("createdAt")),
-      date
-    ),
-    order: [["createdAt", "ASC"]],
-    limit: pageSize,
-    offset,
-  });
-};
-
-export const getUniqueDates = async () => {
-  const dates = await Vehicle.findAll({
+export const getVehiclesGroupedByDate = async () => {
+  const vehicles = await Vehicle.findAll({
     attributes: [
-      [Sequelize.fn("DATE", Sequelize.col("createdAt")), "createdDate"],
+      [Sequelize.fn("DATE", Sequelize.col("createdAt")), "createdDate"], 
+      [Sequelize.fn("COUNT", Sequelize.col("id")), "vehicleCount"], 
     ],
-    group: ["createdDate"],
+    group: ["createdDate"], 
     order: [[Sequelize.fn("DATE", Sequelize.col("createdAt")), "ASC"]],
   });
 
-  return dates.map((date) => date.get("createdDate"));
+  return vehicles.map((row: any) => ({
+    createdDate: row.get("createdDate"),
+    vehicleCount: row.get("vehicleCount"),
+  }));
+};
+
+export const updateVehicle = async (
+  id: number,
+  data: Partial<{
+    licensePlate: string;
+    brand: string;
+    color: string;
+    parkingLot: string;
+    notes: string;
+  }>
+) => {
+  await Vehicle.update(data, { where: { id } });
+  return Vehicle.findByPk(id);
+};
+
+export const deleteVehicle = async (id: number) => {
+  return Vehicle.destroy({ where: { id } });
 };

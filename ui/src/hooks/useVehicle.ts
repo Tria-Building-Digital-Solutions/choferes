@@ -3,56 +3,76 @@ import * as VehicleService from "../services/vehicleService";
 import { Vehicle } from "../models/Vehicle";
 
 export const useVehicles = () => {
-  const [vehicles, setVehicles] = useState<Record<string, Vehicle[]>>({});
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [totalCount, setTotalCount] = useState(0);
+  const [loading, setLoading] = useState(false);
 
-  const fetchVehicles = useCallback(async () => {
-    const data = await VehicleService.fetchVehicles();
-    const grouped: Record<string, Vehicle[]> = {};
-    data.forEach((vehicle: Vehicle) => {
-      const date = new Date(vehicle.createdAt).toISOString().split("T")[0]; // Agrupar por fecha
-      if (!grouped[date]) grouped[date] = [];
-      grouped[date].push(vehicle);
-    });
-    setVehicles(grouped); 
-    setTotalCount(data.length);
-  }, []);
+  const fetchVehicles = useCallback(
+    async (page: number = 1, perPage: number = 10) => {
+      setLoading(true);
+      try {
+        const data = await VehicleService.fetchVehicles(page, perPage);
+        setVehicles(data);
+        setTotalCount(data.length); 
+      } catch (error) {
+        console.error("Error fetching vehicles", error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   const handleAddVehicle = async (newVehicle: Vehicle) => {
     await VehicleService.addVehicle(newVehicle);
-    setVehicles((prev) => {
-      const date = new Date(newVehicle.createdAt).toISOString().split("T")[0];
-      const updatedGroup = { ...prev };
-      if (!updatedGroup[date]) updatedGroup[date] = [];
-      updatedGroup[date].push(newVehicle);
-      return updatedGroup;
-    });
-    setTotalCount((prev) => prev + 1);
+    setVehicles((prev) => [...prev, newVehicle]);
+    setTotalCount((prev) => prev + 1); 
   };
+
+  const getVehiclesGroupedByDate = useCallback(
+    async (date: string, page: number = 1, perPage: number = 10) => {
+      setLoading(true);
+      try {
+        const data = await VehicleService.getVehiclesGroupedByDate(date, page, perPage);
+        setVehicles(data);
+      } catch (error) {
+        console.error("Error fetching grouped vehicles", error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   const handleUpdateVehicle = async (
-    licensePlate: string,
+    id: number,
     updatedVehicle: Partial<Vehicle>
   ) => {
-    await VehicleService.updateVehicle(licensePlate, updatedVehicle);
-    fetchVehicles(); // Refrescar agrupación tras la actualización
+    await VehicleService.updateVehicle(id, updatedVehicle);
+    setVehicles((prev) =>
+      prev.map((vehicle) =>
+        vehicle.id === id ? { ...vehicle, ...updatedVehicle } : vehicle
+      )
+    );
   };
 
-  const handleDeleteVehicle = async (licensePlate: string) => {
-    await VehicleService.deleteVehicle(licensePlate);
-    fetchVehicles(); // Refrescar agrupación tras el borrado
+  const handleDeleteVehicle = async (id: number) => {
+    await VehicleService.deleteVehicle(id);
+    setVehicles((prev) => prev.filter((vehicle) => vehicle.id !== id));
     setTotalCount((prev) => prev - 1);
   };
 
   useEffect(() => {
-    fetchVehicles();
+    fetchVehicles(); 
   }, [fetchVehicles]);
 
   return {
     vehicles,
     totalCount,
+    loading,
     fetchVehicles,
     handleAddVehicle,
+    getVehiclesGroupedByDate,
     handleUpdateVehicle,
     handleDeleteVehicle,
   };
