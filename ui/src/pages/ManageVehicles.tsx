@@ -137,28 +137,24 @@ const ManageVehicles: React.FC = () => {
     });
   };
 
-  const handleSaveClick = (args: { id?: number; licensePlate?: string }) => {
-    if (args.id) {
-      const updatedVehicle = {
-        ...editFields,
-      };
-      handleUpdateVehicle(args.id, updatedVehicle);
-      setEditRowId(null);
-      setEditFields({
-        licensePlate: "",
-        brand: "",
-        color: "",
-        parkingLot: "",
-        notes: "",
-      });
-    }
+  const handleSaveClick = (id: number) => {
+    const updatedVehicle = {
+      ...editFields,
+    };
+    handleUpdateVehicle(id, updatedVehicle);
+    setEditRowId(null);
+    setEditFields({
+      licensePlate: "",
+      brand: "",
+      color: "",
+      parkingLot: "",
+      notes: "",
+    });
   };
 
-  const handleOpenDialog = (args: { id?: number; licensePlate?: string }) => {
-    if (args.id) {
-      setDialogOpen(true);
-      setVehicleToDelete(args.id);
-    }
+  const handleOpenDialog = (id: number) => {
+    setDialogOpen(true);
+    setVehicleToDelete(id);
   };
 
   const handleCloseDialog = () => {
@@ -388,7 +384,7 @@ const ManageVehicles: React.FC = () => {
           handleEditClick={handleEditClick}
           handleSaveClick={handleSaveClick}
           handleOpenDialog={handleOpenDialog}
-          getRowId={(row) => row.licensePlate}
+          getRowId={(row) => row.id}
           totalCount={totalCount}
           page={page}
           rowsPerPage={rowsPerPage}

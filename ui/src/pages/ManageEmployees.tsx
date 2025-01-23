@@ -90,22 +90,18 @@ const ManageEmployees: React.FC = () => {
     });
   };
 
-  const handleSaveClick = (args: { id?: number; licensePlate?: string }) => {
-    if (args.id) {
-      const updatedEmployee = {
-        ...editFields,
-      };
-      handleUpdateEmployee(args.id, updatedEmployee);
-      setEditRowId(null);
-      setEditFields({ firstName: "", lastName: "" });
-    }
+  const handleSaveClick = (id: number) => {
+    const updatedEmployee = {
+      ...editFields,
+    };
+    handleUpdateEmployee(id, updatedEmployee);
+    setEditRowId(null);
+    setEditFields({ firstName: "", lastName: "" });
   };
 
-  const handleOpenDialog = (args: { id?: number; licensePlate?: string }) => {
-    if (args.id) {
-      setDialogOpen(true);
-      setEmployeeToDelete(args.id);
-    }
+  const handleOpenDialog = (id: number) => {
+    setDialogOpen(true);
+    setEmployeeToDelete(id);
   };
 
   const handleCloseDialog = () => {

@@ -27,17 +27,17 @@ import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import { TABLE } from "../../../constants/constants";
 
-type EditableTableProps<T extends { licensePlate?: string; id?: number }> = {
+type EditableTableProps<T> = {
   data: T[];
   columns: (keyof T)[];
   groupByField?: keyof T;
-  editRowId: number | string | null;
-  editFields: Record<string, string | number | Date>;
+  editRowId: number | null;
+  editFields: Record<string, string>;
   setEditField: (field: string, value: string) => void;
   handleEditClick: (row: T) => void;
-  handleSaveClick: (args: { id?: number; licensePlate?: string }) => void;
-  handleOpenDialog: (args: { id?: number; licensePlate?: string }) => void;
-  getRowId: (row: T) => number | string;
+  handleSaveClick: (id: number) => void;
+  handleOpenDialog: (id: number) => void;
+  getRowId: (row: T) => number;
   totalCount: number;
   page: number;
   rowsPerPage: number;
@@ -45,11 +45,11 @@ type EditableTableProps<T extends { licensePlate?: string; id?: number }> = {
   setRowsPerPage: (rowsPerPage: number) => void;
   renderColumnValue?: (column: keyof T, value: any) => React.ReactNode;
   getOptionsForColumn?: (column: keyof T) => { value: string; label: string }[];
-  validateField?: (field: string, value: string | number | Date) => boolean;
+  validateField?: (field: string, value: string) => boolean;
   customPagination?: (data: T[], page: number, rowsPerPage: number) => T[];
 };
 
-const EditableTable = <T extends { licensePlate?: string; id?: number }>({
+const EditableTable = <T,>({
   data,
   columns,
   groupByField,
@@ -212,18 +212,7 @@ const EditableTable = <T extends { licensePlate?: string; id?: number }>({
                     <Tooltip title="Guardar" arrow>
                       <IconButton
                         color="primary"
-                        onClick={() => {
-                          if (row.licensePlate) {
-                            handleSaveClick({
-                              licensePlate: row.licensePlate,
-                            });
-                          } else {
-                            const id = getRowId(row);
-                            if (typeof id === "number") {
-                              handleSaveClick({ id });
-                            }
-                          }
-                        }}
+                        onClick={() => handleSaveClick(getRowId(row))}
                         disabled={!isFormValid}
                       >
                         <SaveIcon />
@@ -242,18 +231,7 @@ const EditableTable = <T extends { licensePlate?: string; id?: number }>({
                   <Tooltip title="Eliminar" arrow>
                     <IconButton
                       color="secondary"
-                      onClick={() => {
-                        if (row.licensePlate) {
-                          handleOpenDialog({
-                            licensePlate: row.licensePlate,
-                          });
-                        } else {
-                          const id = getRowId(row);
-                          if (typeof id === "number") {
-                            handleOpenDialog({ id });
-                          }
-                        }
-                      }}
+                      onClick={() => handleOpenDialog(getRowId(row))}
                     >
                       <DeleteIcon />
                     </IconButton>

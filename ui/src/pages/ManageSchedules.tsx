@@ -114,23 +114,19 @@ const ManageSchedules: React.FC = () => {
     });
   };
 
-  const handleSaveClick = (args: { id?: number; licensePlate?: string }) => {
-    if (args.id) {
-      const updatedSchedule = {
-        ...editFields,
-        hours: parseInt(editFields.hours, 10),
-      };
-      handleUpdateSchedule(args.id, updatedSchedule);
-      setEditRowId(null);
-      setEditFields({ label: "", day: "", hours: "" });
-    }
+  const handleSaveClick = (id: number) => {
+    const updatedSchedule = {
+      ...editFields,
+      hours: parseInt(editFields.hours, 10),
+    };
+    handleUpdateSchedule(id, updatedSchedule);
+    setEditRowId(null);
+    setEditFields({ label: "", day: "", hours: "" });
   };
 
-  const handleOpenDialog = (args: { id?: number; licensePlate?: string }) => {
-    if (args.id) {
-      setDialogOpen(true);
-      setScheduleToDelete(args.id);
-    }
+  const handleOpenDialog = (id: number) => {
+    setDialogOpen(true);
+    setScheduleToDelete(id);
   };
 
   const handleCloseDialog = () => {
