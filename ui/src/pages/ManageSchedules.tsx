@@ -163,7 +163,7 @@ const ManageSchedules: React.FC = () => {
               exportToExcel,
               exportToPDF,
               filteredSchedules,
-              `empleados-${exportFileFormattedDate(new Date())}`
+              `horarios-${exportFileFormattedDate(new Date())}`
             )}
             defaultIndex={0}
             buttonIcon={<DownloadRoundedIcon />}
