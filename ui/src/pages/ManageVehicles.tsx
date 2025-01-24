@@ -44,7 +44,7 @@ const ManageVehicles: React.FC = () => {
   const {
     vehicles,
     handleAddVehicle,
-    getVehiclesGroupedByDate,
+    // getVehiclesGroupedByDate,
     handleUpdateVehicle,
     handleDeleteVehicle,
   } = useVehicles();
