@@ -31,7 +31,9 @@ export const exportToExcel = (
     Object.keys(row).forEach((key, index) => {
       let value = row[key];
 
-      if (typeof value === "string") {
+      if (key === "licensePlate" && typeof value === "string") {
+        value = `${value}`;
+      } else if (typeof value === "string") {
         const dateValue = new Date(value);
         value = !isNaN(dateValue.getTime())
           ? formatDate(dateValue, false)
@@ -69,7 +71,11 @@ export const exportToPDF = (
     : [Object.keys(data[0]).map(translateColumnHeaderToSpanish)];
 
   const tableData = data.map((row) => {
-    return Object.values(row).map((value) => {
+    return Object.entries(row).map(([key, value]) => {
+      if (key === "licensePlate" && typeof value === "string") {
+        return value;
+      }
+
       if (typeof value === "string") {
         const dateValue = new Date(value);
         value = !isNaN(dateValue.getTime())

@@ -21,11 +21,13 @@ import {
 import {
   translateColumnHeaderToSpanish,
   mapDayValues,
+  getDayOptionsSpanish,
 } from "../../../utils/stringUtils";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
-import { TABLE } from "../../../constants/constants";
+import InputMask from "react-input-mask";
+import { BRANDS, COLORS, TABLE } from "../../../constants/constants";
 
 type EditableTableProps<T> = {
   data: T[];
@@ -129,6 +131,128 @@ const EditableTable = <T,>({
     ? customPagination(data, page, rowsPerPage)
     : sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
+  const renderEditField = (column: keyof T, value: string) => {
+    const options = getOptionsForColumn(column);
+
+    if (options.length > 0) {
+      return (
+        <FormControl variant="outlined" fullWidth>
+          <InputLabel>{String(column)}</InputLabel>
+          <Select
+            label={String(column)}
+            value={editFields[String(column)] || ""}
+            onChange={(e) =>
+              setEditField(String(column), String(e.target.value))
+            }
+          >
+            {options.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      );
+    }
+
+    if (column === "licensePlate") {
+      return (
+        <InputMask
+          mask="***-****"
+          value={value}
+          onChange={(e) =>
+            setEditField(String(column), e.target.value.toUpperCase().trim())
+          }
+          maskChar=" "
+        >
+          {(inputProps) => <TextField {...inputProps} variant="outlined" />}
+        </InputMask>
+      );
+    }
+
+    if (column === "brand") {
+      return (
+        <FormControl variant="outlined" fullWidth>
+          <Select
+            value={editFields[String(column)] || ""}
+            onChange={(e) =>
+              setEditField(String(column), String(e.target.value))
+            }
+          >
+            {BRANDS.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      );
+    }
+
+    if (column === "color") {
+      return (
+        <FormControl variant="outlined" fullWidth>
+          <Select
+            value={editFields[String(column)] || ""}
+            onChange={(e) =>
+              setEditField(String(column), String(e.target.value))
+            }
+          >
+            {COLORS.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      );
+    }
+
+    if (column === "parkingLot") {
+      return (
+        <InputMask
+          mask="ATP*-****"
+          value={value.replace(/^ATP/, "")}
+          onChange={(e) => {
+            const formattedValue = `ATP${e.target.value}`;
+            setEditField(String(column), formattedValue);
+          }}
+          maskChar={null}
+        >
+          {(inputProps) => <TextField {...inputProps} variant="outlined" />}
+        </InputMask>
+      );
+    }
+
+    if (column === "day") {
+      return (
+        <FormControl variant="outlined" fullWidth>
+          <Select
+            value={editFields[String(column)] || ""}
+            onChange={(e) =>
+              setEditField(String(column), String(e.target.value))
+            }
+          >
+            {getDayOptionsSpanish().map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      );
+    }
+
+    return (
+      <TextField
+        fullWidth
+        value={value || ""}
+        onChange={(e) => setEditField(String(column), e.target.value)}
+        error={!validateField(String(column), value)}
+      />
+    );
+  };
+
   return (
     <Paper sx={{ width: "100%" }}>
       <TableContainer className="table-container">
@@ -164,47 +288,14 @@ const EditableTable = <T,>({
               <TableRow key={getRowId(row)}>
                 {columns.map((column) => (
                   <TableCell key={String(column)}>
-                    {editRowId === getRowId(row) ? (
-                      getOptionsForColumn(column).length > 0 ? (
-                        <FormControl variant="outlined" fullWidth>
-                          <InputLabel>{String(column)}</InputLabel>
-                          <Select
-                            label={String(column)}
-                            value={editFields[String(column)] || ""}
-                            onChange={(e) =>
-                              setEditField(
-                                String(column),
-                                String(e.target.value)
-                              )
-                            }
-                          >
-                            {getOptionsForColumn(column).map((option) => (
-                              <MenuItem key={option.value} value={option.value}>
-                                {option.label}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-                      ) : (
-                        <TextField
-                          fullWidth
-                          value={editFields[String(column)] || ""}
-                          onChange={(e) =>
-                            setEditField(String(column), e.target.value)
-                          }
-                          error={
-                            !validateField(
-                              String(column),
-                              editFields[String(column)]
-                            )
-                          }
-                        />
-                      )
-                    ) : column === "day" ? (
-                      mapDayValues(row[column] as string)
-                    ) : (
-                      renderColumnValue(column, row[column])
-                    )}
+                    {editRowId === getRowId(row)
+                      ? renderEditField(
+                          column,
+                          editFields[String(column)] || ""
+                        )
+                      : column === "day"
+                      ? mapDayValues(row[column] as string)
+                      : renderColumnValue(column, row[column])}
                   </TableCell>
                 ))}
                 <TableCell>

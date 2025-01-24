@@ -35,11 +35,16 @@ import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 import EditableTable from "../components/Table/EditableTable/EditableTable";
 import InputMask from "react-input-mask";
 import { BRANDS, COLORS } from "../constants/constants";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { es } from "date-fns/locale";
 
 const ManageVehicles: React.FC = () => {
   const {
     vehicles,
     handleAddVehicle,
+    getVehiclesGroupedByDate,
     handleUpdateVehicle,
     handleDeleteVehicle,
   } = useVehicles();
@@ -66,6 +71,7 @@ const ManageVehicles: React.FC = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [isValid, setIsValid] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [selectedBrand, setSelectedBrand] = useState("");
   const [customBrand, setCustomBrand] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
@@ -79,7 +85,6 @@ const ManageVehicles: React.FC = () => {
         .toLowerCase()
         .includes(filter.toLowerCase())
     );
-
     setFilteredVehicles(filtered);
     setTotalCount(filtered.length);
   }, [vehicles, filter]);
@@ -124,6 +129,8 @@ const ManageVehicles: React.FC = () => {
       parkingLot: "",
       notes: "",
     });
+    setSelectedBrand("");
+    setSelectedColor("");
   };
 
   const handleEditClick = (vehicle: Vehicle) => {
@@ -168,6 +175,20 @@ const ManageVehicles: React.FC = () => {
       handleCloseDialog();
     }
   };
+
+  const handleDateChange = (newDate: Date | null) => {
+    setSelectedDate(newDate);
+  };
+
+  // const handleDateFilter = async () => {
+  //   if (selectedDate) {
+  //     await getVehiclesGroupedByDate(
+  //       selectedDate.toDateString(),
+  //       page + 1,
+  //       rowsPerPage
+  //     );
+  //   }
+  // };
 
   const handleBrandChange = (event: SelectChangeEvent<string>) => {
     const value = event.target.value;
@@ -243,13 +264,13 @@ const ManageVehicles: React.FC = () => {
             onChange={(e) => setFilter(e.target.value)}
           />
         </Grid>
-        <Grid item>
+        <Grid item xs={12} sm={6} md={8}>
           <Box display="flex" alignItems="center">
             <InputMask
               mask="***-****"
               value={addFields.licensePlate}
               onChange={(e) => {
-                const formattedValue = e.target.value.toUpperCase();
+                const formattedValue = e.target.value.toUpperCase().trim();
                 setAddFields({ ...addFields, licensePlate: formattedValue });
               }}
               maskChar=" "
@@ -369,6 +390,36 @@ const ManageVehicles: React.FC = () => {
             </Tooltip>
           </Box>
         </Grid>
+        {filteredVehicles.length > 0 && (
+          <Grid item>
+            <Box
+              display="flex"
+              alignItems="center"
+              flexWrap="wrap"
+              justifyContent="flex-end"
+            >
+              <LocalizationProvider
+                dateAdapter={AdapterDateFns}
+                adapterLocale={es}
+                localeText={{
+                  okButtonLabel: "Aceptar",
+                  cancelButtonLabel: "Cancelar",
+                  todayButtonLabel: "Hoy",
+                  year: "Año #{year}",
+                  previousMonth: "Mes anterior",
+                  nextMonth: "Mes siguiente",
+                }}
+              >
+                <DatePicker
+                  label="Seleccionar fecha"
+                  value={selectedDate}
+                  sx={{ width: { xs: "100%", sm: "180px", md: "300px" } }}
+                  onChange={handleDateChange}
+                />
+              </LocalizationProvider>
+            </Box>
+          </Grid>
+        )}
       </Grid>
       <br />
       {filteredVehicles.length > 0 ? (
