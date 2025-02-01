@@ -132,6 +132,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
 
       return {
         employeeId: employee.id,
+        weekNumber,
         totalHours,
       };
     });
@@ -150,6 +151,7 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
 
       return {
         employeeId: employee.id,
+        biweekNumber,
         totalHours,
       };
     });
@@ -166,10 +168,57 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
 
       return {
         employeeId: employee.id,
+        month,
         totalHours,
       };
     });
   }, [filteredEmployees, month, year, monthlySummaries]);
+
+  const multipleWeeksOutput = (employee: Employee): string => {
+    const weeks = getInvolvedPeriods(currentWeek).weekNumbers;
+    return weeks
+      .map(
+        (week) =>
+          `${
+            getTotalWeekly.find(
+              (emp) =>
+                emp.employeeId === employee.id &&
+                emp.weekNumber === week.weekNumber
+            )?.totalHours || 0
+          }`
+      )
+      .join(" / ");
+  };
+
+  const multipleBiweeksOutput = (employee: Employee): string => {
+    const biweeks = getInvolvedPeriods(currentWeek).biweekNumbers;
+    return biweeks
+      .map(
+        (biweek) =>
+          `${
+            getTotalBiweekly.find(
+              (emp) =>
+                emp.employeeId === employee.id && emp.biweekNumber === biweek
+            )?.totalHours || 0
+          }`
+      )
+      .join(" / ");
+  };
+
+  const multipleMonthsOutput = (employee: Employee): string => {
+    const months = getInvolvedPeriods(currentWeek).months;
+    return months
+      .map(
+        (month) =>
+          `${
+            getTotalMonthly.find(
+              (emp) =>
+                emp.employeeId === employee.id && emp.month === month
+            )?.totalHours || 0
+          }`
+      )
+      .join(" / ");
+  };
 
   const getTotalOvertime = useMemo(() => {
     return filteredEmployees.map((employee) => {
@@ -532,13 +581,19 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                   >
                     <strong>
                       {selectedPeriod === "weekly"
-                        ? getTotalWeekly.find(
-                            (emp) => emp.employeeId === employee.id
-                          )?.totalHours || 0
+                        ? hasMultipleYears(currentWeek)
+                          ? multipleWeeksOutput(employee)
+                          : getTotalWeekly.find(
+                              (emp) => emp.employeeId === employee.id
+                            )?.totalHours || 0
                         : selectedPeriod === "biweekly"
-                        ? getTotalBiweekly.find(
-                            (emp) => emp.employeeId === employee.id
-                          )?.totalHours || 0
+                        ? hasMultipleBiweeks(currentWeek)
+                          ? multipleBiweeksOutput(employee)
+                          : getTotalBiweekly.find(
+                              (emp) => emp.employeeId === employee.id
+                            )?.totalHours || 0
+                        : hasMultipleMonths(currentWeek)
+                        ? multipleMonthsOutput(employee)
                         : getTotalMonthly.find(
                             (emp) => emp.employeeId === employee.id
                           )?.totalHours || 0}
