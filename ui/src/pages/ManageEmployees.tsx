@@ -152,19 +152,33 @@ const ManageEmployees: React.FC = () => {
         justifyContent="space-between"
         alignItems="center"
       >
-        <Grid item>
+        <Grid item xs={12}>
           <SearchBar
             placeholder="Buscar Empleado"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
+            sx={{
+              maxWidth: "100%",
+            }}
+            fullWidth
           />
         </Grid>
-        <Grid item>
-          <Box display="flex" alignItems="center">
+        <Grid item xs={12}>
+          <Box
+            display="flex"
+            flexDirection={{ xs: "column", sm: "row" }}
+            alignItems="center"
+            justifyContent="flex-end"
+            gap={2}
+          >
             <TextField
               label="Nombre"
               variant="outlined"
-              sx={{ mr: 2 }}
+              sx={{
+                mr: { xs: 0, sm: 2 },
+                width: { xs: "100%", sm: "auto" },
+                height: 56,
+              }}
               value={addFields.firstName}
               onChange={(e) =>
                 setAddFields({ ...addFields, firstName: e.target.value })
@@ -173,7 +187,11 @@ const ManageEmployees: React.FC = () => {
             <TextField
               label="Apellido"
               variant="outlined"
-              sx={{ mr: 2 }}
+              sx={{
+                mr: { xs: 0, sm: 2 },
+                width: { xs: "100%", sm: "auto" },
+                height: 56,
+              }}
               value={addFields.lastName}
               onChange={(e) =>
                 setAddFields({ ...addFields, lastName: e.target.value })
@@ -184,7 +202,7 @@ const ManageEmployees: React.FC = () => {
                 <Button
                   variant="contained"
                   color="primary"
-                  sx={{ height: "56px" }}
+                  sx={{ width: { xs: "100%", sm: "auto" }, height: 56 }}
                   onClick={handleAdd}
                   disabled={!isValid}
                 >

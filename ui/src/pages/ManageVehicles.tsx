@@ -35,6 +35,9 @@ import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 import EditableTable from "../components/Table/EditableTable/EditableTable";
 import InputMask from "react-input-mask";
 import { BRANDS, COLORS, PAGE_TITLE } from "../constants/constants";
+import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
+import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
+import CalendarTodayRoundedIcon from "@mui/icons-material/CalendarTodayRounded";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
@@ -181,16 +184,6 @@ const ManageVehicles: React.FC = () => {
     setSelectedDate(newDate);
   };
 
-  // const handleDateFilter = async () => {
-  //   if (selectedDate) {
-  //     await getVehiclesGroupedByDate(
-  //       selectedDate.toDateString(),
-  //       page + 1,
-  //       rowsPerPage
-  //     );
-  //   }
-  // };
-
   const handleBrandChange = (event: SelectChangeEvent<string>) => {
     const value = event.target.value;
     setSelectedBrand(value);
@@ -223,8 +216,24 @@ const ManageVehicles: React.FC = () => {
     setAddFields({ ...addFields, color: event.target.value });
   };
 
+  const handleNextDate = () => {
+    console.log("Día Siguiente");
+  };
+
+  const handlePreviousDate = () => {
+    console.log("Día Anterior");
+  };
+
+  const handleCurrentDate = () => {
+    console.log("Día Actual");
+  };
+
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const currentDateIsDisabled = selectedDate
+    ? selectedDate.getTime() === new Date().getTime()
+    : false;
 
   return (
     <Box>
@@ -258,147 +267,72 @@ const ManageVehicles: React.FC = () => {
         justifyContent="space-between"
         alignItems="center"
       >
-        <Grid item>
+        <Grid item xs={12}>
           <SearchBar
             placeholder="Buscar Vehículo"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
+            sx={{
+              maxWidth: "100%",
+            }}
+            fullWidth
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={8}>
-          <Box display="flex" alignItems="center">
-            <InputMask
-              mask="***-****"
-              value={addFields.licensePlate}
-              onChange={(e) => {
-                const formattedValue = e.target.value.toUpperCase().trim();
-                setAddFields({ ...addFields, licensePlate: formattedValue });
-              }}
-              maskChar=" "
-              alwaysShowMask={false}
-            >
-              {(inputProps) => (
-                <TextField
-                  {...inputProps}
-                  label="Placa"
-                  variant="outlined"
-                  sx={{ mr: 2 }}
-                  InputProps={{
-                    style: { textTransform: "uppercase" },
-                    inputRef: inputRef,
-                  }}
-                />
-              )}
-            </InputMask>
-            {selectedColor === "Otro" ? (
-              <TextField
-                label="Modelo"
-                variant="outlined"
-                sx={{ mr: 2 }}
-                value={customBrand}
-                onChange={handleCustomBrandChange}
-              />
-            ) : (
-              <FormControl variant="outlined" sx={{ mr: 2, width: 200 }}>
-                <InputLabel>Marca</InputLabel>
-                <Select
-                  label="Marca"
-                  sx={{ height: 56 }}
-                  value={selectedBrand}
-                  onChange={handleBrandChange}
-                >
-                  {BRANDS.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            )}
-            {selectedColor === "Otro" ? (
-              <TextField
-                label="Color"
-                variant="outlined"
-                sx={{ mr: 2 }}
-                value={customColor}
-                onChange={handleCustomColorChange}
-              />
-            ) : (
-              <FormControl variant="outlined" sx={{ mr: 2, width: 200 }}>
-                <InputLabel>Color</InputLabel>
-                <Select
-                  label="Color"
-                  sx={{ height: 56 }}
-                  value={selectedColor}
-                  onChange={handleColorChange}
-                >
-                  {COLORS.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            )}
-            <InputMask
-              mask="9-99999"
-              value={addFields.parkingLot.replace(/^ATP/, "")}
-              onChange={(e) => {
-                const formattedValue = `ATP${e.target.value}`;
-                setAddFields({ ...addFields, parkingLot: formattedValue });
-              }}
-              maskChar={null}
-              alwaysShowMask={false}
-            >
-              {(inputProps) => (
-                <TextField
-                  {...inputProps}
-                  label="Espacio"
-                  variant="outlined"
-                  sx={{ mr: 2 }}
-                  InputProps={{
-                    startAdornment: addFields.parkingLot ? (
-                      <span style={{ marginRight: "8px" }}>ATP</span>
-                    ) : null,
-                    style: { textTransform: "uppercase" },
-                    inputRef: inputRef,
-                  }}
-                />
-              )}
-            </InputMask>
-            <TextField
-              label="Observaciones"
-              variant="outlined"
-              sx={{ mr: 2 }}
-              fullWidth
-              value={addFields.notes}
-              onChange={(e) =>
-                setAddFields({ ...addFields, notes: e.target.value })
-              }
-            />
-            <Tooltip title="Agregar Vehículo" arrow>
-              <span>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  sx={{ height: "56px" }}
-                  onClick={handleAdd}
-                  disabled={!isValid}
-                >
-                  <DirectionsCarIcon />
-                </Button>
-              </span>
-            </Tooltip>
-          </Box>
-        </Grid>
         {filteredVehicles.length > 0 && (
-          <Grid item>
+          <Grid item xs={12}>
             <Box
               display="flex"
-              alignItems="center"
-              flexWrap="wrap"
+              flexDirection={{ xs: "column", sm: "column", md: "row" }}
+              alignItems="flex-start"
               justifyContent="flex-end"
+              gap={2}
             >
+              <Box
+                display="flex"
+                flexDirection={{ xs: "row", sm: "row", md: "row" }}
+                alignItems="center"
+                justifyContent="flex-end"
+                gap={2}
+                width="100%"
+              >
+                <Tooltip title="Día Anterior" arrow>
+                  <Button
+                    variant="contained"
+                    sx={{
+                      height: "56px",
+                      width: { xs: "auto", sm: "auto", md: "auto" },
+                    }}
+                    onClick={handlePreviousDate}
+                  >
+                    <ArrowBackIosNewRoundedIcon />
+                  </Button>
+                </Tooltip>
+                <Tooltip title="Día Siguiente" arrow>
+                  <Button
+                    variant="contained"
+                    sx={{
+                      height: "56px",
+                      width: { xs: "auto", sm: "auto", md: "auto" },
+                    }}
+                    onClick={handleNextDate}
+                  >
+                    <ArrowForwardIosRoundedIcon />
+                  </Button>
+                </Tooltip>
+                <Tooltip title="Día Actual" arrow>
+                  <Button
+                    variant="contained"
+                    sx={{
+                      height: "56px",
+                      width: { xs: "auto", sm: "auto", md: "auto" },
+                    }}
+                    disabled={currentDateIsDisabled}
+                    onClick={handleCurrentDate}
+                  >
+                    <CalendarTodayRoundedIcon />
+                  </Button>
+                </Tooltip>
+              </Box>
               <LocalizationProvider
                 dateAdapter={AdapterDateFns}
                 adapterLocale={es}
@@ -414,7 +348,10 @@ const ManageVehicles: React.FC = () => {
                 <DatePicker
                   label="Seleccionar fecha"
                   value={selectedDate}
-                  sx={{ width: { xs: "100%", sm: "180px", md: "300px" } }}
+                  sx={{
+                    width: { xs: "100%", sm: "100%", md: "300px" },
+                    mt: { xs: 2, sm: 2, md: 0 },
+                  }}
                   onChange={handleDateChange}
                 />
               </LocalizationProvider>
@@ -422,6 +359,144 @@ const ManageVehicles: React.FC = () => {
           </Grid>
         )}
       </Grid>
+      <Grid item xs={12}>
+        <Box display="flex" flexDirection="column" width="100%">
+          <Grid container spacing={1}>
+            <Grid item xs={12} sm={6} md={2}>
+              <InputMask
+                mask="***-****"
+                value={addFields.licensePlate}
+                onChange={(e) => {
+                  const formattedValue = e.target.value.toUpperCase().trim();
+                  setAddFields({ ...addFields, licensePlate: formattedValue });
+                }}
+                maskChar=" "
+                alwaysShowMask={false}
+              >
+                {(inputProps) => (
+                  <TextField
+                    {...inputProps}
+                    label="Placa"
+                    variant="outlined"
+                    fullWidth
+                    InputProps={{
+                      style: { textTransform: "uppercase" },
+                      inputRef: inputRef,
+                    }}
+                  />
+                )}
+              </InputMask>
+            </Grid>
+            <Grid item xs={12} sm={6} md={2}>
+              {selectedColor === "Otro" ? (
+                <TextField
+                  label="Marca"
+                  variant="outlined"
+                  fullWidth
+                  value={customBrand}
+                  onChange={handleCustomBrandChange}
+                />
+              ) : (
+                <FormControl variant="outlined" fullWidth>
+                  <InputLabel>Marca</InputLabel>
+                  <Select
+                    label="Marca"
+                    value={selectedBrand}
+                    onChange={handleBrandChange}
+                  >
+                    {BRANDS.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              )}
+            </Grid>
+            <Grid item xs={12} sm={6} md={2}>
+              {selectedColor === "Otro" ? (
+                <TextField
+                  label="Color"
+                  variant="outlined"
+                  fullWidth
+                  value={customColor}
+                  onChange={handleCustomColorChange}
+                />
+              ) : (
+                <FormControl variant="outlined" fullWidth>
+                  <InputLabel>Color</InputLabel>
+                  <Select
+                    label="Color"
+                    value={selectedColor}
+                    onChange={handleColorChange}
+                  >
+                    {COLORS.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              )}
+            </Grid>
+            <Grid item xs={12} sm={6} md={1}>
+              <InputMask
+                mask="9-99999"
+                value={addFields.parkingLot.replace(/^ATP/, "")}
+                onChange={(e) => {
+                  const formattedValue = `ATP${e.target.value}`;
+                  setAddFields({ ...addFields, parkingLot: formattedValue });
+                }}
+                maskChar={null}
+                alwaysShowMask={false}
+              >
+                {(inputProps) => (
+                  <TextField
+                    {...inputProps}
+                    label="Espacio"
+                    variant="outlined"
+                    fullWidth
+                    InputProps={{
+                      startAdornment: addFields.parkingLot ? (
+                        <span style={{ marginRight: "8px" }}>ATP</span>
+                      ) : null,
+                      style: { textTransform: "uppercase" },
+                      inputRef: inputRef,
+                    }}
+                  />
+                )}
+              </InputMask>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <TextField
+                label="Observaciones"
+                variant="outlined"
+                fullWidth
+                value={addFields.notes}
+                onChange={(e) =>
+                  setAddFields({ ...addFields, notes: e.target.value })
+                }
+              />
+            </Grid>
+            <Grid item xs={12} sm="auto" md={1}>
+              <Tooltip title="Agregar Vehículo" arrow>
+                <span>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    sx={{ width: { xs: "100%", sm: "auto" }, height: 56 }}
+                    onClick={handleAdd}
+                    disabled={!isValid}
+                  >
+                    <DirectionsCarIcon />
+                  </Button>
+                </span>
+              </Tooltip>
+            </Grid>
+          </Grid>
+        </Box>
+      </Grid>
+
       <br />
       {filteredVehicles.length > 0 ? (
         <EditableTable<Vehicle>

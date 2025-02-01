@@ -114,7 +114,7 @@ const EditableTable = <T,>({
         order === "asc" ? a.localeCompare(b) : b.localeCompare(a)
       )
     : ["default"];
-
+  
   const sortedData = groupByField
     ? groupKeys.flatMap((key) => groupedData[key])
     : [...data].sort((a, b) => {
@@ -265,7 +265,7 @@ const EditableTable = <T,>({
                   align="center"
                   style={{ fontWeight: "bold" }}
                 >
-                  CreatedAt
+                  Fecha
                 </TableCell>
               </TableRow>
             )}

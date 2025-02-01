@@ -177,28 +177,50 @@ const ManageSchedules: React.FC = () => {
         justifyContent="space-between"
         alignItems="center"
       >
-        <Grid item>
+        <Grid item xs={12}>
           <SearchBar
             placeholder="Buscar Horario"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
+            sx={{
+              maxWidth: "100%",
+            }}
+            fullWidth
           />
         </Grid>
-        <Grid item>
-          <Box display="flex" alignItems="center">
+        <Grid item xs={12}>
+          <Box
+            display="flex"
+            flexDirection={{ xs: "column", sm: "row" }}
+            alignItems="center"
+            justifyContent="flex-end"
+            gap={2}
+          >
             <TextField
               label="Lugar"
               variant="outlined"
-              sx={{ mr: 2 }}
+              sx={{
+                mr: { xs: 0, sm: 2 },
+                width: { xs: "100%", sm: "auto" },
+                height: 56,
+              }}
               value={addFields.label}
               onChange={(e) =>
                 setAddFields({ ...addFields, label: e.target.value })
               }
             />
-            <FormControl variant="outlined" sx={{ mr: 2, width: 200 }}>
+            <FormControl
+              variant="outlined"
+              sx={{
+                mr: { xs: 0, sm: 2 },
+                width: { xs: "100%", sm: 200 },
+                height: 56,
+              }}
+            >
               <InputLabel>Día</InputLabel>
               <Select
                 label="Día"
+                sx={{ mr: { xs: 0, sm: 2 }, height: 56 }}
                 value={addFields.day}
                 onChange={(e) =>
                   setAddFields({ ...addFields, day: e.target.value })
@@ -215,7 +237,11 @@ const ManageSchedules: React.FC = () => {
               label="Horas"
               variant="outlined"
               type="number"
-              sx={{ mr: 2 }}
+              sx={{
+                mr: { xs: 0, sm: 2 },
+                width: { xs: "100%", sm: "auto" },
+                height: 56,
+              }}
               value={addFields.hours}
               onChange={(e) =>
                 setAddFields({ ...addFields, hours: e.target.value })

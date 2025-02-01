@@ -210,59 +210,83 @@ const ManageRoles: React.FC = () => {
         justifyContent="space-between"
         alignItems="center"
       >
-        <Grid item xs={12} sm={6} md={4}>
+        <Grid item xs={12}>
           <SearchBar
             placeholder="Buscar Empleado"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
+            sx={{
+              maxWidth: "100%",
+            }}
             fullWidth
           />
         </Grid>
         {showResults && (
-          <Grid item xs={12} sm={6} md={8}>
+          <Grid item xs={12}>
             <Box
               display="flex"
-              alignItems="center"
-              flexWrap="wrap"
+              flexDirection={{ xs: "column", sm: "column", md: "row" }}
+              alignItems="flex-start"
               justifyContent="flex-end"
+              gap={2}
             >
-              <Tooltip title="Semana Anterior" arrow>
-                <Button
-                  variant="contained"
-                  sx={{ mr: 2, height: "56px" }}
-                  onClick={handlePreviousWeek}
-                >
-                  <ArrowBackIosNewRoundedIcon />
-                </Button>
-              </Tooltip>
-              <Tooltip title="Semana Siguiente" arrow>
-                <span>
+              <Box
+                display="flex"
+                flexDirection={{ xs: "row", sm: "row", md: "row" }}
+                alignItems="center"
+                justifyContent="flex-end"
+                gap={2}
+                width="100%"
+              >
+                <Tooltip title="Semana Anterior" arrow>
                   <Button
                     variant="contained"
-                    sx={{ mr: 2, height: "56px" }}
-                    disabled={
-                      !isValidDateForSelect(
-                        new Date(getCurrentWeekDates(weekOffset + 1)[0].isoDate)
-                      )
-                    }
-                    onClick={handleNextWeek}
+                    sx={{
+                      height: "56px",
+                      width: { xs: "auto", sm: "auto", md: "auto" },
+                    }}
+                    onClick={handlePreviousWeek}
                   >
-                    <ArrowForwardIosRoundedIcon />
+                    <ArrowBackIosNewRoundedIcon />
                   </Button>
-                </span>
-              </Tooltip>
-              <Tooltip title="Semana Actual" arrow>
-                <span>
-                  <Button
-                    variant="contained"
-                    sx={{ mr: 2, height: "56px" }}
-                    disabled={weekOffset === 0}
-                    onClick={handleCurrentWeek}
-                  >
-                    <CalendarTodayRoundedIcon />
-                  </Button>
-                </span>
-              </Tooltip>
+                </Tooltip>
+                <Tooltip title="Semana Siguiente" arrow>
+                  <span>
+                    <Button
+                      variant="contained"
+                      sx={{
+                        height: "56px",
+                        width: { xs: "auto", sm: "auto", md: "auto" },
+                      }}
+                      disabled={
+                        !isValidDateForSelect(
+                          new Date(
+                            getCurrentWeekDates(weekOffset + 1)[0].isoDate
+                          )
+                        )
+                      }
+                      onClick={handleNextWeek}
+                    >
+                      <ArrowForwardIosRoundedIcon />
+                    </Button>
+                  </span>
+                </Tooltip>
+                <Tooltip title="Semana Actual" arrow>
+                  <span>
+                    <Button
+                      variant="contained"
+                      sx={{
+                        height: "56px",
+                        width: { xs: "auto", sm: "auto", md: "auto" },
+                      }}
+                      disabled={weekOffset === 0}
+                      onClick={handleCurrentWeek}
+                    >
+                      <CalendarTodayRoundedIcon />
+                    </Button>
+                  </span>
+                </Tooltip>
+              </Box>
               <LocalizationProvider
                 dateAdapter={AdapterDateFns}
                 adapterLocale={es}
@@ -278,7 +302,10 @@ const ManageRoles: React.FC = () => {
                 <DatePicker
                   label="Seleccionar fecha"
                   value={firstDayOfWeek}
-                  sx={{ width: { xs: "100%", sm: "180px", md: "300px" } }}
+                  sx={{
+                    width: { xs: "100%", sm: "100%", md: "300px" },
+                    mt: { xs: 2, sm: 2, md: 0 },
+                  }}
                   onChange={handleDateChange}
                 />
               </LocalizationProvider>
@@ -287,7 +314,6 @@ const ManageRoles: React.FC = () => {
         )}
       </Grid>
       <br />
-
       {showResults ? (
         <DropdownTable
           filteredEmployees={filteredEmployees}
