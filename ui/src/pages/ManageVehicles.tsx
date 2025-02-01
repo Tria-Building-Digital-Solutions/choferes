@@ -120,6 +120,7 @@ const ManageVehicles: React.FC = () => {
       color: addFields.color,
       parkingLot: addFields.parkingLot,
       notes: addFields.notes,
+      createdAt: selectedDate,
     };
     handleAddVehicle(newVehicle);
     setAddFields({
@@ -299,9 +300,9 @@ const ManageVehicles: React.FC = () => {
               />
             ) : (
               <FormControl variant="outlined" sx={{ mr: 2, width: 200 }}>
-                <InputLabel>Modelo</InputLabel>
+                <InputLabel>Marca</InputLabel>
                 <Select
-                  label="Modelo"
+                  label="Marca"
                   sx={{ height: 56 }}
                   value={selectedBrand}
                   onChange={handleBrandChange}
@@ -426,7 +427,7 @@ const ManageVehicles: React.FC = () => {
         <EditableTable<Vehicle>
           data={filteredVehicles}
           columns={["licensePlate", "brand", "color", "parkingLot", "notes"]}
-          //groupByField="createdAt"
+          groupByField="createdAt"
           editRowId={editRowId}
           editFields={editFields}
           setEditField={(field, value) =>

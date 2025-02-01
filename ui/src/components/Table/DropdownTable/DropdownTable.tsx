@@ -39,6 +39,7 @@ import {
   getInvolvedPeriods,
   hasMultipleBiweeks,
   hasMultipleMonths,
+  hasMultipleYears,
   isValidDateForSelect,
 } from "../../../utils/dateUtils";
 import { getBackgroundColor } from "../../../utils/tableUtils";
@@ -219,7 +220,13 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
             <TableRow>
               <TableCell align="center" colSpan={9}>
                 {selectedPeriod === "weekly" ? (
-                  <Typography variant="body2">{`Semana ${weekNumber}`}</Typography>
+                  <div>
+                    {hasMultipleYears(currentWeek) ? (
+                      <Typography variant="body2">{`Semanas ${multiplePeriods.weekNumbers[1].weekNumber} / ${multiplePeriods.weekNumbers[0].weekNumber}`}</Typography>
+                    ) : (
+                      <Typography variant="body2">{`Semana ${weekNumber}`}</Typography>
+                    )}
+                  </div>
                 ) : selectedPeriod === "biweekly" ? (
                   <div>
                     {hasMultipleBiweeks(currentWeek) ? (
@@ -571,8 +578,9 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
           <div>
             {selectedPeriod === "weekly" ? (
               <Typography variant="body2" sx={{ ml: 2 }}>
-                Semana del {formatDateWithoutYear(new Date(currentWeek[0]?.date))}{" "}
-                al {formatDate(new Date(currentWeek[6]?.date), false)}
+                Semana del{" "}
+                {formatDateWithoutYear(new Date(currentWeek[0]?.date))} al{" "}
+                {formatDate(new Date(currentWeek[6]?.date), false)}
               </Typography>
             ) : selectedPeriod === "biweekly" ? (
               <div>

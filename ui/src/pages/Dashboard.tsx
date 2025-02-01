@@ -57,14 +57,14 @@ const Dashboard: React.FC = () => {
   const { biweeklySummaries, fetchBiweeklySummaries } = useBiweeklySummaries();
   const { monthlySummaries, fetchMonthlySummaries } = useMonthlySummaries();
   const [weekOffset, setWeekOffset] = useState(0);
-  const [weekNumber, setWeekNumber] = useState<number>(0);
-  const [biweekNumber, setBiweekNumber] = useState<number>(0);
-  const [month, setMonth] = useState<number>(0);
-  const [year, setYear] = useState<number>(0);
+  const [currentWeekNumber, setCurrentWeekNumber] = useState<number>(0);
+  const [currentBiweekNumber, setCurrentBiweekNumber] = useState<number>(0);
+  const [currentMonth, setCurrentMonth] = useState<number>(0);
+  const [currentYear, setCurrentYear] = useState<number>(0);
   const [period, setPeriod] = useState<"weekly" | "biweekly" | "monthly">(
     "weekly"
   );
-  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
+  const [firstDayOfWeek, setFirstDayOfWeek] = useState<Date | null>(new Date());
   const [filter, setFilter] = useState("");
   const [showResults, setShowResults] = useState(true);
 
@@ -72,26 +72,26 @@ const Dashboard: React.FC = () => {
     const currentWeek = getCurrentWeekDates(weekOffset);
     if (currentWeek.length > 0) {
       const firstDayOfWeek = new Date(currentWeek[0].date);
-      setWeekNumber(getWeekNumber(firstDayOfWeek));
-      setBiweekNumber(getBiweekNumber(firstDayOfWeek));
-      setMonth(getMonthNumber(firstDayOfWeek));
-      setYear(new Date().getFullYear());
+      setCurrentWeekNumber(getWeekNumber(firstDayOfWeek));
+      setCurrentBiweekNumber(getBiweekNumber(firstDayOfWeek));
+      setCurrentMonth(getMonthNumber(firstDayOfWeek));
+      setCurrentYear(new Date().getFullYear());
     }
   }, [weekOffset]);
 
   const handleNextWeek = () => {
     setWeekOffset(weekOffset + 1);
-    setSelectedDate(getFirstDayOfWeek(weekOffset + 1));
+    setFirstDayOfWeek(getFirstDayOfWeek(weekOffset + 1));
   };
 
   const handlePreviousWeek = () => {
     setWeekOffset(weekOffset - 1);
-    setSelectedDate(getFirstDayOfWeek(weekOffset - 1));
+    setFirstDayOfWeek(getFirstDayOfWeek(weekOffset - 1));
   };
 
   const handleCurrentWeek = () => {
     setWeekOffset(0);
-    setSelectedDate(new Date());
+    setFirstDayOfWeek(new Date());
   };
 
   const filteredEmployees = employees.filter((employee) =>
@@ -105,7 +105,7 @@ const Dashboard: React.FC = () => {
   }, [filter, employees, filteredEmployees.length]);
 
   const handleDateChange = (newDate: Date | null) => {
-    setSelectedDate(newDate);
+    setFirstDayOfWeek(newDate);
     if (newDate) {
       const today = new Date();
       const weekOptions: { weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 } = {
@@ -141,10 +141,10 @@ const Dashboard: React.FC = () => {
       monthlySummaries,
       date,
       weekOffset,
-      weekNumber,
-      biweekNumber,
-      month,
-      year,
+      getWeekNumber(date),
+      getBiweekNumber(date),
+      getMonthNumber(date),
+      date.getFullYear(),
       selectedSchedule,
       handleAddHours,
       handleUpdateHours,
@@ -165,10 +165,10 @@ const Dashboard: React.FC = () => {
     weeklySummaries,
     biweeklySummaries,
     monthlySummaries,
-    weekNumber,
-    biweekNumber,
-    month,
-    year,
+    currentWeekNumber,
+    currentBiweekNumber,
+    currentMonth,
+    currentYear,
     getCurrentWeekDates(weekOffset),
     period
   );
@@ -269,14 +269,14 @@ const Dashboard: React.FC = () => {
                   okButtonLabel: "Aceptar",
                   cancelButtonLabel: "Cancelar",
                   todayButtonLabel: "Hoy",
-                  year: "Año #{year}",
+                  year: "Año #{currentYear}",
                   previousMonth: "Mes anterior",
                   nextMonth: "Mes siguiente",
                 }}
               >
                 <DatePicker
                   label="Seleccionar fecha"
-                  value={selectedDate}
+                  value={firstDayOfWeek}
                   sx={{ width: { xs: "100%", sm: "180px", md: "300px" } }}
                   onChange={handleDateChange}
                 />
@@ -293,10 +293,10 @@ const Dashboard: React.FC = () => {
           schedules={schedules}
           hoursWorked={hoursWorked}
           weekOffset={weekOffset}
-          weekNumber={weekNumber}
-          biweekNumber={biweekNumber}
-          month={month}
-          year={year}
+          weekNumber={currentWeekNumber}
+          biweekNumber={currentBiweekNumber}
+          month={currentMonth}
+          year={currentYear}
           setPeriod={setPeriod}
           handleChange={handleChange}
           weeklySummaries={weeklySummaries}

@@ -258,14 +258,14 @@ const EditableTable = <T,>({
       <TableContainer className="table-container">
         <Table stickyHeader aria-label="sticky table">
           <TableHead>
-            {customPagination && (
+            {groupByField && (
               <TableRow>
                 <TableCell
                   colSpan={columns.length + 1}
                   align="center"
-                  style={{ backgroundColor: "#f4f4f4", fontWeight: "bold" }}
+                  style={{ fontWeight: "bold" }}
                 >
-                  Created At
+                  CreatedAt
                 </TableCell>
               </TableRow>
             )}
