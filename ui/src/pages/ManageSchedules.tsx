@@ -33,6 +33,7 @@ import PostAddRoundedIcon from "@mui/icons-material/PostAddRounded";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileExcel, faFilePdf } from "@fortawesome/free-solid-svg-icons";
+import { PAGE_TITLE } from "../constants/constants";
 
 const ManageSchedules: React.FC = () => {
   const {
@@ -153,7 +154,7 @@ const ManageSchedules: React.FC = () => {
         sx={{ mb: 2 }}
       >
         <Typography variant={isSmallScreen ? "h4" : "h2"} sx={{ flexGrow: 1 }}>
-          Gestionar Horarios
+          {PAGE_TITLE.MANAGE_SCHEDULES}
         </Typography>
         {filteredSchedules.length > 0 && (
           <SplitButton

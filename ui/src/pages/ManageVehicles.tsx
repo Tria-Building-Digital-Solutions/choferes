@@ -34,7 +34,7 @@ import SearchBar from "../components/SearchBar/SearchBar";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 import EditableTable from "../components/Table/EditableTable/EditableTable";
 import InputMask from "react-input-mask";
-import { BRANDS, COLORS } from "../constants/constants";
+import { BRANDS, COLORS, PAGE_TITLE } from "../constants/constants";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
@@ -235,7 +235,7 @@ const ManageVehicles: React.FC = () => {
         sx={{ mb: 2 }}
       >
         <Typography variant={isSmallScreen ? "h4" : "h2"} sx={{ flexGrow: 1 }}>
-          Gestionar Vehículos
+          {PAGE_TITLE.MANAGE_VEHICLES}
         </Typography>
         {filteredVehicles.length > 0 && (
           <SplitButton

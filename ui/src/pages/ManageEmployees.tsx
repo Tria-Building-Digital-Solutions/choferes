@@ -28,6 +28,7 @@ import PersonAddAlt1RoundedIcon from "@mui/icons-material/PersonAddAlt1Rounded";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileExcel, faFilePdf } from "@fortawesome/free-solid-svg-icons";
+import { PAGE_TITLE } from "../constants/constants";
 
 const ManageEmployees: React.FC = () => {
   const {
@@ -128,7 +129,7 @@ const ManageEmployees: React.FC = () => {
         sx={{ mb: 2 }}
       >
         <Typography variant={isSmallScreen ? "h4" : "h2"} sx={{ flexGrow: 1 }}>
-          Gestionar Empleados
+          {PAGE_TITLE.MANAGE_EMPLOYEES}
         </Typography>
         {filteredEmployees.length > 0 && (
           <SplitButton

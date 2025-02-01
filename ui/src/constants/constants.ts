@@ -20,6 +20,13 @@ export const ROUTES = {
   MANAGE_SCHEDULES: "/schedules",
 };
 
+export const PAGE_TITLE = {
+  MANAGE_ROLES: "Gestionar Roles",
+  MANAGE_VEHICLES: "Gestionar Vehículos",
+  MANAGE_EMPLOYEES: "Gestionar Empleados",
+  MANAGE_SCHEDULES: "Gestionar Horarios",
+}
+
 export const STATE = {
   FREE: "Libre",
 };

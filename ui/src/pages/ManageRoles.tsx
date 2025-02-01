@@ -46,8 +46,9 @@ import { faFileExcel, faFilePdf } from "@fortawesome/free-solid-svg-icons";
 import { updateHoursAndSummaries } from "../utils/calculationsUtils";
 import { es } from "date-fns/locale";
 import { differenceInCalendarWeeks } from "date-fns";
+import { PAGE_TITLE } from "../constants/constants";
 
-const Dashboard: React.FC = () => {
+const ManageRoles: React.FC = () => {
   const { employees } = useEmployees();
   const { schedules } = useSchedules();
   const { hoursWorked, fetchHours, handleAddHours, handleUpdateHours } =
@@ -185,7 +186,7 @@ const Dashboard: React.FC = () => {
         sx={{ mb: 2 }}
       >
         <Typography variant={isSmallScreen ? "h4" : "h2"} sx={{ flexGrow: 1 }}>
-          Administrar Roles
+          {PAGE_TITLE.MANAGE_ROLES}
         </Typography>
         {showResults && (
           <SplitButton
@@ -312,4 +313,4 @@ const Dashboard: React.FC = () => {
   );
 };
 
-export default Dashboard;
+export default ManageRoles;
