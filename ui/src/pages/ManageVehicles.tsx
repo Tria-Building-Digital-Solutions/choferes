@@ -358,145 +358,136 @@ const ManageVehicles: React.FC = () => {
             </Box>
           </Grid>
         )}
-      </Grid>
-      <Grid item xs={12}>
-        <Box display="flex" flexDirection="column" width="100%">
-          <Grid container spacing={1}>
-            <Grid item xs={12} sm={6} md={2}>
-              <InputMask
-                mask="***-****"
-                value={addFields.licensePlate}
-                onChange={(e) => {
-                  const formattedValue = e.target.value.toUpperCase().trim();
-                  setAddFields({ ...addFields, licensePlate: formattedValue });
-                }}
-                maskChar=" "
-                alwaysShowMask={false}
-              >
-                {(inputProps) => (
-                  <TextField
-                    {...inputProps}
-                    label="Placa"
-                    variant="outlined"
-                    fullWidth
-                    InputProps={{
-                      style: { textTransform: "uppercase" },
-                      inputRef: inputRef,
-                    }}
-                  />
-                )}
-              </InputMask>
-            </Grid>
-            <Grid item xs={12} sm={6} md={2}>
-              {selectedColor === "Otro" ? (
+        <Grid item xs={12}>
+          <Box
+            display="flex"
+            flexDirection={{ xs: "column", sm: "row" }}
+            alignItems="center"
+            justifyContent="flex-end"
+            gap={2}
+          >
+            <InputMask
+              mask="***-****"
+              value={addFields.licensePlate}
+              onChange={(e) => {
+                const formattedValue = e.target.value.toUpperCase().trim();
+                setAddFields({ ...addFields, licensePlate: formattedValue });
+              }}
+              maskChar=" "
+              alwaysShowMask={false}
+            >
+              {(inputProps) => (
                 <TextField
-                  label="Marca"
+                  {...inputProps}
+                  label="Placa"
                   variant="outlined"
                   fullWidth
-                  value={customBrand}
-                  onChange={handleCustomBrandChange}
+                  InputProps={{
+                    style: { textTransform: "uppercase" },
+                    inputRef: inputRef,
+                  }}
                 />
-              ) : (
-                <FormControl variant="outlined" fullWidth>
-                  <InputLabel>Marca</InputLabel>
-                  <Select
-                    label="Marca"
-                    value={selectedBrand}
-                    onChange={handleBrandChange}
-                  >
-                    {BRANDS.map((option) => (
-                      <MenuItem key={option.value} value={option.value}>
-                        {option.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
               )}
-            </Grid>
-            <Grid item xs={12} sm={6} md={2}>
-              {selectedColor === "Otro" ? (
-                <TextField
-                  label="Color"
-                  variant="outlined"
-                  fullWidth
-                  value={customColor}
-                  onChange={handleCustomColorChange}
-                />
-              ) : (
-                <FormControl variant="outlined" fullWidth>
-                  <InputLabel>Color</InputLabel>
-                  <Select
-                    label="Color"
-                    value={selectedColor}
-                    onChange={handleColorChange}
-                  >
-                    {COLORS.map((option) => (
-                      <MenuItem key={option.value} value={option.value}>
-                        {option.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              )}
-            </Grid>
-            <Grid item xs={12} sm={6} md={1}>
-              <InputMask
-                mask="9-99999"
-                value={addFields.parkingLot.replace(/^ATP/, "")}
-                onChange={(e) => {
-                  const formattedValue = `ATP${e.target.value}`;
-                  setAddFields({ ...addFields, parkingLot: formattedValue });
-                }}
-                maskChar={null}
-                alwaysShowMask={false}
-              >
-                {(inputProps) => (
-                  <TextField
-                    {...inputProps}
-                    label="Espacio"
-                    variant="outlined"
-                    fullWidth
-                    InputProps={{
-                      startAdornment: addFields.parkingLot ? (
-                        <span style={{ marginRight: "8px" }}>ATP</span>
-                      ) : null,
-                      style: { textTransform: "uppercase" },
-                      inputRef: inputRef,
-                    }}
-                  />
-                )}
-              </InputMask>
-            </Grid>
-            <Grid item xs={12} md={4}>
+            </InputMask>
+            {selectedColor === "Otro" ? (
               <TextField
-                label="Observaciones"
+                label="Marca"
                 variant="outlined"
                 fullWidth
-                value={addFields.notes}
-                onChange={(e) =>
-                  setAddFields({ ...addFields, notes: e.target.value })
-                }
+                value={customBrand}
+                onChange={handleCustomBrandChange}
               />
-            </Grid>
-            <Grid item xs={12} sm="auto" md={1}>
-              <Tooltip title="Agregar Vehículo" arrow>
-                <span>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    sx={{ width: { xs: "100%", sm: "auto" }, height: 56 }}
-                    onClick={handleAdd}
-                    disabled={!isValid}
-                  >
-                    <DirectionsCarIcon />
-                  </Button>
-                </span>
-              </Tooltip>
-            </Grid>
-          </Grid>
-        </Box>
+            ) : (
+              <FormControl variant="outlined" fullWidth>
+                <InputLabel>Marca</InputLabel>
+                <Select
+                  label="Marca"
+                  value={selectedBrand}
+                  onChange={handleBrandChange}
+                >
+                  {BRANDS.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
+            {selectedColor === "Otro" ? (
+              <TextField
+                label="Color"
+                variant="outlined"
+                fullWidth
+                value={customColor}
+                onChange={handleCustomColorChange}
+              />
+            ) : (
+              <FormControl variant="outlined" fullWidth>
+                <InputLabel>Color</InputLabel>
+                <Select
+                  label="Color"
+                  value={selectedColor}
+                  onChange={handleColorChange}
+                >
+                  {COLORS.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
+            <InputMask
+              mask="9-99999"
+              value={addFields.parkingLot.replace(/^ATP/, "")}
+              onChange={(e) => {
+                const formattedValue = `ATP${e.target.value}`;
+                setAddFields({ ...addFields, parkingLot: formattedValue });
+              }}
+              maskChar={null}
+              alwaysShowMask={false}
+            >
+              {(inputProps) => (
+                <TextField
+                  {...inputProps}
+                  label="Espacio"
+                  variant="outlined"
+                  fullWidth
+                  InputProps={{
+                    startAdornment: addFields.parkingLot ? (
+                      <span style={{ marginRight: "8px" }}>ATP</span>
+                    ) : null,
+                    style: { textTransform: "uppercase" },
+                    inputRef: inputRef,
+                  }}
+                />
+              )}
+            </InputMask>
+            <TextField
+              label="Observaciones"
+              variant="outlined"
+              fullWidth
+              value={addFields.notes}
+              onChange={(e) =>
+                setAddFields({ ...addFields, notes: e.target.value })
+              }
+            />
+            <Tooltip title="Agregar Vehículo" arrow>
+              <span>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  sx={{ height: "56px" }}
+                  onClick={handleAdd}
+                  disabled={!isValid}
+                >
+                  <DirectionsCarIcon />
+                </Button>
+              </span>
+            </Tooltip>
+          </Box>
+        </Grid>
       </Grid>
-
       <br />
       {filteredVehicles.length > 0 ? (
         <EditableTable<Vehicle>
