@@ -198,17 +198,17 @@ const ManageEmployees: React.FC = () => {
               }
             />
             <Tooltip title="Agregar Empleado" arrow>
-              <span>
+              <Box sx={{ width: { xs: "100%", sm: "auto" } }}>
                 <Button
                   variant="contained"
                   color="primary"
-                  sx={{ width: { xs: "100%", sm: "auto" }, height: 56 }}
+                  sx={{ width: "100%", height: 56 }}
                   onClick={handleAdd}
                   disabled={!isValid}
                 >
                   <PersonAddAlt1RoundedIcon />
                 </Button>
-              </span>
+              </Box>
             </Tooltip>
           </Box>
         </Grid>

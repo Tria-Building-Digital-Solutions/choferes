@@ -473,17 +473,17 @@ const ManageVehicles: React.FC = () => {
               }
             />
             <Tooltip title="Agregar Vehículo" arrow>
-              <span>
+              <Box sx={{ width: { xs: "100%", sm: "auto" } }}>
                 <Button
                   variant="contained"
                   color="primary"
-                  sx={{ height: "56px" }}
+                  sx={{ width: "100%", height: 56 }}
                   onClick={handleAdd}
                   disabled={!isValid}
                 >
                   <DirectionsCarIcon />
                 </Button>
-              </span>
+              </Box>
             </Tooltip>
           </Box>
         </Grid>
