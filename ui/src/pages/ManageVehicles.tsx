@@ -83,11 +83,22 @@ const ManageVehicles: React.FC = () => {
 
   useEffect(() => {
     const allVehicles = Object.values(vehicles).flat();
-    const filtered = allVehicles.filter((vehicle) =>
-      `${vehicle.licensePlate} ${vehicle.brand} ${vehicle.color} ${vehicle.parkingLot} ${vehicle.notes}`
-        .toLowerCase()
-        .includes(filter.toLowerCase())
-    );
+    const cleanedFilter = filter.replace(/[\s-]/g, "").toLowerCase();
+    const filtered = allVehicles.filter((vehicle) => {
+      const cleanedLicensePlate = vehicle.licensePlate
+        .replace(/[\s-]/g, "")
+        .toLowerCase();
+      const cleanedParkingLot = vehicle.parkingLot
+        .replace(/[\s-]/g, "")
+        .toLowerCase();
+      const isLicensePlateMatch = cleanedLicensePlate.includes(cleanedFilter);
+      const isOtherFieldsMatch =
+        `${vehicle.brand} ${vehicle.color} ${cleanedParkingLot} ${vehicle.notes}`
+          .toLowerCase()
+          .includes(cleanedFilter);
+
+      return isLicensePlateMatch || isOtherFieldsMatch;
+    });
     setFilteredVehicles(filtered);
     setTotalCount(filtered.length);
   }, [vehicles, filter]);
