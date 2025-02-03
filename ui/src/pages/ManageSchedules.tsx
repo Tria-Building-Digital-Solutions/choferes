@@ -188,79 +188,89 @@ const ManageSchedules: React.FC = () => {
             fullWidth
           />
         </Grid>
-        <Grid item xs={12}>
-          <Box
-            display="flex"
-            flexDirection={{ xs: "column", sm: "row" }}
-            alignItems="center"
-            justifyContent="flex-end"
-            gap={2}
+        <Grid item sx={{ flexGrow: 1 }}>
+          <Grid
+            container
+            spacing={2}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-end",
+            }}
           >
-            <TextField
-              label="Lugar"
-              variant="outlined"
-              sx={{
-                mr: { xs: 0, sm: 2 },
-                width: { xs: "100%", sm: "auto" },
-                height: 56,
-              }}
-              value={addFields.label}
-              onChange={(e) =>
-                setAddFields({ ...addFields, label: e.target.value })
-              }
-            />
-            <FormControl
-              variant="outlined"
-              sx={{
-                mr: { xs: 0, sm: 2 },
-                width: { xs: "100%", sm: 200 },
-                height: 56,
-              }}
-            >
-              <InputLabel>Día</InputLabel>
-              <Select
-                label="Día"
-                sx={{ mr: { xs: 0, sm: 2 }, height: 56 }}
-                value={addFields.day}
+            <Grid item xs={12} md={2}>
+              <TextField
+                label="Lugar"
+                variant="outlined"
+                sx={{
+                  mr: { xs: 0 },
+                  width: { xs: "100%", sm: "100%" },
+                  height: 56,
+                }}
+                value={addFields.label}
                 onChange={(e) =>
-                  setAddFields({ ...addFields, day: e.target.value })
+                  setAddFields({ ...addFields, label: e.target.value })
                 }
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={2}>
+              <FormControl
+                variant="outlined"
+                sx={{
+                  mr: { xs: 0 },
+                  width: { xs: "100%", sm: "100%" },
+                  height: 56,
+                }}
               >
-                {getDayOptionsSpanish().map((option) => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <TextField
-              label="Horas"
-              variant="outlined"
-              type="number"
-              sx={{
-                mr: { xs: 0, sm: 2 },
-                width: { xs: "100%", sm: "auto" },
-                height: 56,
-              }}
-              value={addFields.hours}
-              onChange={(e) =>
-                setAddFields({ ...addFields, hours: e.target.value })
-              }
-            />
-            <Tooltip title="Agregar Horario" arrow>
-              <Box sx={{ width: { xs: "100%", sm: "auto" } }}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  sx={{ width: "100%", height: 56 }}
-                  onClick={handleAdd}
-                  disabled={!isValid}
+                <InputLabel>Día</InputLabel>
+                <Select
+                  label="Día"
+                  sx={{ mr: { xs: 0 }, height: 56 }}
+                  value={addFields.day}
+                  onChange={(e) =>
+                    setAddFields({ ...addFields, day: e.target.value })
+                  }
                 >
-                  <PostAddRoundedIcon />
-                </Button>
-              </Box>
-            </Tooltip>
-          </Box>
+                  {getDayOptionsSpanish().map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6} md={2}>
+              <TextField
+                label="Horas"
+                variant="outlined"
+                type="number"
+                sx={{
+                  mr: { xs: 0 },
+                  width: { xs: "100%", sm: "100%" },
+                  height: 56,
+                }}
+                value={addFields.hours}
+                onChange={(e) =>
+                  setAddFields({ ...addFields, hours: e.target.value })
+                }
+              />
+            </Grid>
+            <Grid item xs={12} md={1}>
+              <Tooltip title="Agregar Horario" arrow>
+                <Box sx={{ width: { xs: "100%", sm: "auto" } }}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    sx={{ width: "100%", height: 56 }}
+                    onClick={handleAdd}
+                    disabled={!isValid}
+                  >
+                    <PostAddRoundedIcon />
+                  </Button>
+                </Box>
+              </Tooltip>
+            </Grid>
+          </Grid>
         </Grid>
       </Grid>
       <br />

@@ -163,54 +163,62 @@ const ManageEmployees: React.FC = () => {
             fullWidth
           />
         </Grid>
-        <Grid item xs={12}>
-          <Box
-            display="flex"
-            flexDirection={{ xs: "column", sm: "row" }}
-            alignItems="center"
-            justifyContent="flex-end"
-            gap={2}
+        <Grid item sx={{ flexGrow: 1 }}>
+          <Grid
+            container
+            spacing={2}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-end",
+            }}
           >
-            <TextField
-              label="Nombre"
-              variant="outlined"
-              sx={{
-                mr: { xs: 0, sm: 2 },
-                width: { xs: "100%", sm: "auto" },
-                height: 56,
-              }}
-              value={addFields.firstName}
-              onChange={(e) =>
-                setAddFields({ ...addFields, firstName: e.target.value })
-              }
-            />
-            <TextField
-              label="Apellido"
-              variant="outlined"
-              sx={{
-                mr: { xs: 0, sm: 2 },
-                width: { xs: "100%", sm: "auto" },
-                height: 56,
-              }}
-              value={addFields.lastName}
-              onChange={(e) =>
-                setAddFields({ ...addFields, lastName: e.target.value })
-              }
-            />
-            <Tooltip title="Agregar Empleado" arrow>
-              <Box sx={{ width: { xs: "100%", sm: "auto" } }}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  sx={{ width: "100%", height: 56 }}
-                  onClick={handleAdd}
-                  disabled={!isValid}
-                >
-                  <PersonAddAlt1RoundedIcon />
-                </Button>
-              </Box>
-            </Tooltip>
-          </Box>
+            <Grid item xs={12} sm={6} md={2}>
+              <TextField
+                label="Nombre"
+                variant="outlined"
+                sx={{
+                  mr: { xs: 0 },
+                  width: { xs: "100%", sm: "100%" },
+                  height: 56,
+                }}
+                value={addFields.firstName}
+                onChange={(e) =>
+                  setAddFields({ ...addFields, firstName: e.target.value })
+                }
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={2}>
+              <TextField
+                label="Apellido"
+                variant="outlined"
+                sx={{
+                  mr: { xs: 0 },
+                  width: { xs: "100%", sm: "100%" },
+                  height: 56,
+                }}
+                value={addFields.lastName}
+                onChange={(e) =>
+                  setAddFields({ ...addFields, lastName: e.target.value })
+                }
+              />
+            </Grid>
+            <Grid item xs={12} md={1}>
+              <Tooltip title="Agregar Empleado" arrow>
+                <Box sx={{ width: { xs: "100%", sm: "auto" } }}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    sx={{ width: "100%", height: 56 }}
+                    onClick={handleAdd}
+                    disabled={!isValid}
+                  >
+                    <PersonAddAlt1RoundedIcon />
+                  </Button>
+                </Box>
+              </Tooltip>
+            </Grid>
+          </Grid>
         </Grid>
       </Grid>
       <br />
