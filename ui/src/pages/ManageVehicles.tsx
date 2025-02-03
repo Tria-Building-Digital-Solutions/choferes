@@ -42,6 +42,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { es } from "date-fns/locale";
+import { isTodayOrFuture } from "../utils/dateUtils";
 
 const ManageVehicles: React.FC = () => {
   const {
@@ -228,23 +229,25 @@ const ManageVehicles: React.FC = () => {
   };
 
   const handleNextDate = () => {
-    console.log("Día Siguiente");
+    const nextDay = selectedDate
+      ? new Date(selectedDate.getTime() + 24 * 60 * 60 * 1000)
+      : null;
+    setSelectedDate(nextDay);
   };
 
   const handlePreviousDate = () => {
-    console.log("Día Anterior");
+    const previousDay = selectedDate
+      ? new Date(selectedDate.getTime() - 24 * 60 * 60 * 1000)
+      : null;
+    setSelectedDate(previousDay);
   };
 
   const handleCurrentDate = () => {
-    console.log("Día Actual");
+    setSelectedDate(new Date());
   };
 
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
-
-  const currentDateIsDisabled = selectedDate
-    ? selectedDate.getTime() === new Date().getTime()
-    : false;
 
   return (
     <Box>
@@ -325,6 +328,7 @@ const ManageVehicles: React.FC = () => {
                       height: "56px",
                       width: { xs: "auto", sm: "auto", md: "auto" },
                     }}
+                    disabled={isTodayOrFuture(selectedDate)}
                     onClick={handleNextDate}
                   >
                     <ArrowForwardIosRoundedIcon />
@@ -337,7 +341,7 @@ const ManageVehicles: React.FC = () => {
                       height: "56px",
                       width: { xs: "auto", sm: "auto", md: "auto" },
                     }}
-                    disabled={currentDateIsDisabled}
+                    disabled={isTodayOrFuture(selectedDate)}
                     onClick={handleCurrentDate}
                   >
                     <CalendarTodayRoundedIcon />
@@ -363,6 +367,7 @@ const ManageVehicles: React.FC = () => {
                     width: { xs: "100%", sm: "100%", md: "300px" },
                     mt: { xs: 2, sm: 2, md: 0 },
                   }}
+                  maxDate={new Date()}
                   onChange={handleDateChange}
                 />
               </LocalizationProvider>
@@ -456,7 +461,7 @@ const ManageVehicles: React.FC = () => {
                 </FormControl>
               )}
             </Grid>
-            <Grid item xs={12} sm={6} md={2}>
+            <Grid item xs={12} sm={6} md={1}>
               <InputMask
                 mask="9-99999"
                 value={addFields.parkingLot.replace(/^ATP/, "")}
@@ -484,7 +489,7 @@ const ManageVehicles: React.FC = () => {
                 )}
               </InputMask>
             </Grid>
-            <Grid item xs={12} sm={12} md={3}>
+            <Grid item xs={12} sm={12} md={4}>
               <TextField
                 label="Observaciones"
                 variant="outlined"
@@ -518,7 +523,7 @@ const ManageVehicles: React.FC = () => {
         <EditableTable<Vehicle>
           data={filteredVehicles}
           columns={["licensePlate", "brand", "color", "parkingLot", "notes"]}
-          groupByField="createdAt"
+          groupByDate={selectedDate}
           editRowId={editRowId}
           editFields={editFields}
           setEditField={(field, value) =>

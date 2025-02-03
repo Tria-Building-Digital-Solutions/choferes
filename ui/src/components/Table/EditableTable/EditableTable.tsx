@@ -28,11 +28,12 @@ import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import InputMask from "react-input-mask";
 import { BRANDS, COLORS, TABLE } from "../../../constants/constants";
+import { formatDateWithDay } from "../../../utils/dateUtils";
 
 type EditableTableProps<T> = {
   data: T[];
   columns: (keyof T)[];
-  groupByField?: keyof T;
+  groupByDate?: Date | null;
   editRowId: number | null;
   editFields: Record<string, string>;
   setEditField: (field: string, value: string) => void;
@@ -54,7 +55,7 @@ type EditableTableProps<T> = {
 const EditableTable = <T,>({
   data,
   columns,
-  groupByField,
+  groupByDate,
   editRowId,
   editFields,
   setEditField,
@@ -70,7 +71,6 @@ const EditableTable = <T,>({
   renderColumnValue = (_, value) => value,
   getOptionsForColumn = () => [],
   validateField = () => true,
-  customPagination,
 }: EditableTableProps<T>) => {
   const [isFormValid, setIsFormValid] = useState(false);
   const [order, setOrder] = useState<"asc" | "desc">("asc");
@@ -100,24 +100,38 @@ const EditableTable = <T,>({
     setOrderBy(column);
   };
 
-  const groupedData = groupByField
-    ? data.reduce((acc, item) => {
-        const key = item[groupByField] as string;
-        if (!acc[key]) acc[key] = [];
-        acc[key].push(item);
-        return acc;
-      }, {} as Record<string, T[]>)
-    : { default: data };
+  // const groupedData = groupByField
+  //   ? data.reduce((acc, item) => {
+  //       const key = item[groupByField] as string;
+  //       if (!acc[key]) acc[key] = [];
+  //       acc[key].push(item);
+  //       return acc;
+  //     }, {} as Record<string, T[]>)
+  //   : { default: data };
 
-  const groupKeys = groupByField
-    ? Object.keys(groupedData).sort((a, b) =>
-        order === "asc" ? a.localeCompare(b) : b.localeCompare(a)
-      )
-    : ["default"];
+  // const groupKeys = groupByField
+  //   ? Object.keys(groupedData).sort((a, b) =>
+  //       order === "asc" ? a.localeCompare(b) : b.localeCompare(a)
+  //     )
+  //   : ["default"];
   
-  const sortedData = groupByField
-    ? groupKeys.flatMap((key) => groupedData[key])
-    : [...data].sort((a, b) => {
+  // const sortedData = groupByField
+  //   ? groupKeys.flatMap((key) => groupedData[key])
+  //   : [...data].sort((a, b) => {
+  //       if (a[orderBy] < b[orderBy]) {
+  //         return order === "asc" ? -1 : 1;
+  //       }
+  //       if (a[orderBy] > b[orderBy]) {
+  //         return order === "asc" ? 1 : -1;
+  //       }
+  //       return 0;
+  //     });
+
+  // const paginatedData = customPagination
+  //   ? customPagination(data, page, rowsPerPage)
+  //   : sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
+    const sortedData = [...data].sort((a, b) => {
         if (a[orderBy] < b[orderBy]) {
           return order === "asc" ? -1 : 1;
         }
@@ -127,9 +141,7 @@ const EditableTable = <T,>({
         return 0;
       });
 
-  const paginatedData = customPagination
-    ? customPagination(data, page, rowsPerPage)
-    : sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    const paginatedData = sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   const renderEditField = (column: keyof T, value: string) => {
     const options = getOptionsForColumn(column);
@@ -258,14 +270,14 @@ const EditableTable = <T,>({
       <TableContainer className="table-container">
         <Table stickyHeader aria-label="sticky table">
           <TableHead>
-            {groupByField && (
+            {groupByDate && (
               <TableRow>
                 <TableCell
                   colSpan={columns.length + 1}
                   align="center"
                   style={{ fontWeight: "bold" }}
                 >
-                  Fecha
+                  {formatDateWithDay(groupByDate, false)}
                 </TableCell>
               </TableRow>
             )}

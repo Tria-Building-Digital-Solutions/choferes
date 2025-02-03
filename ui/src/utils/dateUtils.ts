@@ -30,6 +30,32 @@ export const formatDate = (date: Date, withTimePart: boolean) => {
   return datePart;
 };
 
+export const formatDateWithDay = (date: Date, withTimePart: boolean) => {
+  const options: Intl.DateTimeFormatOptions = {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  };
+
+  const formattedDate = date.toLocaleString("es-ES", options);
+  const parts = formattedDate.split(", ");
+
+  const dayName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
+  const datePart = parts[1];
+  const timePart = parts[2];
+
+  if (withTimePart) {
+    return `${dayName} ${datePart} de ${timePart}`;
+  }
+
+  return `${dayName} ${datePart}`;
+};
+
 export const formatDateWithoutYear = (date: Date) => {
   const options: Intl.DateTimeFormatOptions = {
     day: "2-digit",
@@ -105,6 +131,13 @@ export const isValidDateForSelect = (date: Date): boolean => {
   today.setHours(0, 0, 0, 0);
   const endOfNextWeek = getEndOfNextWeek(today);
   return date <= endOfNextWeek;
+};
+
+export const isTodayOrFuture = (date: Date | null): boolean => {
+  if (!date) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return date >= today;
 };
 
 export const getWeekNumberAndYear = (
