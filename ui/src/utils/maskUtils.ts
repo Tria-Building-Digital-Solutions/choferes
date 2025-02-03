@@ -12,17 +12,15 @@ export const maskLicensePlate = (plate: string): string => {
     const partAfterHyphen = limitedPlate.substring(3).replace(/[^0-9]/g, "");
     return `${partBeforeHyphen}-${partAfterHyphen}`;
   }
-
   return limitedPlate;
 };
 
 export const maskParkingLot = (parkingLot: string): string => {
-  const sanitizedParkingLot = parkingLot
-    .replace(/[^A-Za-z0-9]/g, "")
-    .toUpperCase();
+  const sanitizedParkingLot = parkingLot.replace(/[^0-9]/g, "").toUpperCase();
   let result = sanitizedParkingLot.startsWith("ATP")
     ? sanitizedParkingLot
     : "ATP" + sanitizedParkingLot;
+
   if (result.length < 4) {
     return result;
   }
