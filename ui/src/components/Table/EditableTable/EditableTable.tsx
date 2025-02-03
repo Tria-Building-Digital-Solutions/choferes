@@ -100,48 +100,20 @@ const EditableTable = <T,>({
     setOrderBy(column);
   };
 
-  // const groupedData = groupByField
-  //   ? data.reduce((acc, item) => {
-  //       const key = item[groupByField] as string;
-  //       if (!acc[key]) acc[key] = [];
-  //       acc[key].push(item);
-  //       return acc;
-  //     }, {} as Record<string, T[]>)
-  //   : { default: data };
+  const sortedData = [...data].sort((a, b) => {
+    if (a[orderBy] < b[orderBy]) {
+      return order === "asc" ? -1 : 1;
+    }
+    if (a[orderBy] > b[orderBy]) {
+      return order === "asc" ? 1 : -1;
+    }
+    return 0;
+  });
 
-  // const groupKeys = groupByField
-  //   ? Object.keys(groupedData).sort((a, b) =>
-  //       order === "asc" ? a.localeCompare(b) : b.localeCompare(a)
-  //     )
-  //   : ["default"];
-  
-  // const sortedData = groupByField
-  //   ? groupKeys.flatMap((key) => groupedData[key])
-  //   : [...data].sort((a, b) => {
-  //       if (a[orderBy] < b[orderBy]) {
-  //         return order === "asc" ? -1 : 1;
-  //       }
-  //       if (a[orderBy] > b[orderBy]) {
-  //         return order === "asc" ? 1 : -1;
-  //       }
-  //       return 0;
-  //     });
-
-  // const paginatedData = customPagination
-  //   ? customPagination(data, page, rowsPerPage)
-  //   : sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-
-    const sortedData = [...data].sort((a, b) => {
-        if (a[orderBy] < b[orderBy]) {
-          return order === "asc" ? -1 : 1;
-        }
-        if (a[orderBy] > b[orderBy]) {
-          return order === "asc" ? 1 : -1;
-        }
-        return 0;
-      });
-
-    const paginatedData = sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  const paginatedData = sortedData.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
 
   const renderEditField = (column: keyof T, value: string) => {
     const options = getOptionsForColumn(column);
