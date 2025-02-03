@@ -196,9 +196,9 @@ const EditableTable = <T,>({
       return (
         <InputMask
           mask="ATP*-****"
-          value={value.replace(/^ATP/, "")}
+          value={value ? value.replace(/^ATP/, "") : ""}
           onChange={(e) => {
-            const formattedValue = `ATP${e.target.value}`;
+            const formattedValue = `ATP${e.target.value.replace(/^ATP/, "")}`;
             setEditField(String(column), formattedValue);
           }}
           maskChar={null}
@@ -207,6 +207,7 @@ const EditableTable = <T,>({
         </InputMask>
       );
     }
+    
 
     if (column === "day") {
       return (
