@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -33,7 +33,6 @@ import { faFileExcel, faFilePdf } from "@fortawesome/free-solid-svg-icons";
 import SearchBar from "../components/SearchBar/SearchBar";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 import EditableTable from "../components/Table/EditableTable/EditableTable";
-import InputMask from "react-input-mask";
 import { BRANDS, COLORS, PAGE_TITLE } from "../constants/constants";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
@@ -43,14 +42,18 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { es } from "date-fns/locale";
 import { isTodayOrFuture } from "../utils/dateUtils";
+import { maskLicensePlate, maskParkingLot } from "../utils/maskUtils";
 
 const ManageVehicles: React.FC = () => {
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
   const {
     vehicles,
     handleAddVehicle,
     handleUpdateVehicle,
     handleDeleteVehicle,
-  } = useVehicles();
+  } = useVehicles(selectedDate, page, rowsPerPage);
   const [filteredVehicles, setFilteredVehicles] = useState<Vehicle[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [editRowId, setEditRowId] = useState<number | null>(null);
@@ -71,15 +74,11 @@ const ManageVehicles: React.FC = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [vehicleToDelete, setVehicleToDelete] = useState<number | null>(null);
   const [filter, setFilter] = useState("");
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [isValid, setIsValid] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [selectedBrand, setSelectedBrand] = useState("");
   const [customBrand, setCustomBrand] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
   const [customColor, setCustomColor] = useState("");
-  const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     const allVehicles = Object.values(vehicles).flat();
@@ -227,6 +226,22 @@ const ManageVehicles: React.FC = () => {
     setAddFields({ ...addFields, color: event.target.value });
   };
 
+  const handleLicensePlateChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const rawValue = event.target.value;
+    const maskedValue = maskLicensePlate(rawValue);
+    setAddFields((prevState) => ({ ...prevState, licensePlate: maskedValue }));
+  };
+
+  const handleParkingLotChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const rawValue = event.target.value;
+    const maskedValue = maskParkingLot(rawValue);
+    setAddFields((prevState) => ({ ...prevState, parkingLot: maskedValue }));
+  };
+
   const handleNextDate = () => {
     const nextDay = selectedDate
       ? new Date(selectedDate.getTime() + 24 * 60 * 60 * 1000)
@@ -291,24 +306,24 @@ const ManageVehicles: React.FC = () => {
             fullWidth
           />
         </Grid>
-        {filteredVehicles.length > 0 && (
-          <Grid item xs={12}>
+        <Grid item xs={12}>
+          <Box
+            display="flex"
+            flexDirection={{ xs: "column", sm: "column", md: "row" }}
+            alignItems="flex-start"
+            justifyContent="flex-end"
+            gap={2}
+          >
             <Box
               display="flex"
-              flexDirection={{ xs: "column", sm: "column", md: "row" }}
-              alignItems="flex-start"
+              flexDirection={{ xs: "row", sm: "row", md: "row" }}
+              alignItems="center"
               justifyContent="flex-end"
               gap={2}
+              width="100%"
             >
-              <Box
-                display="flex"
-                flexDirection={{ xs: "row", sm: "row", md: "row" }}
-                alignItems="center"
-                justifyContent="flex-end"
-                gap={2}
-                width="100%"
-              >
-                <Tooltip title="Día Anterior" arrow>
+              <Tooltip title="Día Anterior" arrow>
+                <Box>
                   <Button
                     variant="contained"
                     sx={{
@@ -319,8 +334,10 @@ const ManageVehicles: React.FC = () => {
                   >
                     <ArrowBackIosNewRoundedIcon />
                   </Button>
-                </Tooltip>
-                <Tooltip title="Día Siguiente" arrow>
+                </Box>
+              </Tooltip>
+              <Tooltip title="Día Siguiente" arrow>
+                <Box>
                   <Button
                     variant="contained"
                     sx={{
@@ -332,8 +349,10 @@ const ManageVehicles: React.FC = () => {
                   >
                     <ArrowForwardIosRoundedIcon />
                   </Button>
-                </Tooltip>
-                <Tooltip title="Día Actual" arrow>
+                </Box>
+              </Tooltip>
+              <Tooltip title="Día Actual" arrow>
+                <Box>
                   <Button
                     variant="contained"
                     sx={{
@@ -345,34 +364,34 @@ const ManageVehicles: React.FC = () => {
                   >
                     <CalendarTodayRoundedIcon />
                   </Button>
-                </Tooltip>
-              </Box>
-              <LocalizationProvider
-                dateAdapter={AdapterDateFns}
-                adapterLocale={es}
-                localeText={{
-                  okButtonLabel: "Aceptar",
-                  cancelButtonLabel: "Cancelar",
-                  todayButtonLabel: "Hoy",
-                  year: "Año #{year}",
-                  previousMonth: "Mes anterior",
-                  nextMonth: "Mes siguiente",
-                }}
-              >
-                <DatePicker
-                  label="Seleccionar fecha"
-                  value={selectedDate}
-                  sx={{
-                    width: { xs: "100%", sm: "100%", md: "auto" },
-                    mt: { xs: 2, sm: 2, md: 0 },
-                  }}
-                  maxDate={new Date()}
-                  onChange={handleDateChange}
-                />
-              </LocalizationProvider>
+                </Box>
+              </Tooltip>
             </Box>
-          </Grid>
-        )}
+            <LocalizationProvider
+              dateAdapter={AdapterDateFns}
+              adapterLocale={es}
+              localeText={{
+                okButtonLabel: "Aceptar",
+                cancelButtonLabel: "Cancelar",
+                todayButtonLabel: "Hoy",
+                year: "Año #{year}",
+                previousMonth: "Mes anterior",
+                nextMonth: "Mes siguiente",
+              }}
+            >
+              <DatePicker
+                label="Seleccionar fecha"
+                value={selectedDate}
+                sx={{
+                  width: { xs: "100%", sm: "100%", md: "auto" },
+                  mt: { xs: 2, sm: 2, md: 0 },
+                }}
+                maxDate={new Date()}
+                onChange={handleDateChange}
+              />
+            </LocalizationProvider>
+          </Box>
+        </Grid>
         <Grid item sx={{ flexGrow: 1 }}>
           <Grid
             container
@@ -384,29 +403,13 @@ const ManageVehicles: React.FC = () => {
             }}
           >
             <Grid item xs={12} sm={6} md={2}>
-              <InputMask
-                mask="***-****"
+              <TextField
+                label="Placa"
+                variant="outlined"
+                fullWidth
                 value={addFields.licensePlate}
-                onChange={(e) => {
-                  const formattedValue = e.target.value.toUpperCase().trim();
-                  setAddFields({ ...addFields, licensePlate: formattedValue });
-                }}
-                maskChar=" "
-                alwaysShowMask={false}
-              >
-                {(inputProps) => (
-                  <TextField
-                    {...inputProps}
-                    label="Placa"
-                    variant="outlined"
-                    fullWidth
-                    InputProps={{
-                      style: { textTransform: "uppercase" },
-                      inputRef: inputRef,
-                    }}
-                  />
-                )}
-              </InputMask>
+                onChange={handleLicensePlateChange}
+              />
             </Grid>
             <Grid item xs={12} sm={6} md={2}>
               {selectedColor === "Otro" ? (
@@ -461,32 +464,13 @@ const ManageVehicles: React.FC = () => {
               )}
             </Grid>
             <Grid item xs={12} sm={6} md={1}>
-              <InputMask
-                mask="9-99999"
-                value={addFields.parkingLot.replace(/^ATP/, "")}
-                onChange={(e) => {
-                  const formattedValue = `ATP${e.target.value}`;
-                  setAddFields({ ...addFields, parkingLot: formattedValue });
-                }}
-                maskChar={null}
-                alwaysShowMask={false}
-              >
-                {(inputProps) => (
-                  <TextField
-                    {...inputProps}
-                    label="Espacio"
-                    variant="outlined"
-                    fullWidth
-                    InputProps={{
-                      startAdornment: addFields.parkingLot ? (
-                        <span style={{ marginRight: "8px" }}>ATP</span>
-                      ) : null,
-                      style: { textTransform: "uppercase" },
-                      inputRef: inputRef,
-                    }}
-                  />
-                )}
-              </InputMask>
+              <TextField
+                label="Espacio"
+                variant="outlined"
+                fullWidth
+                value={addFields.parkingLot}
+                onChange={handleParkingLotChange}
+              />
             </Grid>
             <Grid item xs={12} sm={12} md={4}>
               <TextField

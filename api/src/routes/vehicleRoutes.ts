@@ -6,7 +6,7 @@ const router = express.Router();
 router.post("/", vehicleController.createVehicle);
 router.get("/", vehicleController.getAllVehicles);
 router.get("/:id", vehicleController.getVehicleById);
-router.get("/grouped/by-date", vehicleController.getVehiclesGroupedByDate);
+router.get("/by-date", vehicleController.getVehiclesByDate);
 router.put("/:id", vehicleController.updateVehicle);
 router.delete("/:id", vehicleController.deleteVehicle);
 

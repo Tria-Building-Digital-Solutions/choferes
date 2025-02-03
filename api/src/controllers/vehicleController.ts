@@ -33,12 +33,20 @@ export const getVehicleById = async (req: Request, res: Response) => {
   }
 };
 
-export const getVehiclesGroupedByDate = async (req: Request, res: Response) => {
+export const getVehiclesByDate = async (req: Request, res: Response) => {
   try {
-    const groupedVehicles = await vehicleService.getVehiclesGroupedByDate();
-    res.status(200).json(groupedVehicles);
+    const { date } = req.query;
+    if (!date) {
+      res.status(400).json({ message: "Date is required" });
+    }
+    const createdAt = new Date(date as string);
+    if (isNaN(createdAt.getTime())) {
+      res.status(400).json({ message: "Invalid date format" });
+    }
+    const vehicles = await vehicleService.getVehiclesByDate(createdAt);
+    res.status(200).json(vehicles);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching grouped Vehicles", error });
+    res.status(500).json({ message: "Error fetching Vehicles", error });
   }
 };
 

@@ -45,7 +45,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileExcel, faFilePdf } from "@fortawesome/free-solid-svg-icons";
 import { updateHoursAndSummaries } from "../utils/calculationsUtils";
 import { es } from "date-fns/locale";
-import { addWeeks, differenceInCalendarWeeks, endOfWeek, startOfWeek } from "date-fns";
+import {
+  addWeeks,
+  differenceInCalendarWeeks,
+  endOfWeek,
+  startOfWeek,
+} from "date-fns";
 import { PAGE_TITLE } from "../constants/constants";
 
 const ManageRoles: React.FC = () => {
@@ -174,7 +179,9 @@ const ManageRoles: React.FC = () => {
     period
   );
 
-  const nextWeekStart = startOfWeek(addWeeks(new Date(), 1), { weekStartsOn: 1 });
+  const nextWeekStart = startOfWeek(addWeeks(new Date(), 1), {
+    weekStartsOn: 1,
+  });
   const nextWeekEnd = endOfWeek(nextWeekStart, { weekStartsOn: 1 });
 
   const theme = useTheme();
@@ -242,19 +249,21 @@ const ManageRoles: React.FC = () => {
                 width="100%"
               >
                 <Tooltip title="Semana Anterior" arrow>
-                  <Button
-                    variant="contained"
-                    sx={{
-                      height: "56px",
-                      width: { xs: "auto", sm: "auto", md: "auto" },
-                    }}
-                    onClick={handlePreviousWeek}
-                  >
-                    <ArrowBackIosNewRoundedIcon />
-                  </Button>
+                  <Box>
+                    <Button
+                      variant="contained"
+                      sx={{
+                        height: "56px",
+                        width: { xs: "auto", sm: "auto", md: "auto" },
+                      }}
+                      onClick={handlePreviousWeek}
+                    >
+                      <ArrowBackIosNewRoundedIcon />
+                    </Button>
+                  </Box>
                 </Tooltip>
                 <Tooltip title="Semana Siguiente" arrow>
-                  <span>
+                  <Box>
                     <Button
                       variant="contained"
                       sx={{
@@ -272,10 +281,10 @@ const ManageRoles: React.FC = () => {
                     >
                       <ArrowForwardIosRoundedIcon />
                     </Button>
-                  </span>
+                  </Box>
                 </Tooltip>
                 <Tooltip title="Semana Actual" arrow>
-                  <span>
+                  <Box>
                     <Button
                       variant="contained"
                       sx={{
@@ -287,7 +296,7 @@ const ManageRoles: React.FC = () => {
                     >
                       <CalendarTodayRoundedIcon />
                     </Button>
-                  </span>
+                  </Box>
                 </Tooltip>
               </Box>
               <LocalizationProvider
@@ -309,7 +318,7 @@ const ManageRoles: React.FC = () => {
                     width: { xs: "100%", sm: "100%", md: "auto" },
                     mt: { xs: 2, sm: 2, md: 0 },
                   }}
-                  maxDate={nextWeekEnd} 
+                  maxDate={nextWeekEnd}
                   onChange={handleDateChange}
                 />
               </LocalizationProvider>

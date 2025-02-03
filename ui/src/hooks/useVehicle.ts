@@ -2,7 +2,11 @@ import { useState, useEffect, useCallback } from "react";
 import * as VehicleService from "../services/vehicleService";
 import { Vehicle } from "../models/Vehicle";
 
-export const useVehicles = () => {
+export const useVehicles = (
+  selectedDate: Date | null,
+  page: number = 1,
+  perPage: number = 10
+) => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -13,9 +17,25 @@ export const useVehicles = () => {
       try {
         const data = await VehicleService.fetchVehicles(page, perPage);
         setVehicles(data);
-        setTotalCount(data.length); 
+        setTotalCount(data.length);
       } catch (error) {
         console.error("Error fetching vehicles", error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  const fetchVehiclesByDate = useCallback(
+    async (date: Date, page: number = 1, perPage: number = 10) => {
+      setLoading(true);
+      try {
+        const data = await VehicleService.getVehiclesByDate(date, page, perPage);
+        setVehicles(data);
+        setTotalCount(data.length);
+      } catch (error) {
+        console.error("Error fetching vehicles by date", error);
       } finally {
         setLoading(false);
       }
@@ -26,23 +46,8 @@ export const useVehicles = () => {
   const handleAddVehicle = async (newVehicle: Vehicle) => {
     await VehicleService.addVehicle(newVehicle);
     setVehicles((prev) => [...prev, newVehicle]);
-    setTotalCount((prev) => prev + 1); 
+    setTotalCount((prev) => prev + 1);
   };
-
-  const getVehiclesGroupedByDate = useCallback(
-    async (date: string, page: number = 1, perPage: number = 10) => {
-      setLoading(true);
-      try {
-        const data = await VehicleService.getVehiclesGroupedByDate(date, page, perPage);
-        setVehicles(data);
-      } catch (error) {
-        console.error("Error fetching grouped vehicles", error);
-      } finally {
-        setLoading(false);
-      }
-    },
-    []
-  );
 
   const handleUpdateVehicle = async (
     id: number,
@@ -63,16 +68,20 @@ export const useVehicles = () => {
   };
 
   useEffect(() => {
-    fetchVehicles(); 
-  }, [fetchVehicles]);
+    if (selectedDate) {
+      fetchVehiclesByDate(selectedDate, page, perPage);
+    } else {
+      fetchVehicles(page, perPage);
+    }
+  }, [selectedDate, page, perPage, fetchVehicles, fetchVehiclesByDate]);
 
   return {
     vehicles,
     totalCount,
     loading,
     fetchVehicles,
+    fetchVehiclesByDate,
     handleAddVehicle,
-    getVehiclesGroupedByDate,
     handleUpdateVehicle,
     handleDeleteVehicle,
   };

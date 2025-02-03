@@ -17,6 +17,7 @@ import {
   Tooltip,
   IconButton,
   Divider,
+  Box,
 } from "@mui/material";
 import {
   translateColumnHeaderToSpanish,
@@ -26,9 +27,10 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
-import InputMask from "react-input-mask";
+// import InputMask from "react-input-mask";
 import { BRANDS, COLORS, TABLE } from "../../../constants/constants";
 import { formatDateWithDay } from "../../../utils/dateUtils";
+import { maskLicensePlate, maskParkingLot } from "../../../utils/maskUtils";
 
 type EditableTableProps<T> = {
   data: T[];
@@ -115,6 +117,24 @@ const EditableTable = <T,>({
     page * rowsPerPage + rowsPerPage
   );
 
+  const handleEditLicensePlateChange = (
+    column: keyof T,
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const rawValue = event.target.value;
+    const maskedValue = maskLicensePlate(rawValue);
+    setEditField(String(column), String(maskedValue));
+  };
+
+  const handleEditParkingLotChange = (
+    column: keyof T,
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const rawValue = event.target.value;
+    const maskedValue = maskParkingLot(rawValue);
+    setEditField(String(column), String(maskedValue));
+  };
+
   const renderEditField = (column: keyof T, value: string) => {
     const options = getOptionsForColumn(column);
 
@@ -141,16 +161,13 @@ const EditableTable = <T,>({
 
     if (column === "licensePlate") {
       return (
-        <InputMask
-          mask="***-****"
-          value={value}
-          onChange={(e) =>
-            setEditField(String(column), e.target.value.toUpperCase().trim())
-          }
-          maskChar=" "
-        >
-          {(inputProps) => <TextField {...inputProps} variant="outlined" />}
-        </InputMask>
+        <TextField
+          label="Placa"
+          variant="outlined"
+          fullWidth
+          value={editFields[String(column)] || ""}
+          onChange={(e) => handleEditLicensePlateChange}
+        />
       );
     }
 
@@ -194,20 +211,15 @@ const EditableTable = <T,>({
 
     if (column === "parkingLot") {
       return (
-        <InputMask
-          mask="ATP*-****"
-          value={value ? value.replace(/^ATP/, "") : ""}
-          onChange={(e) => {
-            const formattedValue = `ATP${e.target.value.replace(/^ATP/, "")}`;
-            setEditField(String(column), formattedValue);
-          }}
-          maskChar={null}
-        >
-          {(inputProps) => <TextField {...inputProps} variant="outlined" />}
-        </InputMask>
+        <TextField
+          label="Espacio"
+          variant="outlined"
+          fullWidth
+          value={editFields[String(column)] || ""}
+          onChange={(e) => handleEditParkingLotChange}
+        />
       );
     }
-    
 
     if (column === "day") {
       return (
@@ -286,31 +298,37 @@ const EditableTable = <T,>({
                 <TableCell>
                   {editRowId === getRowId(row) ? (
                     <Tooltip title="Guardar" arrow>
-                      <IconButton
-                        color="primary"
-                        onClick={() => handleSaveClick(getRowId(row))}
-                        disabled={!isFormValid}
-                      >
-                        <SaveIcon />
-                      </IconButton>
+                      <Box>
+                        <IconButton
+                          color="primary"
+                          onClick={() => handleSaveClick(getRowId(row))}
+                          disabled={!isFormValid}
+                        >
+                          <SaveIcon />
+                        </IconButton>
+                      </Box>
                     </Tooltip>
                   ) : (
                     <Tooltip title="Editar" arrow>
-                      <IconButton
-                        color="primary"
-                        onClick={() => handleEditClick(row)}
-                      >
-                        <EditIcon />
-                      </IconButton>
+                      <Box>
+                        <IconButton
+                          color="primary"
+                          onClick={() => handleEditClick(row)}
+                        >
+                          <EditIcon />
+                        </IconButton>
+                      </Box>
                     </Tooltip>
                   )}
                   <Tooltip title="Eliminar" arrow>
-                    <IconButton
-                      color="secondary"
-                      onClick={() => handleOpenDialog(getRowId(row))}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
+                    <Box>
+                      <IconButton
+                        color="secondary"
+                        onClick={() => handleOpenDialog(getRowId(row))}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Box>
                   </Tooltip>
                 </TableCell>
               </TableRow>

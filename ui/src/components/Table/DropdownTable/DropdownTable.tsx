@@ -598,23 +598,25 @@ const DropdownTable: React.FC<DropdownTableProps> = ({
                   </Box>
                   <Box sx={{ display: "flex", alignItems: "center", ml: 1 }}>
                     <Tooltip title="Horas Extra" arrow>
-                      <Badge
-                        badgeContent={
-                          getTotalOvertime.find(
-                            (emp) => emp.employeeId === employee.id
-                          )?.overtime || 0
-                        }
-                        color={
-                          (getTotalOvertime.find(
-                            (emp) => emp.employeeId === employee.id
-                          )?.overtime || 0) > 0
-                            ? "warning"
-                            : "success"
-                        }
-                        showZero
-                      >
-                        <AccessTimeRoundedIcon />
-                      </Badge>
+                      <Box>
+                        <Badge
+                          badgeContent={
+                            getTotalOvertime.find(
+                              (emp) => emp.employeeId === employee.id
+                            )?.overtime || 0
+                          }
+                          color={
+                            (getTotalOvertime.find(
+                              (emp) => emp.employeeId === employee.id
+                            )?.overtime || 0) > 0
+                              ? "warning"
+                              : "success"
+                          }
+                          showZero
+                        >
+                          <AccessTimeRoundedIcon />
+                        </Badge>
+                      </Box>
                     </Tooltip>
                   </Box>
                 </TableCell>
