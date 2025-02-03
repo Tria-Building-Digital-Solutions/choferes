@@ -45,7 +45,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileExcel, faFilePdf } from "@fortawesome/free-solid-svg-icons";
 import { updateHoursAndSummaries } from "../utils/calculationsUtils";
 import { es } from "date-fns/locale";
-import { differenceInCalendarWeeks } from "date-fns";
+import { addWeeks, differenceInCalendarWeeks, endOfWeek, startOfWeek } from "date-fns";
 import { PAGE_TITLE } from "../constants/constants";
 
 const ManageRoles: React.FC = () => {
@@ -173,6 +173,9 @@ const ManageRoles: React.FC = () => {
     getCurrentWeekDates(weekOffset),
     period
   );
+
+  const nextWeekStart = startOfWeek(addWeeks(new Date(), 1), { weekStartsOn: 1 });
+  const nextWeekEnd = endOfWeek(nextWeekStart, { weekStartsOn: 1 });
 
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -303,9 +306,10 @@ const ManageRoles: React.FC = () => {
                   label="Seleccionar fecha"
                   value={firstDayOfWeek}
                   sx={{
-                    width: { xs: "100%", sm: "100%", md: "300px" },
+                    width: { xs: "100%", sm: "100%", md: "auto" },
                     mt: { xs: 2, sm: 2, md: 0 },
                   }}
+                  maxDate={nextWeekEnd} 
                   onChange={handleDateChange}
                 />
               </LocalizationProvider>

@@ -363,7 +363,7 @@ const ManageVehicles: React.FC = () => {
                   label="Seleccionar fecha"
                   value={selectedDate}
                   sx={{
-                    width: { xs: "100%", sm: "100%", md: "300px" },
+                    width: { xs: "100%", sm: "100%", md: "auto" },
                     mt: { xs: 2, sm: 2, md: 0 },
                   }}
                   maxDate={new Date()}
