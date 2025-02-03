@@ -59,6 +59,7 @@ const ManageRoles: React.FC = () => {
   const { hoursWorked, fetchHours, handleAddHours, handleUpdateHours } =
     useHours();
   const { handleSummaryChange, handleSummaryUpdate } = useSummaries();
+  const [filteredRoles, setFilteredRoles] = useState(true);
   const { weeklySummaries, fetchWeeklySummaries } = useWeeklySummaries();
   const { biweeklySummaries, fetchBiweeklySummaries } = useBiweeklySummaries();
   const { monthlySummaries, fetchMonthlySummaries } = useMonthlySummaries();
@@ -72,8 +73,7 @@ const ManageRoles: React.FC = () => {
   );
   const [firstDayOfWeek, setFirstDayOfWeek] = useState<Date | null>(new Date());
   const [filter, setFilter] = useState("");
-  const [showResults, setShowResults] = useState(true);
-
+  
   useEffect(() => {
     const currentWeek = getCurrentWeekDates(weekOffset);
     if (currentWeek.length > 0) {
@@ -107,7 +107,7 @@ const ManageRoles: React.FC = () => {
   );
 
   useEffect(() => {
-    setShowResults(filteredEmployees.length > 0);
+    setFilteredRoles(filteredEmployees.length > 0);
   }, [filter, employees, filteredEmployees.length]);
 
   const handleDateChange = (newDate: Date | null) => {
@@ -198,7 +198,7 @@ const ManageRoles: React.FC = () => {
         <Typography variant={isSmallScreen ? "h4" : "h2"} sx={{ flexGrow: 1 }}>
           {PAGE_TITLE.MANAGE_ROLES}
         </Typography>
-        {showResults && (
+        {filteredRoles && (
           <SplitButton
             options={createExportOptions(
               <FontAwesomeIcon icon={faFileExcel} size="lg" />,
@@ -231,7 +231,7 @@ const ManageRoles: React.FC = () => {
             fullWidth
           />
         </Grid>
-        {showResults && (
+        {filteredRoles && (
           <Grid item xs={12} md={6}>
             <Box
               display="flex"
@@ -327,7 +327,7 @@ const ManageRoles: React.FC = () => {
         )}
       </Grid>
       <br />
-      {showResults ? (
+      {filteredRoles ? (
         <DropdownTable
           filteredEmployees={filteredEmployees}
           schedules={schedules}

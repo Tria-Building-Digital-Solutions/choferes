@@ -392,113 +392,123 @@ const ManageVehicles: React.FC = () => {
             </LocalizationProvider>
           </Box>
         </Grid>
-        <Grid item sx={{ flexGrow: 1 }}>
-          <Grid
-            container
-            spacing={2}
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "flex-end",
-            }}
+        <Grid item xs={12} md={12}>
+          <Box
+            display="flex"
+            flexDirection={{ xs: "column", sm: "column", md: "row" }}
+            alignItems="center"
+            justifyContent="flex-end"
+            gap={2}
           >
-            <Grid item xs={12} sm={6} md={2}>
-              <TextField
-                label="Placa"
-                variant="outlined"
-                fullWidth
-                value={addFields.licensePlate}
-                onChange={handleLicensePlateChange}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6} md={2}>
-              {selectedColor === "Otro" ? (
+            <Grid container spacing={2} alignItems="center">
+              <Grid item xs={12} sm={6} md={2}>
                 <TextField
-                  label="Marca"
+                  label="Placa"
                   variant="outlined"
                   fullWidth
-                  value={customBrand}
-                  onChange={handleCustomBrandChange}
+                  value={addFields.licensePlate}
+                  onChange={handleLicensePlateChange}
                 />
-              ) : (
-                <FormControl variant="outlined" fullWidth>
-                  <InputLabel>Marca</InputLabel>
-                  <Select
+              </Grid>
+              <Grid item xs={12} sm={6} md={2}>
+                {selectedColor === "Otro" ? (
+                  <TextField
                     label="Marca"
-                    value={selectedBrand}
-                    onChange={handleBrandChange}
-                  >
-                    {BRANDS.map((option) => (
-                      <MenuItem key={option.value} value={option.value}>
-                        {option.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              )}
-            </Grid>
-            <Grid item xs={12} sm={6} md={2}>
-              {selectedColor === "Otro" ? (
+                    variant="outlined"
+                    fullWidth
+                    value={customBrand}
+                    onChange={handleCustomBrandChange}
+                  />
+                ) : (
+                  <FormControl variant="outlined" fullWidth>
+                    <InputLabel>Marca</InputLabel>
+                    <Select
+                      label="Marca"
+                      value={selectedBrand}
+                      onChange={handleBrandChange}
+                    >
+                      {BRANDS.map((option) => (
+                        <MenuItem key={option.value} value={option.value}>
+                          {option.label}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                )}
+              </Grid>
+              <Grid item xs={12} sm={6} md={2}>
+                {selectedColor === "Otro" ? (
+                  <TextField
+                    label="Color"
+                    variant="outlined"
+                    fullWidth
+                    value={customColor}
+                    onChange={handleCustomColorChange}
+                  />
+                ) : (
+                  <FormControl variant="outlined" fullWidth>
+                    <InputLabel>Color</InputLabel>
+                    <Select
+                      label="Color"
+                      value={selectedColor}
+                      onChange={handleColorChange}
+                    >
+                      {COLORS.map((option) => (
+                        <MenuItem key={option.value} value={option.value}>
+                          {option.label}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                )}
+              </Grid>
+              <Grid item xs={12} sm={6} md={1}>
                 <TextField
-                  label="Color"
+                  label="Espacio"
                   variant="outlined"
                   fullWidth
-                  value={customColor}
-                  onChange={handleCustomColorChange}
+                  value={addFields.parkingLot}
+                  onChange={handleParkingLotChange}
                 />
-              ) : (
-                <FormControl variant="outlined" fullWidth>
-                  <InputLabel>Color</InputLabel>
-                  <Select
-                    label="Color"
-                    value={selectedColor}
-                    onChange={handleColorChange}
-                  >
-                    {COLORS.map((option) => (
-                      <MenuItem key={option.value} value={option.value}>
-                        {option.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              )}
+              </Grid>
+              <Grid item xs={12} sm={12} md={5}>
+                <TextField
+                  label="Observaciones"
+                  variant="outlined"
+                  fullWidth
+                  value={addFields.notes}
+                  onChange={(e) =>
+                    setAddFields({ ...addFields, notes: e.target.value })
+                  }
+                />
+              </Grid>
             </Grid>
-            <Grid item xs={12} sm={6} md={1}>
-              <TextField
-                label="Espacio"
-                variant="outlined"
-                fullWidth
-                value={addFields.parkingLot}
-                onChange={handleParkingLotChange}
-              />
-            </Grid>
-            <Grid item xs={12} sm={12} md={4}>
-              <TextField
-                label="Observaciones"
-                variant="outlined"
-                fullWidth
-                value={addFields.notes}
-                onChange={(e) =>
-                  setAddFields({ ...addFields, notes: e.target.value })
-                }
-              />
-            </Grid>
-            <Grid item xs={12} md={1}>
-              <Tooltip title="Agregar Vehículo" arrow>
-                <Box sx={{ width: { xs: "100%", sm: "auto" } }}>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    sx={{ width: "100%", height: 56 }}
-                    onClick={handleAdd}
-                    disabled={!isValid}
-                  >
-                    <DirectionsCarIcon />
-                  </Button>
-                </Box>
-              </Tooltip>
-            </Grid>
-          </Grid>
+            <Tooltip title="Agregar Vehículo" arrow>
+              <Box
+                sx={{
+                  width: { xs: "100%", md: "auto" },
+                  display: "flex",
+                  justifyContent: { xs: "stretch", md: "flex-end" },
+                }}
+              >
+                <Button
+                  variant="contained"
+                  color="primary"
+                  sx={{
+                    minHeight: 56,
+                    display: "flex",
+                    justifyContent: "center",
+                    lineHeight: "normal",
+                    width: { xs: "100%", md: "auto" },
+                  }}
+                  onClick={handleAdd}
+                  disabled={!isValid}
+                >
+                  <DirectionsCarIcon />
+                </Button>
+              </Box>
+            </Tooltip>
+          </Box>
         </Grid>
       </Grid>
       <br />

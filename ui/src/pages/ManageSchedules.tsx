@@ -177,100 +177,105 @@ const ManageSchedules: React.FC = () => {
         justifyContent="space-between"
         alignItems="center"
       >
-        <Grid item xs={12}>
+        <Grid item xs={12} md={6}>
           <SearchBar
             placeholder="Buscar Horario"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            sx={{
-              maxWidth: "100%",
-            }}
+            sx={{ maxWidth: "100%" }}
             fullWidth
           />
         </Grid>
-        <Grid item sx={{ flexGrow: 1 }}>
-          <Grid
-            container
-            spacing={2}
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "flex-end",
-            }}
+        <Grid item xs={12} md={6}>
+          <Box
+            display="flex"
+            flexDirection={{ xs: "column", sm: "column", md: "row" }}
+            alignItems="center"
+            justifyContent="flex-end"
+            gap={2}
           >
-            <Grid item xs={12} md={2}>
-              <TextField
-                label="Lugar"
-                variant="outlined"
-                sx={{
-                  mr: { xs: 0 },
-                  width: { xs: "100%", sm: "100%" },
-                  height: 56,
-                }}
-                value={addFields.label}
-                onChange={(e) =>
-                  setAddFields({ ...addFields, label: e.target.value })
-                }
-              />
+            <Grid container spacing={2} alignItems="center">
+              <Grid item xs={12} md={4}>
+                <TextField
+                  label="Lugar"
+                  variant="outlined"
+                  fullWidth
+                  sx={{
+                    height: 56,
+                  }}
+                  value={addFields.label}
+                  onChange={(e) =>
+                    setAddFields({ ...addFields, label: e.target.value })
+                  }
+                />
+              </Grid>
+              <Grid item xs={6} md={4}>
+                <FormControl
+                  variant="outlined"
+                  fullWidth
+                  sx={{
+                    height: 56,
+                  }}
+                >
+                  <InputLabel>Día</InputLabel>
+                  <Select
+                    label="Día"
+                    sx={{ height: 56 }}
+                    value={addFields.day}
+                    onChange={(e) =>
+                      setAddFields({ ...addFields, day: e.target.value })
+                    }
+                  >
+                    {getDayOptionsSpanish().map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={6} md={4}>
+                <TextField
+                  label="Horas"
+                  variant="outlined"
+                  type="number"
+                  fullWidth
+                  sx={{
+                    height: 56,
+                  }}
+                  value={addFields.hours}
+                  onChange={(e) =>
+                    setAddFields({ ...addFields, hours: e.target.value })
+                  }
+                />
+              </Grid>
             </Grid>
-            <Grid item xs={12} sm={6} md={2}>
-              <FormControl
-                variant="outlined"
+            <Tooltip title="Agregar Horario" arrow>
+              <Box
                 sx={{
-                  mr: { xs: 0 },
-                  width: { xs: "100%", sm: "100%" },
-                  height: 56,
+                  width: { xs: "100%", md: "auto" },
+                  display: "flex",
+                  justifyContent: { xs: "stretch", md: "flex-end" },
                 }}
               >
-                <InputLabel>Día</InputLabel>
-                <Select
-                  label="Día"
-                  sx={{ mr: { xs: 0 }, height: 56 }}
-                  value={addFields.day}
-                  onChange={(e) =>
-                    setAddFields({ ...addFields, day: e.target.value })
-                  }
+                <Button
+                  variant="contained"
+                  color="primary"
+                  sx={{
+                    minHeight: 56,
+                    display: "flex",
+                    justifyContent: "center",
+                    lineHeight: "normal",
+                    width: { xs: "100%", md: "auto" },
+                  }}
+                  onClick={handleAdd}
+                  disabled={!isValid}
                 >
-                  {getDayOptionsSpanish().map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6} md={2}>
-              <TextField
-                label="Horas"
-                variant="outlined"
-                type="number"
-                sx={{
-                  mr: { xs: 0 },
-                  width: { xs: "100%", sm: "100%" },
-                  height: 56,
-                }}
-                value={addFields.hours}
-                onChange={(e) =>
-                  setAddFields({ ...addFields, hours: e.target.value })
-                }
-              />
-            </Grid>
-            <Grid item xs={12} md={1}>
-              <Tooltip title="Agregar Horario" arrow>
-                <Box sx={{ width: { xs: "100%", sm: "auto" } }}>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    sx={{ width: "100%", height: 56 }}
-                    onClick={handleAdd}
-                    disabled={!isValid}
-                  >
-                    <PostAddRoundedIcon />
-                  </Button>
-                </Box>
-              </Tooltip>
-            </Grid>
-          </Grid>
+                  <PostAddRoundedIcon />
+                </Button>
+              </Box>
+            </Tooltip>
+          </Box>
         </Grid>
       </Grid>
       <br />
