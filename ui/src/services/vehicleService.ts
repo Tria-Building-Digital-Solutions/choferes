@@ -21,17 +21,11 @@ export const getVehicleById = async (id: number): Promise<Vehicle> => {
 };
 
 export const getVehiclesByDate = async (
-  date: Date,
-  page: number = 1,
-  perPage: number = 10
+  date: string,
 ): Promise<Vehicle[]> => {
-  console.log("date: ", date);
-  console.log("page: ", page);
-  console.log("perPage: ", perPage);
   const response = await api.get("/vehicles/by-date", {
-    params: { date, page, perPage },
+    params: { date },
   });
-  console.log("data: ", response);
   return response.data;
 };
 

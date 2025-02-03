@@ -3,9 +3,7 @@ import * as VehicleService from "../services/vehicleService";
 import { Vehicle } from "../models/Vehicle";
 
 export const useVehicles = (
-  selectedDate: Date | null,
-  page: number = 1,
-  perPage: number = 10
+  selectedDate?: string,
 ) => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -28,10 +26,10 @@ export const useVehicles = (
   );
 
   const fetchVehiclesByDate = useCallback(
-    async (date: Date, page: number = 1, perPage: number = 10) => {
+    async (date: string) => {
       setLoading(true);
       try {
-        const data = await VehicleService.getVehiclesByDate(date, page, perPage);
+        const data = await VehicleService.getVehiclesByDate(date);
         setVehicles(data);
         setTotalCount(data.length);
       } catch (error) {
@@ -69,11 +67,11 @@ export const useVehicles = (
 
   useEffect(() => {
     if (selectedDate) {
-      fetchVehiclesByDate(selectedDate, page, perPage);
+      fetchVehiclesByDate(selectedDate);
     } else {
-      fetchVehicles(page, perPage);
+      fetchVehicles();
     }
-  }, [selectedDate, page, perPage, fetchVehicles, fetchVehiclesByDate]);
+  }, [selectedDate, fetchVehicles, fetchVehiclesByDate]);
 
   return {
     vehicles,

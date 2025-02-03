@@ -220,7 +220,7 @@ const ManageRoles: React.FC = () => {
         justifyContent="space-between"
         alignItems="center"
       >
-        <Grid item xs={12}>
+        <Grid item xs={12} md={6}>
           <SearchBar
             placeholder="Buscar Empleado"
             value={filter}
@@ -232,7 +232,7 @@ const ManageRoles: React.FC = () => {
           />
         </Grid>
         {showResults && (
-          <Grid item xs={12}>
+          <Grid item xs={12} md={6}>
             <Box
               display="flex"
               flexDirection={{ xs: "column", sm: "column", md: "row" }}

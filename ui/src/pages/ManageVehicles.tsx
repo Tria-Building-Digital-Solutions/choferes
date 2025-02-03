@@ -46,14 +46,12 @@ import { maskLicensePlate, maskParkingLot } from "../utils/maskUtils";
 
 const ManageVehicles: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
   const {
     vehicles,
     handleAddVehicle,
     handleUpdateVehicle,
     handleDeleteVehicle,
-  } = useVehicles(selectedDate, page, rowsPerPage);
+  } = useVehicles(selectedDate?.toISOString());
   const [filteredVehicles, setFilteredVehicles] = useState<Vehicle[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [editRowId, setEditRowId] = useState<number | null>(null);
@@ -79,6 +77,8 @@ const ManageVehicles: React.FC = () => {
   const [customBrand, setCustomBrand] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
   const [customColor, setCustomColor] = useState("");
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
   useEffect(() => {
     const allVehicles = Object.values(vehicles).flat();
@@ -103,7 +103,7 @@ const ManageVehicles: React.FC = () => {
   }, [vehicles, filter]);
 
   const validateFields = useCallback(() => {
-    const plateRegex = /^[A-ZÑ0-9]{3}-[A-ZÑ0-9]{3,4}$/;
+    const plateRegex = /^(?:[A-ZÑ]{3}-\d{3}|\d{6})$/;
     const textRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
     const parkingLotRegex = /^ATP[1-9]-\d{3,4}$/;
     const isLicensePlateValid =
@@ -295,7 +295,7 @@ const ManageVehicles: React.FC = () => {
         justifyContent="space-between"
         alignItems="center"
       >
-        <Grid item xs={12}>
+        <Grid item xs={12} md={6}>
           <SearchBar
             placeholder="Buscar Vehículo"
             value={filter}
@@ -306,7 +306,7 @@ const ManageVehicles: React.FC = () => {
             fullWidth
           />
         </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={12} md={6}>
           <Box
             display="flex"
             flexDirection={{ xs: "column", sm: "column", md: "row" }}

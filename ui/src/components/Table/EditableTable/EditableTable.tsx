@@ -296,40 +296,42 @@ const EditableTable = <T,>({
                   </TableCell>
                 ))}
                 <TableCell>
-                  {editRowId === getRowId(row) ? (
-                    <Tooltip title="Guardar" arrow>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    {editRowId === getRowId(row) ? (
+                      <Tooltip title="Guardar" arrow>
+                        <Box>
+                          <IconButton
+                            color="primary"
+                            onClick={() => handleSaveClick(getRowId(row))}
+                            disabled={!isFormValid}
+                          >
+                            <SaveIcon />
+                          </IconButton>
+                        </Box>
+                      </Tooltip>
+                    ) : (
+                      <Tooltip title="Editar" arrow>
+                        <Box>
+                          <IconButton
+                            color="primary"
+                            onClick={() => handleEditClick(row)}
+                          >
+                            <EditIcon />
+                          </IconButton>
+                        </Box>
+                      </Tooltip>
+                    )}
+                    <Tooltip title="Eliminar" arrow>
                       <Box>
                         <IconButton
-                          color="primary"
-                          onClick={() => handleSaveClick(getRowId(row))}
-                          disabled={!isFormValid}
+                          color="secondary"
+                          onClick={() => handleOpenDialog(getRowId(row))}
                         >
-                          <SaveIcon />
+                          <DeleteIcon />
                         </IconButton>
                       </Box>
                     </Tooltip>
-                  ) : (
-                    <Tooltip title="Editar" arrow>
-                      <Box>
-                        <IconButton
-                          color="primary"
-                          onClick={() => handleEditClick(row)}
-                        >
-                          <EditIcon />
-                        </IconButton>
-                      </Box>
-                    </Tooltip>
-                  )}
-                  <Tooltip title="Eliminar" arrow>
-                    <Box>
-                      <IconButton
-                        color="secondary"
-                        onClick={() => handleOpenDialog(getRowId(row))}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Box>
-                  </Tooltip>
+                  </Box>
                 </TableCell>
               </TableRow>
             ))}
