@@ -68,12 +68,14 @@ export const useVehicles = (
   };
 
   useEffect(() => {
+    fetchVehicles();
+  }, [fetchVehicles]);
+
+  useEffect(() => {
     if (selectedDate) {
-      fetchVehiclesByDate(selectedDate);
-    } else {
-      fetchVehicles();
+      fetchVehiclesByDate(selectedDate); 
     }
-  }, [selectedDate, fetchVehicles, fetchVehiclesByDate]);
+  }, [selectedDate, fetchVehiclesByDate]);
 
   return {
     vehicles,

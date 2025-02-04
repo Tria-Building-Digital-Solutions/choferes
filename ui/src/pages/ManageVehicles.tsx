@@ -48,6 +48,7 @@ const ManageVehicles: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const {
     vehicles,
+    allVehicles,
     handleAddVehicle,
     handleUpdateVehicle,
     handleDeleteVehicle,
@@ -261,6 +262,12 @@ const ManageVehicles: React.FC = () => {
     return vehicles.some((vehicle) => vehicle.licensePlate === licensePlate);
   };
 
+  const checkLicensePlateExistenceInAllVehicles = (
+    licensePlate: string
+  ): Vehicle | undefined => {
+    return allVehicles.find((vehicle) => vehicle.licensePlate === licensePlate);
+  };
+
   const handleLicensePlateChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -273,10 +280,23 @@ const ManageVehicles: React.FC = () => {
       return;
     }
 
-    setAddFields((prevState) => ({
-      ...prevState,
-      licensePlate: maskedValue,
-    }));
+    const existingVehicle =
+      checkLicensePlateExistenceInAllVehicles(maskedValue);
+
+    setAddFields((prevState) => {
+      const updatedFields = {
+        ...prevState,
+        licensePlate: maskedValue,
+        brand: existingVehicle?.brand || "",
+        color: existingVehicle?.color || "",
+      };
+      return updatedFields;
+    });
+
+    if (existingVehicle) {
+      setSelectedBrand(existingVehicle.brand || ""); 
+      setSelectedColor(existingVehicle.color || "");
+    }
   };
 
   const handleParkingLotChange = (
