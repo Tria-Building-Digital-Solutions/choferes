@@ -26,6 +26,7 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
+import ClearIcon from "@mui/icons-material/Clear";
 import { BRANDS, COLORS, TABLE } from "../../../constants/constants";
 import { formatDateWithDay } from "../../../utils/dateUtils";
 import { maskLicensePlate, maskParkingLot } from "../../../utils/maskUtils";
@@ -38,6 +39,7 @@ type EditableTableProps<T> = {
   editFields: Record<string, string>;
   setEditField: (field: string, value: string) => void;
   handleEditClick: (row: T) => void;
+  handleCancelClick: () => void;
   handleSaveClick: (id: number) => void;
   handleOpenDialog: (id: number) => void;
   getRowId: (row: T) => number;
@@ -59,6 +61,7 @@ const EditableTable = <T,>({
   editFields,
   setEditField,
   handleEditClick,
+  handleCancelClick,
   handleSaveClick,
   handleOpenDialog,
   getRowId,
@@ -69,7 +72,7 @@ const EditableTable = <T,>({
   setRowsPerPage,
   renderColumnValue = (_, value) => value,
   validateField = () => true,
-  isSaveDisabled
+  isSaveDisabled,
 }: EditableTableProps<T>) => {
   const [order, setOrder] = useState<"asc" | "desc">("asc");
   const [orderBy, setOrderBy] = useState<keyof T>(columns[0]);
@@ -131,20 +134,36 @@ const EditableTable = <T,>({
     }
 
     if (config.type === "select" && config.options) {
+      const selectedValue = editFields[String(column)] || "";
+      const hasOtroOption = config.options.some(
+        (option) => option.value === "Otro"
+      );
+
       return (
         <FormControl variant="outlined" fullWidth>
-          <Select
-            value={editFields[String(column)] || ""}
-            onChange={(e) =>
-              setEditField(String(column), String(e.target.value))
-            }
-          >
-            {config.options.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </Select>
+          {selectedValue === "Otro" ? (
+            <TextField
+              label={translateColumnHeaderToSpanish(column)}
+              variant="outlined"
+              fullWidth
+              value={editFields[String(column)] || ""}
+              onChange={(e) => setEditField(String(column), e.target.value)}
+            />
+          ) : (
+            <Select
+              value={selectedValue}
+              onChange={(e) =>
+                setEditField(String(column), String(e.target.value))
+              }
+            >
+              {config.options.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+              {!hasOtroOption && <MenuItem value="Otro">Otro</MenuItem>}
+            </Select>
+          )}
         </FormControl>
       );
     }
@@ -228,39 +247,53 @@ const EditableTable = <T,>({
                 <TableCell>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                     {editRowId === getRowId(row) ? (
-                      <Tooltip title="Guardar" arrow>
-                        <Box>
-                          <IconButton
-                            color="primary"
-                            onClick={() => handleSaveClick(getRowId(row))}
-                            disabled={isSaveDisabled} 
-                          >
-                            <SaveIcon />
-                          </IconButton>
-                        </Box>
-                      </Tooltip>
+                      <>
+                        <Tooltip title="Guardar" arrow>
+                          <Box>
+                            <IconButton
+                              color="primary"
+                              onClick={() => handleSaveClick(getRowId(row))}
+                              disabled={isSaveDisabled}
+                            >
+                              <SaveIcon />
+                            </IconButton>
+                          </Box>
+                        </Tooltip>
+                        <Tooltip title="Cancelar" arrow>
+                          <Box>
+                            <IconButton
+                              color="primary"
+                              onClick={() => handleCancelClick()}
+                            >
+                              <ClearIcon />
+                            </IconButton>
+                          </Box>
+                        </Tooltip>
+                      </>
                     ) : (
-                      <Tooltip title="Editar" arrow>
-                        <Box>
-                          <IconButton
-                            color="primary"
-                            onClick={() => handleEditClick(row)}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                        </Box>
-                      </Tooltip>
+                      <>
+                        <Tooltip title="Editar" arrow>
+                          <Box>
+                            <IconButton
+                              color="primary"
+                              onClick={() => handleEditClick(row)}
+                            >
+                              <EditIcon />
+                            </IconButton>
+                          </Box>
+                        </Tooltip>
+                        <Tooltip title="Eliminar" arrow>
+                          <Box>
+                            <IconButton
+                              color="secondary"
+                              onClick={() => handleOpenDialog(getRowId(row))}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Box>
+                        </Tooltip>
+                      </>
                     )}
-                    <Tooltip title="Eliminar" arrow>
-                      <Box>
-                        <IconButton
-                          color="secondary"
-                          onClick={() => handleOpenDialog(getRowId(row))}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </Box>
-                    </Tooltip>
                   </Box>
                 </TableCell>
               </TableRow>

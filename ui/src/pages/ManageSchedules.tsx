@@ -131,6 +131,10 @@ const ManageSchedules: React.FC = () => {
     });
   };
 
+  const handleCancelClick = () => {
+    setEditRowId(null);
+  };
+
   const handleSaveClick = (id: number) => {
     const updatedSchedule = {
       ...editFields,
@@ -305,6 +309,7 @@ const ManageSchedules: React.FC = () => {
             setEditFields({ ...editFields, [field]: value })
           }
           handleEditClick={handleEditClick}
+          handleCancelClick={handleCancelClick}
           handleSaveClick={handleSaveClick}
           handleOpenDialog={handleOpenDialog}
           getRowId={(row) => row.id}

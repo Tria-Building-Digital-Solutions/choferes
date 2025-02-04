@@ -184,6 +184,10 @@ const ManageVehicles: React.FC = () => {
     });
   };
 
+  const handleCancelClick = () => {
+    setEditRowId(null);
+  };
+
   const handleSaveClick = (id: number) => {
     const updatedVehicle = {
       ...editFields,
@@ -437,7 +441,7 @@ const ManageVehicles: React.FC = () => {
                 />
               </Grid>
               <Grid item xs={12} sm={6} md={2}>
-                {selectedColor === "Otro" ? (
+                {selectedBrand === "Otro" ? (
                   <TextField
                     label="Marca"
                     variant="outlined"
@@ -549,6 +553,7 @@ const ManageVehicles: React.FC = () => {
             setEditFields({ ...editFields, [field]: value })
           }
           handleEditClick={handleEditClick}
+          handleCancelClick={handleCancelClick}
           handleSaveClick={handleSaveClick}
           handleOpenDialog={handleOpenDialog}
           getRowId={(row) => row.id}

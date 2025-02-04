@@ -107,6 +107,10 @@ const ManageEmployees: React.FC = () => {
     });
   };
 
+  const handleCancelClick = () => {
+    setEditRowId(null);
+  };
+
   const handleSaveClick = (id: number) => {
     const updatedEmployee = {
       ...editFields,
@@ -231,7 +235,7 @@ const ManageEmployees: React.FC = () => {
                     display: "flex",
                     justifyContent: "center",
                     lineHeight: "normal",
-                    width: { xs: "100%", md: "auto" }, 
+                    width: { xs: "100%", md: "auto" },
                   }}
                   onClick={handleAdd}
                   disabled={!isAddFormValid}
@@ -254,6 +258,7 @@ const ManageEmployees: React.FC = () => {
             setEditFields({ ...editFields, [field]: value })
           }
           handleEditClick={handleEditClick}
+          handleCancelClick={handleCancelClick}
           handleSaveClick={handleSaveClick}
           handleOpenDialog={handleOpenDialog}
           getRowId={(row) => row.id}
