@@ -12,7 +12,11 @@ import {
   translationsDayOptionsToSpanish,
 } from "./stringUtils";
 import { calculateTotalHoursForPeriod } from "./tableUtils";
-import { formatHeaderDateWithYear, formatDate } from "./dateUtils";
+import {
+  formatHeaderDateWithYear,
+  formatDate,
+  formatDateWithDay,
+} from "./dateUtils";
 import { EnglishDayOfWeek } from "./englishDayOfWeek";
 import { WeeklySummary } from "../models/WeeklySummary";
 import { BiweeklySummary } from "../models/BiweeklySummary";
@@ -23,8 +27,24 @@ export const exportToExcel = (
   fileName: string,
   customHeaders?: string[]
 ) => {
+  let isVehicleData = data.length > 0 && "licensePlate" in data[0];
+
+  if (isVehicleData) {
+    data = data.map(({ id, updatedAt, createdAt, ...filteredRow }) => {
+      if (createdAt) {
+        filteredRow.Fecha = formatDateWithDay(new Date(createdAt), false);
+      }
+      return filteredRow;
+    });
+  }
+
   const headers =
-    customHeaders || Object.keys(data[0]).map(translateColumnHeaderToSpanish);
+    customHeaders ||
+    Object.keys(data[0]).map((header) =>
+      isVehicleData && header === "createdAt"
+        ? "Fecha"
+        : translateColumnHeaderToSpanish(header)
+    );
 
   const translatedData = data.map((row) => {
     const translatedRow: any = {};
@@ -66,9 +86,26 @@ export const exportToPDF = (
 ) => {
   const doc = new jsPDF();
 
+  let isVehicleData = data.length > 0 && "licensePlate" in data[0];
+
+  if (isVehicleData) {
+    data = data.map(({ id, updatedAt, createdAt, ...filteredRow }) => {
+      if (createdAt) {
+        filteredRow.Fecha = formatDateWithDay(new Date(createdAt), false);
+      }
+      return filteredRow;
+    });
+  }
+
   const headers = customHeaders
     ? [customHeaders]
-    : [Object.keys(data[0]).map(translateColumnHeaderToSpanish)];
+    : [
+        Object.keys(data[0]).map((header) =>
+          isVehicleData && header === "createdAt"
+            ? "Fecha"
+            : translateColumnHeaderToSpanish(header)
+        ),
+      ];
 
   const tableData = data.map((row) => {
     return Object.entries(row).map(([key, value]) => {

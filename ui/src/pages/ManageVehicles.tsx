@@ -347,7 +347,7 @@ const ManageVehicles: React.FC = () => {
               exportToExcel,
               exportToPDF,
               filteredVehicles,
-              `reporte-de-vehiculos-${exportFileFormattedDate(new Date())}`
+              `reporte-de-vehiculos-${exportFileFormattedDate(selectedDate || new Date())}`
             )}
             defaultIndex={0}
             buttonIcon={<DownloadRoundedIcon />}
