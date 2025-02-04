@@ -47,7 +47,8 @@ const ManageEmployees: React.FC = () => {
   const [filter, setFilter] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [isValid, setIsValid] = useState(false);
+  const [isAddFormValid, setIsAddFormValid] = useState(false);
+  const [isEditFormValid, setIsEditFormValid] = useState(false);
 
   useEffect(() => {
     const filtered = employees.filter((employee) =>
@@ -60,18 +61,33 @@ const ManageEmployees: React.FC = () => {
     setTotalCount(filtered.length);
   }, [employees, filter]);
 
-  const validateFields = useCallback(() => {
+  const validateAddFields = useCallback(() => {
     const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
     const isFirstNameValid =
       nameRegex.test(addFields.firstName) && addFields.firstName !== "";
     const isLastNameValid =
       nameRegex.test(addFields.lastName) && addFields.lastName !== "";
-    setIsValid(isFirstNameValid && isLastNameValid);
+    setIsAddFormValid(isFirstNameValid && isLastNameValid);
   }, [addFields]);
 
+  const validateEditFields = useCallback(() => {
+    const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+    const isFirstNameValid =
+      nameRegex.test(editFields.firstName) && editFields.firstName !== "";
+    const isLastNameValid =
+      nameRegex.test(editFields.lastName) && editFields.lastName !== "";
+    setIsEditFormValid(isFirstNameValid && isLastNameValid);
+  }, [editFields]);
+
   useEffect(() => {
-    validateFields();
-  }, [validateFields]);
+    validateAddFields();
+  }, [validateAddFields]);
+
+  useEffect(() => {
+    if (editRowId !== null) {
+      validateEditFields();
+    }
+  }, [editFields, editRowId, validateEditFields]);
 
   const handleAdd = () => {
     const newEmployee: Employee = {
@@ -218,7 +234,7 @@ const ManageEmployees: React.FC = () => {
                     width: { xs: "100%", md: "auto" }, 
                   }}
                   onClick={handleAdd}
-                  disabled={!isValid}
+                  disabled={!isAddFormValid}
                 >
                   <PersonAddAlt1RoundedIcon />
                 </Button>
@@ -246,6 +262,7 @@ const ManageEmployees: React.FC = () => {
           rowsPerPage={rowsPerPage}
           setPage={setPage}
           setRowsPerPage={setRowsPerPage}
+          isSaveDisabled={!isEditFormValid}
         />
       ) : (
         <Typography variant="h6" color="textSecondary">

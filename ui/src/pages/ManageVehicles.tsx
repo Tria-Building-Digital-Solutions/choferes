@@ -72,13 +72,14 @@ const ManageVehicles: React.FC = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [vehicleToDelete, setVehicleToDelete] = useState<number | null>(null);
   const [filter, setFilter] = useState("");
-  const [isValid, setIsValid] = useState(false);
   const [selectedBrand, setSelectedBrand] = useState("");
   const [customBrand, setCustomBrand] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
   const [customColor, setCustomColor] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [isAddFormValid, setIsAddFormValid] = useState(false);
+  const [isEditFormValid, setIsEditFormValid] = useState(false);
 
   useEffect(() => {
     const allVehicles = Object.values(vehicles).flat();
@@ -102,7 +103,7 @@ const ManageVehicles: React.FC = () => {
     setTotalCount(filtered.length);
   }, [vehicles, filter]);
 
-  const validateFields = useCallback(() => {
+  const validateAddFields = useCallback(() => {
     const plateRegex = /^(?:[A-ZÑ]{3}-\d{3}|\d{6})$/;
     const textRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
     const parkingLotRegex = /^ATP[1-9]-\d{3,4}$/;
@@ -116,14 +117,39 @@ const ManageVehicles: React.FC = () => {
     const isParkingLotValid =
       parkingLotRegex.test(addFields.parkingLot.trim()) &&
       addFields.parkingLot !== "";
-    setIsValid(
+    setIsAddFormValid(
       isLicensePlateValid && isModelValid && isColorValid && isParkingLotValid
     );
   }, [addFields]);
 
+  const validateEditFields = useCallback(() => {
+    const plateRegex = /^(?:[A-ZÑ]{3}-\d{3}|\d{6})$/;
+    const textRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+    const parkingLotRegex = /^ATP[1-9]-\d{3,4}$/;
+    const isLicensePlateValid =
+      plateRegex.test(editFields.licensePlate.trim()) &&
+      editFields.licensePlate !== "";
+    const isModelValid =
+      textRegex.test(editFields.brand) && editFields.brand !== "";
+    const isColorValid =
+      textRegex.test(editFields.color) && editFields.color !== "";
+    const isParkingLotValid =
+      parkingLotRegex.test(editFields.parkingLot.trim()) &&
+      editFields.parkingLot !== "";
+    setIsEditFormValid(
+      isLicensePlateValid && isModelValid && isColorValid && isParkingLotValid
+    );
+  }, [editFields]);
+
   useEffect(() => {
-    validateFields();
-  }, [validateFields]);
+    validateAddFields();
+  }, [validateAddFields]);
+
+  useEffect(() => {
+    if (editRowId !== null) {
+      validateEditFields();
+    }
+  }, [editFields, editRowId, validateEditFields]);
 
   const handleAdd = () => {
     const newVehicle: Vehicle = {
@@ -502,7 +528,7 @@ const ManageVehicles: React.FC = () => {
                     width: { xs: "100%", md: "auto" },
                   }}
                   onClick={handleAdd}
-                  disabled={!isValid}
+                  disabled={!isAddFormValid}
                 >
                   <DirectionsCarIcon />
                 </Button>
@@ -531,6 +557,7 @@ const ManageVehicles: React.FC = () => {
           rowsPerPage={rowsPerPage}
           setPage={setPage}
           setRowsPerPage={setRowsPerPage}
+          isSaveDisabled={!isEditFormValid}
         />
       ) : (
         <Typography variant="h6" color="textSecondary">

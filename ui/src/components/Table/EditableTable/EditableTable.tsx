@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -11,7 +11,6 @@ import {
   TableSortLabel,
   TextField,
   FormControl,
-  InputLabel,
   Select,
   MenuItem,
   Tooltip,
@@ -27,7 +26,6 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
-// import InputMask from "react-input-mask";
 import { BRANDS, COLORS, TABLE } from "../../../constants/constants";
 import { formatDateWithDay } from "../../../utils/dateUtils";
 import { maskLicensePlate, maskParkingLot } from "../../../utils/maskUtils";
@@ -49,9 +47,8 @@ type EditableTableProps<T> = {
   setPage: (page: number) => void;
   setRowsPerPage: (rowsPerPage: number) => void;
   renderColumnValue?: (column: keyof T, value: any) => React.ReactNode;
-  getOptionsForColumn?: (column: keyof T) => { value: string; label: string }[];
   validateField?: (field: string, value: string) => boolean;
-  customPagination?: (data: T[], page: number, rowsPerPage: number) => T[];
+  isSaveDisabled?: boolean;
 };
 
 const EditableTable = <T,>({
@@ -71,23 +68,11 @@ const EditableTable = <T,>({
   setPage,
   setRowsPerPage,
   renderColumnValue = (_, value) => value,
-  getOptionsForColumn = () => [],
   validateField = () => true,
+  isSaveDisabled
 }: EditableTableProps<T>) => {
-  const [isFormValid, setIsFormValid] = useState(false);
   const [order, setOrder] = useState<"asc" | "desc">("asc");
   const [orderBy, setOrderBy] = useState<keyof T>(columns[0]);
-
-  const checkFormValidity = useCallback(() => {
-    const isValid = Object.keys(editFields).every((field) =>
-      validateField(field, editFields[field])
-    );
-    setIsFormValid(isValid);
-  }, [editFields, validateField]);
-
-  useEffect(() => {
-    checkFormValidity();
-  }, [checkFormValidity]);
 
   const handlePageChange = (
     event: React.MouseEvent<HTMLButtonElement> | null,
@@ -117,61 +102,35 @@ const EditableTable = <T,>({
     page * rowsPerPage + rowsPerPage
   );
 
-  const handleEditLicensePlateChange = (
-    column: keyof T,
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const rawValue = event.target.value;
-    const maskedValue = maskLicensePlate(rawValue);
-    setEditField(String(column), String(maskedValue));
-  };
-
-  const handleEditParkingLotChange = (
-    column: keyof T,
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const rawValue = event.target.value;
-    const maskedValue = maskParkingLot(rawValue);
-    setEditField(String(column), String(maskedValue));
+  const columnConfig: Record<
+    string,
+    {
+      type: "text" | "select" | "masked";
+      options?: { value: string; label: string }[];
+    }
+  > = {
+    licensePlate: { type: "masked" },
+    parkingLot: { type: "masked" },
+    brand: { type: "select", options: BRANDS },
+    color: { type: "select", options: COLORS },
+    day: { type: "select", options: getDayOptionsSpanish() },
   };
 
   const renderEditField = (column: keyof T, value: string) => {
-    const options = getOptionsForColumn(column);
+    const config = columnConfig[String(column)];
 
-    if (options.length > 0) {
-      return (
-        <FormControl variant="outlined" fullWidth>
-          <InputLabel>{String(column)}</InputLabel>
-          <Select
-            label={String(column)}
-            value={editFields[String(column)] || ""}
-            onChange={(e) =>
-              setEditField(String(column), String(e.target.value))
-            }
-          >
-            {options.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      );
-    }
-
-    if (column === "licensePlate") {
+    if (!config) {
       return (
         <TextField
-          label="Placa"
-          variant="outlined"
           fullWidth
           value={editFields[String(column)] || ""}
-          onChange={(e) => handleEditLicensePlateChange}
+          onChange={(e) => setEditField(String(column), e.target.value)}
+          error={!validateField(String(column), value)}
         />
       );
     }
 
-    if (column === "brand") {
+    if (config.type === "select" && config.options) {
       return (
         <FormControl variant="outlined" fullWidth>
           <Select
@@ -180,7 +139,7 @@ const EditableTable = <T,>({
               setEditField(String(column), String(e.target.value))
             }
           >
-            {BRANDS.map((option) => (
+            {config.options.map((option) => (
               <MenuItem key={option.value} value={option.value}>
                 {option.label}
               </MenuItem>
@@ -190,60 +149,31 @@ const EditableTable = <T,>({
       );
     }
 
-    if (column === "color") {
-      return (
-        <FormControl variant="outlined" fullWidth>
-          <Select
-            value={editFields[String(column)] || ""}
-            onChange={(e) =>
-              setEditField(String(column), String(e.target.value))
-            }
-          >
-            {COLORS.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      );
-    }
+    if (config.type === "masked") {
+      const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const rawValue = event.target.value;
+        const maskedValue =
+          column === "licensePlate"
+            ? maskLicensePlate(rawValue)
+            : maskParkingLot(rawValue);
+        setEditField(String(column), maskedValue);
+      };
 
-    if (column === "parkingLot") {
       return (
         <TextField
-          label="Espacio"
+          label={translateColumnHeaderToSpanish(column)}
           variant="outlined"
           fullWidth
           value={editFields[String(column)] || ""}
-          onChange={(e) => handleEditParkingLotChange}
+          onChange={handleChange}
         />
-      );
-    }
-
-    if (column === "day") {
-      return (
-        <FormControl variant="outlined" fullWidth>
-          <Select
-            value={editFields[String(column)] || ""}
-            onChange={(e) =>
-              setEditField(String(column), String(e.target.value))
-            }
-          >
-            {getDayOptionsSpanish().map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
       );
     }
 
     return (
       <TextField
         fullWidth
-        value={value || ""}
+        value={editFields[String(column)] || ""}
         onChange={(e) => setEditField(String(column), e.target.value)}
         error={!validateField(String(column), value)}
       />
@@ -303,7 +233,7 @@ const EditableTable = <T,>({
                           <IconButton
                             color="primary"
                             onClick={() => handleSaveClick(getRowId(row))}
-                            disabled={!isFormValid}
+                            disabled={isSaveDisabled} 
                           >
                             <SaveIcon />
                           </IconButton>
