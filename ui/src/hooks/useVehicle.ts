@@ -6,6 +6,8 @@ export const useVehicles = (
   selectedDate?: string,
 ) => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [allVehicles, setAllVehicles] = useState<Vehicle[]>([]);
+  const [count, setCount] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
 
@@ -14,7 +16,7 @@ export const useVehicles = (
       setLoading(true);
       try {
         const data = await VehicleService.fetchVehicles(page, perPage);
-        setVehicles(data);
+        setAllVehicles(data);
         setTotalCount(data.length);
       } catch (error) {
         console.error("Error fetching vehicles", error);
@@ -31,7 +33,7 @@ export const useVehicles = (
       try {
         const data = await VehicleService.getVehiclesByDate(date);
         setVehicles(data);
-        setTotalCount(data.length);
+        setCount(data.length);
       } catch (error) {
         console.error("Error fetching vehicles by date", error);
       } finally {
@@ -75,6 +77,8 @@ export const useVehicles = (
 
   return {
     vehicles,
+    allVehicles,
+    count,
     totalCount,
     loading,
     fetchVehicles,

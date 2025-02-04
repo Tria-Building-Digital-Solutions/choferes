@@ -73,7 +73,7 @@ const ManageRoles: React.FC = () => {
   );
   const [firstDayOfWeek, setFirstDayOfWeek] = useState<Date | null>(new Date());
   const [filter, setFilter] = useState("");
-  
+
   useEffect(() => {
     const currentWeek = getCurrentWeekDates(weekOffset);
     if (currentWeek.length > 0) {
@@ -344,9 +344,19 @@ const ManageRoles: React.FC = () => {
           monthlySummaries={monthlySummaries}
         />
       ) : (
-        <Typography variant="h6" color="textSecondary">
-          No se encontraron empleados para mostrar.
-        </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            textAlign: "center",
+            paddingTop: "10%",
+          }}
+        >
+          <Typography variant="h6" color="textSecondary">
+            No se encontraron empleados para mostrar.
+          </Typography>
+        </Box>
       )}
     </Box>
   );

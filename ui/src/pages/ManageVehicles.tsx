@@ -69,7 +69,8 @@ const ManageVehicles: React.FC = () => {
     parkingLot: "",
     notes: "",
   });
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [openTooltip, setOpenTooltip] = useState(false);
   const [vehicleToDelete, setVehicleToDelete] = useState<number | null>(null);
   const [filter, setFilter] = useState("");
   const [selectedBrand, setSelectedBrand] = useState("");
@@ -204,12 +205,12 @@ const ManageVehicles: React.FC = () => {
   };
 
   const handleOpenDialog = (id: number) => {
-    setDialogOpen(true);
+    setOpenDialog(true);
     setVehicleToDelete(id);
   };
 
   const handleCloseDialog = () => {
-    setDialogOpen(false);
+    setOpenDialog(false);
     setVehicleToDelete(null);
   };
 
@@ -256,12 +257,26 @@ const ManageVehicles: React.FC = () => {
     setAddFields({ ...addFields, color: event.target.value });
   };
 
+  const checkLicensePlateExistence = (licensePlate: string): boolean => {
+    return vehicles.some((vehicle) => vehicle.licensePlate === licensePlate);
+  };
+
   const handleLicensePlateChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const rawValue = event.target.value;
     const maskedValue = maskLicensePlate(rawValue);
-    setAddFields((prevState) => ({ ...prevState, licensePlate: maskedValue }));
+
+    if (checkLicensePlateExistence(maskedValue)) {
+      setOpenTooltip(true);
+      setTimeout(() => setOpenTooltip(false), 2000);
+      return;
+    }
+
+    setAddFields((prevState) => ({
+      ...prevState,
+      licensePlate: maskedValue,
+    }));
   };
 
   const handleParkingLotChange = (
@@ -432,13 +447,21 @@ const ManageVehicles: React.FC = () => {
           >
             <Grid container spacing={2} alignItems="center">
               <Grid item xs={12} sm={6} md={2}>
-                <TextField
-                  label="Placa"
-                  variant="outlined"
-                  fullWidth
-                  value={addFields.licensePlate}
-                  onChange={handleLicensePlateChange}
-                />
+                <Tooltip
+                  title="Esta placa ya está registrada"
+                  open={openTooltip}
+                  disableHoverListener
+                  placement="bottom"
+                  arrow
+                >
+                  <TextField
+                    label="Placa"
+                    variant="outlined"
+                    fullWidth
+                    value={addFields.licensePlate}
+                    onChange={handleLicensePlateChange}
+                  />
+                </Tooltip>
               </Grid>
               <Grid item xs={12} sm={6} md={2}>
                 {selectedBrand === "Otro" ? (
@@ -579,7 +602,7 @@ const ManageVehicles: React.FC = () => {
           </Typography>
         </Box>
       )}
-      <Dialog open={dialogOpen} onClose={handleCloseDialog}>
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
         <DialogTitle>Confirmar Eliminación</DialogTitle>
         <DialogContent>
           <Typography>

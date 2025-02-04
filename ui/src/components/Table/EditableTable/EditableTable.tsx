@@ -26,7 +26,7 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
-import ClearIcon from "@mui/icons-material/Clear";
+import CloseIcon from '@mui/icons-material/Close';
 import { BRANDS, COLORS, TABLE } from "../../../constants/constants";
 import { formatDateWithDay } from "../../../utils/dateUtils";
 import { maskLicensePlate, maskParkingLot } from "../../../utils/maskUtils";
@@ -265,7 +265,7 @@ const EditableTable = <T,>({
                               color="primary"
                               onClick={() => handleCancelClick()}
                             >
-                              <ClearIcon />
+                              <CloseIcon />
                             </IconButton>
                           </Box>
                         </Tooltip>
