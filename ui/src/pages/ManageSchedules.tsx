@@ -106,10 +106,10 @@ const ManageSchedules: React.FC = () => {
   }, [validateAddFields]);
 
   useEffect(() => {
-      if (editRowId !== null) {
-        validateEditFields();
-      }
-    }, [editFields, editRowId, validateEditFields]);
+    if (editRowId !== null) {
+      validateEditFields();
+    }
+  }, [editFields, editRowId, validateEditFields]);
 
   const handleAdd = () => {
     const newSchedule: Schedule = {
@@ -321,9 +321,19 @@ const ManageSchedules: React.FC = () => {
           isSaveDisabled={!isEditFormValid}
         />
       ) : (
-        <Typography variant="h6" color="textSecondary">
-          No se encontraron horarios para mostrar.
-        </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            textAlign: "center",
+            paddingTop: "10%",
+          }}
+        >
+          <Typography variant="h6" color="textSecondary">
+            No se encontraron horarios para mostrar.
+          </Typography>
+        </Box>
       )}
       <Dialog open={dialogOpen} onClose={handleCloseDialog}>
         <DialogTitle>Confirmar Eliminación</DialogTitle>

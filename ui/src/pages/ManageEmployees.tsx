@@ -270,9 +270,19 @@ const ManageEmployees: React.FC = () => {
           isSaveDisabled={!isEditFormValid}
         />
       ) : (
-        <Typography variant="h6" color="textSecondary">
-          No se encontraron empleados para mostrar.
-        </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            textAlign: "center",
+            paddingTop: "10%",
+          }}
+        >
+          <Typography variant="h6" color="textSecondary">
+            No se encontraron empleados para mostrar.
+          </Typography>
+        </Box>
       )}
       <Dialog open={dialogOpen} onClose={handleCloseDialog}>
         <DialogTitle>Confirmar Eliminación</DialogTitle>
