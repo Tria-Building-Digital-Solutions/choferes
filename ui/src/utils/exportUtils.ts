@@ -51,7 +51,10 @@ export const exportToExcel = (
     Object.keys(row).forEach((key, index) => {
       let value = row[key];
 
-      if (key === "licensePlate" && typeof value === "string") {
+      if (
+        (key === "ticket" || key === "licensePlate") &&
+        typeof value === "string"
+      ) {
         value = `${value}`;
       } else if (typeof value === "string") {
         const dateValue = new Date(value);
@@ -109,7 +112,10 @@ export const exportToPDF = (
 
   const tableData = data.map((row) => {
     return Object.entries(row).map(([key, value]) => {
-      if (key === "licensePlate" && typeof value === "string") {
+      if (
+        (key === "ticket" || key === "licensePlate") &&
+        typeof value === "string"
+      ) {
         return value;
       }
 
