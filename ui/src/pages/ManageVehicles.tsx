@@ -283,7 +283,7 @@ const ManageVehicles: React.FC = () => {
   const checkTicketExistenceInAllVehicles = (
     ticket: string
   ): Vehicle | undefined => {
-    return allVehicles.find((vehicle) => vehicle.ticket === ticket);
+    return allVehicles.find((vehicle) => String(vehicle.ticket) === ticket);
   };
 
   const getNextTicketNumber = (): string => {
@@ -309,20 +309,20 @@ const ManageVehicles: React.FC = () => {
       nextTicket = (BigInt(nextTicket) + BigInt(1)).toString();
     }
     setAddFields((prevFields) => ({ ...prevFields, ticket: nextTicket }));
-  };  
+  };
 
-  const handleTicketChange = (event: { target: { value: string } }) => {
+  const handleTicketChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     let value = event.target.value.trim();
     if (!/^\d*$/.test(value)) {
       return;
     }
-    const existingTicket = checkTicketExistenceInAllVehicles(value);
-    if (existingTicket) {
+
+    if (checkTicketExistenceInAllVehicles(value)) {
       setOpenTicketTooltip(true);
       setTimeout(() => setOpenTicketTooltip(false), 2000);
-      return; 
+      return;
     }
-    setOpenTicketTooltip(false);
+
     setAddFields((prevFields) => ({ ...prevFields, ticket: value }));
   };
 
